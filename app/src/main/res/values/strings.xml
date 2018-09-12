@@ -6,4 +6,13 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+    <string name="new_app_name">E-Blog</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="admob_id_label">Enter your AdMob Banner Ad Unit ID</string>
+    <string name="admob_id_hint">Google AdMob Banner Ad Unit ID</string>
+    <string name="test_ad_id">For eg.: ca-app-pub-3940256099942544/6300978111</string>
+    <string name="submit_button">Submit</string>
 </resources>

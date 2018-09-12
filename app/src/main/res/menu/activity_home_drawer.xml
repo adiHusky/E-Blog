@@ -5,34 +5,40 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:id="@+id/nav_new_blog"
+            android:icon="@drawable/ic_description_black_24dp"
+            android:title="Create New Blog" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
+            android:id="@+id/nav_blog_history"
+            android:icon="@drawable/ic_library_books_black_24dp"
+            android:title="Your Blogs" />
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:id="@+id/nav_monetize"
+            android:icon="@drawable/ic_graph"
+            android:title="Monetization" />
         <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:id="@+id/nav_task"
+            android:icon="@drawable/ic_playlist_add_check_black_24dp"
+            android:title="Tasks" />
     </group>
 
-    <item android:title="Communicate">
-        <menu>
+    <group android:checkableBehavior="single">
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:id="@+id/nav_profile"
+                android:icon="@drawable/ic_person_add_black_24dp"
+                android:title="My Profile" />
             <item
-                android:id="@+id/nav_send"
+                android:id="@+id/nav_logout"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
+                android:title="Logout" />
+            <item
+                android:id="@+id/nav_about_us"
+                android:icon="@drawable/ic_menu_send"
+                android:title="About Us" />
+            <item
+                android:id="@+id/nav_tc"
+                android:icon="@drawable/ic_menu_send"
+                android:title="T &amp; C" />
+    </group>
 
 </menu>

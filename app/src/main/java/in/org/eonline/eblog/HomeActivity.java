@@ -1,21 +1,29 @@
 package in.org.eonline.eblog;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
@@ -24,48 +32,88 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
+import in.org.eonline.eblog.Fragments.MonetizationFragment;
+import in.org.eonline.eblog.Fragments.MyProfileFragment;
+import in.org.eonline.eblog.Fragments.TaskFragment;
+import in.org.eonline.eblog.Fragments.YourBlogsFragment;
+
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     FirebaseFirestore db;
     Map<String, Object> user = new HashMap<>();
 
+    AdView mAdView;
+    FrameLayout frameLayout;
+    Toolbar toolbar;
+    NavigationView navigationView;
+    DrawerLayout drawer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        initializeViews();
+
         db = FirebaseFirestore.getInstance();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         // Create a new user with a first and last name
 
-        user.put("first", "Akshat");
-        user.put("last", "Gawankar");
-        user.put("born", 1995);
-        user.put("City", "Mumbai");
-        addData();
+        user.put("first", "Viraj");
+        user.put("last", "Jadhav");
+        user.put("born", 1998);
+        user.put("City", "Panvel");
+        //addData();
+
+        MobileAds.initialize(this,"ca-app-pub-7293397784162310~9840078574");
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                  .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                  .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
+        mAdView.loadAd(adRequest);
+
     }
 
+    public void initializeViews() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        frameLayout = (FrameLayout) findViewById(R.id.content_frame);
+    }
+
+    // Back button click handled by this method
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        //Toast.makeText(HomeActivity.this, "on pause is called", Toast.LENGTH_SHORT).show();
+        mAdView.pause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        //Toast.makeText(HomeActivity.this, "on resume is called", Toast.LENGTH_SHORT).show();
+        mAdView.resume();
+        super.onResume();
     }
 
     @Override
@@ -96,26 +144,42 @@ public class HomeActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_new_blog) {
+            CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
+            openFragment(createNewBlogFragment);
+        } else if (id == R.id.nav_blog_history) {
+            YourBlogsFragment yourBlogsFragment = new YourBlogsFragment();
+            openFragment(yourBlogsFragment);
+        } else if (id == R.id.nav_monetize) {
+            MonetizationFragment monetizationFragment = new MonetizationFragment();
+            openFragment(monetizationFragment);
+        } else if (id == R.id.nav_task) {
+            TaskFragment taskFragment = new TaskFragment();
+            openFragment(taskFragment);
+        } else if (id == R.id.nav_profile) {
+            MyProfileFragment myProfileFragment = new MyProfileFragment();
+            openFragment(myProfileFragment);
+        } else if (id == R.id.nav_logout) {
+            //TODO
+        } else if (id == R.id.nav_about_us) {
+            //TODO
+        } else if (id == R.id.nav_tc) {
+            //TODO
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    public void addData(){
+    public void openFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.content_frame, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void addData() {
         db.collection("users")
                 .add(user)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
