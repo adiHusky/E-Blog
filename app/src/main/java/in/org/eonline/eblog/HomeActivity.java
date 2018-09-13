@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
+import in.org.eonline.eblog.Fragments.HomeFragment;
 import in.org.eonline.eblog.Fragments.MonetizationFragment;
 import in.org.eonline.eblog.Fragments.MyProfileFragment;
 import in.org.eonline.eblog.Fragments.TaskFragment;
@@ -44,7 +45,6 @@ public class HomeActivity extends AppCompatActivity
     FirebaseFirestore db;
     Map<String, Object> user = new HashMap<>();
 
-    AdView mAdView;
     FrameLayout frameLayout;
     Toolbar toolbar;
     NavigationView navigationView;
@@ -56,6 +56,8 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
 
         initializeViews();
+        openFragment(new HomeFragment());
+        //getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, new HomeFragment(), "EXPLORE").commit();
 
         db = FirebaseFirestore.getInstance();
 
@@ -76,12 +78,12 @@ public class HomeActivity extends AppCompatActivity
         user.put("City", "Panvel");
         //addData();
 
-        MobileAds.initialize(this,"ca-app-pub-7293397784162310~9840078574");
+        /* MobileAds.initialize(this,"ca-app-pub-7293397784162310~9840078574");
         mAdView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder()
                   .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                   .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
-        mAdView.loadAd(adRequest);
+        mAdView.loadAd(adRequest); */
 
     }
 
@@ -102,7 +104,7 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
-    @Override
+    /* @Override
     protected void onPause() {
         //Toast.makeText(HomeActivity.this, "on pause is called", Toast.LENGTH_SHORT).show();
         mAdView.pause();
@@ -114,7 +116,7 @@ public class HomeActivity extends AppCompatActivity
         //Toast.makeText(HomeActivity.this, "on resume is called", Toast.LENGTH_SHORT).show();
         mAdView.resume();
         super.onResume();
-    }
+    } */
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -144,7 +146,10 @@ public class HomeActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_new_blog) {
+        if (id == R.id.nav_home) {
+            HomeFragment homeFragment = new HomeFragment();
+            openFragment(homeFragment);
+        } else if (id == R.id.nav_new_blog) {
             CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
             openFragment(createNewBlogFragment);
         } else if (id == R.id.nav_blog_history) {
