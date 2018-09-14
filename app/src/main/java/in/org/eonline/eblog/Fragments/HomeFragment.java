@@ -14,16 +14,22 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import in.org.eonline.eblog.Adapters.UserAdapter;
+import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements UserAdapter.ClickListener {
 
 
     private AdView mAdView;
     private RecyclerView popularUsersRecyclerView;
+    private List<UserModel> userModels = new ArrayList<>();
 
     public HomeFragment() {
         // Required empty public constructor
@@ -47,6 +53,18 @@ public class HomeFragment extends Fragment {
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL, false);
         popularUsersRecyclerView.setLayoutManager(linearLayoutManager);
+
+        String userNames[]={"Vaibhav","Viraj","Aditya","Akshata",
+                "Aniket" };
+
+        for(int i = 0; i< userNames.length; i++) {
+            UserModel model = new UserModel();
+            model.setUserFName(userNames[i]);
+            userModels.add(model);
+        }
+
+        UserAdapter adapter = new UserAdapter(getActivity(), userModels, HomeFragment.this);
+        popularUsersRecyclerView.setAdapter(adapter);
 
         MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
         mAdView = (AdView) getView().findViewById(R.id.adView);

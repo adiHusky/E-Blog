@@ -11,9 +11,7 @@
         android:layout_height="@dimen/_45sdp"
         android:id="@+id/user_image_item"
         android:src="@drawable/him"
-        android:layout_gravity="center_horizontal"
-        card_view:border_color="@color/myPrimaryColor"
-        card_view:border_width="@dimen/_1sdp"/>
+        android:layout_gravity="center_horizontal"/>
 
     <TextView
         android:id="@+id/user_name_item"
