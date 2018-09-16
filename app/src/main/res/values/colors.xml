@@ -6,4 +6,5 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="toolbar_color">#ff5a5a</color>
+    <color name="straightLine">#a39b9b</color>
 </resources>

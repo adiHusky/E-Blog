@@ -17,19 +17,22 @@ import com.google.android.gms.ads.MobileAds;
 import java.util.ArrayList;
 import java.util.List;
 
+import in.org.eonline.eblog.Adapters.BlogAdapter;
 import in.org.eonline.eblog.Adapters.UserAdapter;
+import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment implements UserAdapter.ClickListener {
+public class HomeFragment extends Fragment implements UserAdapter.ClickListener, BlogAdapter.ClickListener {
 
 
     private AdView mAdView;
-    private RecyclerView popularUsersRecyclerView;
+    private RecyclerView popularUsersRecyclerView, popularBlogsRecyclerView;
     private List<UserModel> userModels = new ArrayList<>();
+    private List<BlogModel> blogModels = new ArrayList<>();
 
     public HomeFragment() {
         // Required empty public constructor
@@ -49,8 +52,25 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener 
 
         initializeViews();
 
-        popularUsersRecyclerView.setHasFixedSize(true);
+        setPopularUsersRecyclerView();
+        setPopularBlogsRecyclerView();
 
+
+        MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
+        mAdView = (AdView) getView().findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
+        mAdView.loadAd(adRequest);
+    }
+
+    public void initializeViews() {
+        popularUsersRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_users);
+        popularBlogsRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_blogs);
+    }
+
+    public void setPopularUsersRecyclerView() {
+        popularUsersRecyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL, false);
         popularUsersRecyclerView.setLayoutManager(linearLayoutManager);
 
@@ -65,16 +85,23 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener 
 
         UserAdapter adapter = new UserAdapter(getActivity(), userModels, HomeFragment.this);
         popularUsersRecyclerView.setAdapter(adapter);
-
-        MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
-        mAdView = (AdView) getView().findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder()
-                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
-        mAdView.loadAd(adRequest);
     }
 
-    public void initializeViews() {
-        popularUsersRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_users);
+    public void setPopularBlogsRecyclerView() {
+        popularBlogsRecyclerView.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL, false);
+        popularBlogsRecyclerView.setLayoutManager(linearLayoutManager);
+
+        String blogHeader[]={"Vaibhav","Viraj","Aditya","Akshata",
+                "Aniket" };
+
+        for(int i = 0; i< blogHeader.length; i++) {
+            BlogModel model = new BlogModel();
+            model.setBlogHeader(blogHeader[i]);
+            blogModels.add(model);
+        }
+
+        BlogAdapter adapter = new BlogAdapter(getActivity(), blogModels, HomeFragment.this);
+        popularBlogsRecyclerView.setAdapter(adapter);
     }
 }

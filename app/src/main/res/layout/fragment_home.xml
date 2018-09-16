@@ -17,6 +17,25 @@
 
         </android.support.v7.widget.RecyclerView>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_1sdp"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:layout_below="@+id/popular_users"
+            android:background="@color/straightLine"
+            android:id="@+id/view_1">
+
+        </View>
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/view_1"
+            android:id="@+id/popular_blogs"
+            android:layout_marginTop="@dimen/_20sdp">
+
+        </android.support.v7.widget.RecyclerView>
+
         <com.google.android.gms.ads.AdView
             xmlns:ads="http://schemas.android.com/apk/res-auto"
             android:id="@+id/adView"
