@@ -1,15 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".Fragments.CreateNewBlogFragment">
 
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="10dip"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+    <!-- Text Label -->
     <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="10dip"
+        android:entries="@color/colorPrimaryDark"
+        android:text="Category:" />
+
+    <!-- Spinner Element -->
+    <Spinner
+        android:id="@+id/spinner_category"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:entries="@color/colorPrimary"
+
+        android:prompt="@string/nav_header_title" />
+
+    <EditText
+        android:id="@+id/blog_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="53dp"
+        android:ems="15"
+        android:hint="What would you like to name your site? "
+        android:textSize="@dimen/_15sdp" />
+
+    <EditText
+        android:id="@+id/blog_content"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="5dp"
+        android:ems="15"
+        android:hint="Enter the content"
+        android:textSize="@dimen/_15sdp" />
+    <EditText
+        android:id="@+id/blog_footer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create New Blog Screen"
-        android:textSize="@dimen/_20sdp"
-        android:layout_centerInParent="true"/>
+        android:layout_marginTop="5dp"
+        android:ems="15"
+        android:hint="Enter footer of the blog"
+        android:textSize="@dimen/_15sdp" />
+    <EditText
+        android:id="@+id/adview_user_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:ems="15"
+        android:hint="Enter your banner ad unit id"
+        android:textSize="@dimen/_15sdp" />
 
-</RelativeLayout>
+    <Button
+        android:id="@+id/submitAdId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="7dp"
+        android:text="Submit" />
+
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView_user_ad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        ads:adSize="BANNER"
+        ads:adUnitId="none"
+        android:layout_marginTop="@dimen/_3sdp"
+        >
+
+    </com.google.android.gms.ads.AdView>
+
+
+</LinearLayout>
