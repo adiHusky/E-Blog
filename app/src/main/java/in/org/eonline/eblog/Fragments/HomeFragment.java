@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,8 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     private RecyclerView popularUsersRecyclerView, popularBlogsRecyclerView;
     private List<UserModel> userModels = new ArrayList<>();
     private List<BlogModel> blogModels = new ArrayList<>();
+    FirebaseStorage storage;
+    StorageReference storageRef;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -54,6 +58,11 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
 
         setPopularUsersRecyclerView();
         setPopularBlogsRecyclerView();
+
+        // Get the instance of Firebase storage
+        storage = FirebaseStorage.getInstance();
+        // Create a storage reference from our app
+        storageRef = storage.getReference();
 
 
         MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
