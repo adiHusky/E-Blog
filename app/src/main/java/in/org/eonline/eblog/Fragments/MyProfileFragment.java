@@ -22,11 +22,25 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,21 +48,33 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 
 import static android.Manifest.permission.CAMERA;
 import static android.app.Activity.RESULT_OK;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.content.ContentValues.TAG;
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class MyProfileFragment extends Fragment {
-
+    FirebaseFirestore db;
     private ImageView userProfileImage;
+    private EditText userFnameEdit;
+    private EditText userLnameEdit;
+    private EditText userEmailIdEdit;
+    private EditText userContactEdit;
+    UserModel userModel = new UserModel();
+    Map<String, String> userMap = new HashMap<>();
+    private Button submitButton;
     private Uri picUri;
     private Bitmap myBitmap;
     private ArrayList<String> permissionsToRequest;
@@ -77,8 +103,11 @@ public class MyProfileFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         initializeViews();
+        db = FirebaseFirestore.getInstance();
+        checkUserFirebase();
 
-        if(savedInstanceState != null) {
+
+        if (savedInstanceState != null) {
             picUri = savedInstanceState.getParcelable("pic_uri");
         }
 
@@ -102,8 +131,91 @@ public class MyProfileFragment extends Fragment {
         uploadImage();
     }
 
+
+    public void checkUserFirebase() {
+
+        DocumentReference docRef = db.collection("Users").document("userId");
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        setUserModel(document);
+                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        submitButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                userModel.setUserFName(userFnameEdit.getText().toString());
+                                userModel.setUserLName(userLnameEdit.getText().toString());
+                                userModel.setUserEmail(userEmailIdEdit.getText().toString());
+                                userModel.setUserContact(userContactEdit.getText().toString());
+                                userMap.put("UserFirstName", userModel.getUserFName());
+                                userMap.put("UserLastName", userModel.getUserLName());
+                                userMap.put("UserEmailId", userModel.getUserEmail());
+                                userMap.put("UserContact", userModel.getUserContact());
+                                addDataToUserFirebase();
+                            }
+
+                        });
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+
+
+            }
+        });
+
+    }
+
+    public void setUserModel(DocumentSnapshot document){
+
+        userModel = new UserModel();
+        userModel.setUserFName(document.getString("UserFirstName"));
+        userFnameEdit.setText(userModel.getUserFName());
+        userModel.setUserLName(document.getString("UserLastName"));
+        userLnameEdit.setText(userModel.getUserLName());
+        userModel.setUserEmail(document.getString("UserEmailId"));
+        userEmailIdEdit.setText(userModel.getUserEmail());
+        // blogModel.setBlogLikes(Integer.parseInt(document.getString("BlogLikes")));
+        userModel.setUserContact(document.getString("UserContact"));
+        userContactEdit.setText(userModel.getUserContact());
+    }
+
+    public void addDataToUserFirebase(){
+
+
+        String userId = userModel.getUserFName()+userModel.getUserLName()+userModel.getUserContact();
+
+        db.collection("Users").document(userId).set(userMap, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+
+
+
+                    }
+                });
+
+    }
+
     public void initializeViews() {
         userProfileImage = (ImageView) getView().findViewById(R.id.user_profile_image);
+        userFnameEdit = (EditText) getView().findViewById(R.id.first_name);
+        userLnameEdit = (EditText) getView().findViewById(R.id.last_name);
+        userEmailIdEdit = (EditText) getView().findViewById(R.id.email_id);
+        userContactEdit = (EditText) getView().findViewById(R.id.mobile_no);
+        submitButton = (Button) getView().findViewById(R.id.submit_button);
     }
 
     public void uploadImage() {
@@ -219,7 +331,7 @@ public class MyProfileFragment extends Fragment {
                 picUri = getPickImageResultUri(data);
                 try {
                     myBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
-                    myBitmap = rotateImageIfRequired(myBitmap, picUri);
+                    //myBitmap = rotateImageIfRequired(myBitmap, picUri);
                     //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
                     userProfileImage.setImageBitmap(myBitmap);
                 } catch (IOException e) {

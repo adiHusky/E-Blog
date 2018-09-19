@@ -45,15 +45,16 @@ import static android.content.ContentValues.TAG;
  */
 public class CreateNewBlogFragment extends Fragment  {
     FirebaseFirestore db;
-    private EditText blogHeaderId;
-    private EditText blogContentId;
-    private EditText blogFooterId;
+    private EditText blogHeaderEdit;
+    private EditText blogContentEdit;
+    private EditText blogFooterEdit;
     private AdView mAdView;
     private EditText bannerAdIdEdit;
-    private Button submitBannerAdId;
+    private Button submitButton;
     private String bannerAdId;
     private Spinner spinner;
     private String item;
+    private String blogId = "Aditya7506640685";
     BlogModel blogmodel = new BlogModel();
     UserModel userModel;
     Map<String, String> blogMap = new HashMap<>();
@@ -80,11 +81,12 @@ public class CreateNewBlogFragment extends Fragment  {
 
         initializeViews();
         db = FirebaseFirestore.getInstance();
+        blogId = blogId+1;
 
         setSpinner();
 
 
-        submitBannerAdId.setOnClickListener(new View.OnClickListener() {
+        submitButton.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
@@ -92,9 +94,9 @@ public class CreateNewBlogFragment extends Fragment  {
                 mAdView = new AdView(getActivity());
 
                 bannerAdId = bannerAdIdEdit.getText().toString();
-                blogmodel.setBlogHeader(blogHeaderId.getText().toString());
-                blogmodel.setBlogContent(blogContentId.getText().toString());
-                blogmodel.setBlogFooter(blogFooterId.getText().toString());
+                blogmodel.setBlogHeader(blogHeaderEdit.getText().toString());
+                blogmodel.setBlogContent(blogContentEdit.getText().toString());
+                blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
                 blogmodel.setBlogLikes(0);
                 blogmodel.setBlogUser("Aditya Kamat");
                 blogMap.put("BlogHeader",blogmodel.getBlogHeader());
@@ -102,12 +104,11 @@ public class CreateNewBlogFragment extends Fragment  {
                 blogMap.put("BlogFooter", blogmodel.getBlogFooter());
                 blogMap.put("BlogCategory",item);
                 blogMap.put("BlogUser", "Aditya Kamat");
-                blogMap.put("BlogLike", String.valueOf(blogmodel.getBlogLikes()));
+                blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
+
 
 
                 addData();
-
-
 
                 mAdView.setAdSize(AdSize.BANNER);
                 mAdView.setAdUnitId(bannerAdId);
@@ -123,7 +124,7 @@ public class CreateNewBlogFragment extends Fragment  {
 
     public void addData() {
 
-        db.collection("Blogs").document("Aditya").set(blogMap, SetOptions.merge())
+        db.collection("Blogs").document(blogId).set(blogMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -134,17 +135,20 @@ public class CreateNewBlogFragment extends Fragment  {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error writing document", e);
+
+
+
                     }
                 });}
 
 
 
     public void initializeViews() {
-        blogHeaderId = (EditText) getView().findViewById(R.id.blog_header);
-        blogContentId = (EditText) getView().findViewById(R.id.blog_content);
-        blogFooterId = (EditText) getView().findViewById(R.id.blog_footer);
+        blogHeaderEdit = (EditText) getView().findViewById(R.id.blog_header);
+        blogContentEdit = (EditText) getView().findViewById(R.id.blog_content);
+        blogFooterEdit = (EditText) getView().findViewById(R.id.blog_footer);
         mAdView = (AdView) getView().findViewById(R.id.adView_user_ad);
-        submitBannerAdId = (Button) getView().findViewById(R.id.submitAdId);
+        submitButton = (Button) getView().findViewById(R.id.submit_button);
         bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
         spinner = (Spinner) getView().findViewById(R.id.spinner_category);
 

@@ -14,4 +14,55 @@
         android:layout_marginStart="@dimen/_20sdp"
         android:layout_marginTop="@dimen/_20sdp"/>
 
+
+
+    <!-- Text Label -->
+
+
+
+    <EditText
+        android:id="@+id/first_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="53dp"
+        android:ems="15"
+        android:hint="Enter First Name "
+        android:textSize="@dimen/_15sdp" />
+
+    <EditText
+        android:id="@+id/last_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:ems="15"
+        android:hint="Enter Last Name"
+        android:textSize="@dimen/_15sdp" />
+
+    <EditText
+        android:id="@+id/email_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:ems="15"
+        android:hint="Enter email id"
+        android:textSize="@dimen/_15sdp" />
+
+    <EditText
+        android:id="@+id/mobile_no"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:ems="15"
+        android:hint="Enter Mobile No"
+        android:textSize="@dimen/_15sdp" />
+
+    <Button
+        android:id="@+id/submit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="1dp"
+        android:text="Submit" />
+
+
 </LinearLayout>

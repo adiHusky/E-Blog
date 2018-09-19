@@ -6,6 +6,34 @@ public class BlogModel {
     public String blogFooter;
     public int blogLikes;
     public String blogUser;
+    public String blogCategory;
+    public String blogId;
+
+
+
+    public String getBlogId() {
+        return blogId;
+    }
+
+    public void setBlogId(String blogId) {
+        this.blogId = blogId;
+    }
+
+
+
+
+
+
+    public String getBlogCategory() {
+        return blogCategory;
+    }
+
+    public void setBlogCategory(String blogCategory) {
+        this.blogCategory = blogCategory;
+    }
+
+
+
 
 
     public String getBlogContent() {
