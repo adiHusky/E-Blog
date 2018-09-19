@@ -4,8 +4,10 @@ package in.org.eonline.eblog.Fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -55,6 +57,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.SQLite.DatabaseHelper;
 
 import static android.Manifest.permission.CAMERA;
 import static android.app.Activity.RESULT_OK;
@@ -66,6 +69,7 @@ import static android.content.ContentValues.TAG;
  * A simple {@link Fragment} subclass.
  */
 public class MyProfileFragment extends Fragment {
+    DatabaseHelper sqliteDatabaseHelper;
     FirebaseFirestore db;
     private ImageView userProfileImage;
     private EditText userFnameEdit;
@@ -75,6 +79,11 @@ public class MyProfileFragment extends Fragment {
     UserModel userModel = new UserModel();
     Map<String, String> userMap = new HashMap<>();
     private Button submitButton;
+    private Boolean isDataInserted = false;
+    private Boolean isUserRegisteredAlready = false;
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    private SharedPreferences.Editor editor;
     private Uri picUri;
     private Bitmap myBitmap;
     private ArrayList<String> permissionsToRequest;
@@ -105,7 +114,7 @@ public class MyProfileFragment extends Fragment {
         initializeViews();
         db = FirebaseFirestore.getInstance();
         checkUserFirebase();
-
+        sqliteDatabaseHelper = new DatabaseHelper(getActivity());
 
         if (savedInstanceState != null) {
             picUri = savedInstanceState.getParcelable("pic_uri");
@@ -129,12 +138,26 @@ public class MyProfileFragment extends Fragment {
         }
 
         uploadImage();
+
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(isUserRegisteredAlready) {
+                    // TODO: Write your Update Method here
+                } else {
+                    setUserModelAndUserMap();
+                    addDataToUserFirebase();
+                }
+            }
+        });
+
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        isUserRegisteredAlready = sharedpreferences.getBoolean("isUserCreated", false);
     }
 
 
     public void checkUserFirebase() {
-
-        DocumentReference docRef = db.collection("Users").document("userId");
+        DocumentReference docRef = db.collection("Users").document("vaibhavjadhav1273838433");
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -142,32 +165,16 @@ public class MyProfileFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         setUserModel(document);
-                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
-                    } else {
-                        submitButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                userModel.setUserFName(userFnameEdit.getText().toString());
-                                userModel.setUserLName(userLnameEdit.getText().toString());
-                                userModel.setUserEmail(userEmailIdEdit.getText().toString());
-                                userModel.setUserContact(userContactEdit.getText().toString());
-                                userMap.put("UserFirstName", userModel.getUserFName());
-                                userMap.put("UserLastName", userModel.getUserLName());
-                                userMap.put("UserEmailId", userModel.getUserEmail());
-                                userMap.put("UserContact", userModel.getUserContact());
-                                addDataToUserFirebase();
-                            }
-
-                        });
-                    }
+                        Toast.makeText(getContext(), "Data is retrieved from firebase", Toast.LENGTH_SHORT).show();
+                    } /*else {
+                        setUserModelAndUserMap();
+                        addDataToUserFirebase();
+                    } */
                 } else {
-                    Log.d(TAG, "get failed with ", task.getException());
+                    Toast.makeText(getContext(), "Server is down", Toast.LENGTH_SHORT).show();
                 }
-
-
             }
         });
-
     }
 
     public void setUserModel(DocumentSnapshot document){
@@ -184,26 +191,37 @@ public class MyProfileFragment extends Fragment {
         userContactEdit.setText(userModel.getUserContact());
     }
 
+    public void setUserModelAndUserMap() {
+        userModel.setUserFName(userFnameEdit.getText().toString());
+        userModel.setUserLName(userLnameEdit.getText().toString());
+        userModel.setUserEmail(userEmailIdEdit.getText().toString());
+        userModel.setUserContact(userContactEdit.getText().toString());
+        userMap.put("UserFirstName", userModel.getUserFName());
+        userMap.put("UserLastName", userModel.getUserLName());
+        userMap.put("UserEmailId", userModel.getUserEmail());
+        userMap.put("UserContact", userModel.getUserContact());
+    }
+
     public void addDataToUserFirebase(){
-
-
         String userId = userModel.getUserFName()+userModel.getUserLName()+userModel.getUserContact();
+        userModel.setUserId(userId);
 
-        db.collection("Users").document(userId).set(userMap, SetOptions.merge())
+        db.collection("Users").document(userModel.getUserId()).set(userMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "DocumentSnapshot successfully written!");
-
+                        Toast.makeText(getContext(), "Data is successfully saved", Toast.LENGTH_SHORT).show();
+                        isDataInserted = sqliteDatabaseHelper.insertUserDataInSQLite(userModel.getUserFName(),
+                                userModel.getUserLName(), userModel.getUserEmail(), userModel.getUserContact()); //this method returns boolean value
+                        editor = sharedpreferences.edit();
+                        editor.putBoolean("isUserCreated", isDataInserted);
+                        editor.apply();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
-
-
-
+                        Toast.makeText(getContext(), "Some error occured", Toast.LENGTH_SHORT).show();
                     }
                 });
 
