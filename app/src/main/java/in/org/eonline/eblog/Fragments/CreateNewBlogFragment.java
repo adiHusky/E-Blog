@@ -1,6 +1,8 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -39,6 +41,7 @@ import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 
 import static android.content.ContentValues.TAG;
+import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -54,10 +57,15 @@ public class CreateNewBlogFragment extends Fragment  {
     private String bannerAdId;
     private Spinner spinner;
     private String item;
-    private String blogId = "Aditya7506640685";
+    //private String blogId = "Aditya7506640685";
     BlogModel blogmodel = new BlogModel();
     UserModel userModel;
     Map<String, String> blogMap = new HashMap<>();
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs_new" ;
+    private String userId;
+    private String blogId;
+    private SharedPreferences.Editor editor;
 
 
     public CreateNewBlogFragment() {
@@ -81,7 +89,11 @@ public class CreateNewBlogFragment extends Fragment  {
 
         initializeViews();
         db = FirebaseFirestore.getInstance();
-        blogId = blogId+1;
+       // blogId = blogId+1;
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
+
+        blogId = sharedpreferences.getString("blogId_new",userId);
 
         setSpinner();
 
@@ -120,9 +132,28 @@ public class CreateNewBlogFragment extends Fragment  {
             }
 
         });
+
+
     }
 
     public void addData() {
+
+        String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );
+
+        int integer = Integer.parseInt(localblogId)+ 1;
+        localblogId = Integer.toString(integer);
+
+        blogId = blogId.substring(0, blogId.length() - 1);
+
+
+        blogId = blogId + localblogId;
+        editor = sharedpreferences.edit();
+        editor.putString("blogId_new",blogId);
+        editor.apply();
+
+
+
+
 
         db.collection("Blogs").document(blogId).set(blogMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {

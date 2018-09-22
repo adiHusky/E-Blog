@@ -1,6 +1,8 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -57,6 +59,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
 
 
 
+
     public YourBlogsFragment() {
         // Required empty public constructor
     }
@@ -76,6 +79,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         db= FirebaseFirestore.getInstance();
         InitializeViews();
         setData();
+
 
 
 

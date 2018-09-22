@@ -82,8 +82,9 @@ public class MyProfileFragment extends Fragment {
     private Boolean isDataInserted = false;
     private Boolean isUserRegisteredAlready = false;
     private SharedPreferences sharedpreferences;
-    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String MyPREFERENCES = "MyPrefs_new" ;
     private SharedPreferences.Editor editor;
+    private String userIdCreated;
     private Uri picUri;
     private Bitmap myBitmap;
     private ArrayList<String> permissionsToRequest;
@@ -110,6 +111,11 @@ public class MyProfileFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        isUserRegisteredAlready = sharedpreferences.getBoolean("isUserCreated", false);
+        userIdCreated = sharedpreferences.getString("UserIdCreated","document");
+
 
         initializeViews();
         db = FirebaseFirestore.getInstance();
@@ -143,7 +149,27 @@ public class MyProfileFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(isUserRegisteredAlready) {
-                    // TODO: Write your Update Method here
+
+                    DocumentReference userDoc = db.collection("Users").document(userIdCreated);
+
+// Set the "isCapital" field of the city 'DC'
+                    userDoc
+                            .update("UserFirstName", userFnameEdit.getText().toString())
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Log.d(TAG, "DocumentSnapshot successfully updated!");
+                                    Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
+
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.w(TAG, "Error updating document", e);
+                                }
+                            });
+
                 } else {
                     setUserModelAndUserMap();
                     addDataToUserFirebase();
@@ -151,13 +177,12 @@ public class MyProfileFragment extends Fragment {
             }
         });
 
-        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-        isUserRegisteredAlready = sharedpreferences.getBoolean("isUserCreated", false);
+
     }
 
 
     public void checkUserFirebase() {
-        DocumentReference docRef = db.collection("Users").document("vaibhavjadhav1273838433");
+        DocumentReference docRef = db.collection("Users").document(userIdCreated);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -203,8 +228,11 @@ public class MyProfileFragment extends Fragment {
     }
 
     public void addDataToUserFirebase(){
-        String userId = userModel.getUserFName()+userModel.getUserLName()+userModel.getUserContact();
+        String userId = userModel.getUserFName()+userModel.getUserLName()+userModel.getUserContact()+"0";
         userModel.setUserId(userId);
+        editor = sharedpreferences.edit();
+        editor.putString("UserIdCreated",userId);
+        editor.apply();
 
         db.collection("Users").document(userModel.getUserId()).set(userMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
