@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +34,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -43,7 +45,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -71,6 +77,7 @@ import static android.content.ContentValues.TAG;
 public class MyProfileFragment extends Fragment {
     DatabaseHelper sqliteDatabaseHelper;
     FirebaseFirestore db;
+    FirebaseStorage storage;
     private ImageView userProfileImage;
     private EditText userFnameEdit;
     private EditText userLnameEdit;
@@ -85,6 +92,7 @@ public class MyProfileFragment extends Fragment {
     public static final String MyPREFERENCES = "MyPrefs_new" ;
     private SharedPreferences.Editor editor;
     private String userIdCreated;
+    private String userProfileUrl;
     private Uri picUri;
     private Bitmap myBitmap;
     private ArrayList<String> permissionsToRequest;
@@ -115,69 +123,53 @@ public class MyProfileFragment extends Fragment {
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         isUserRegisteredAlready = sharedpreferences.getBoolean("isUserCreated", false);
         userIdCreated = sharedpreferences.getString("UserIdCreated","document");
-
+        userProfileUrl = sharedpreferences.getString("userProfileUrl", "imageUrl");
 
         initializeViews();
+        // get instance of Firebase Firestore Database
         db = FirebaseFirestore.getInstance();
+
+        // get instance of Firebase Storage
+        storage = FirebaseStorage.getInstance();
+
         checkUserFirebase();
+
         sqliteDatabaseHelper = new DatabaseHelper(getActivity());
 
         if (savedInstanceState != null) {
             picUri = savedInstanceState.getParcelable("pic_uri");
         }
 
-        permissions.add(CAMERA);
-        permissions.add(READ_EXTERNAL_STORAGE);
-        permissions.add(WRITE_EXTERNAL_STORAGE);
-
-        permissionsToRequest = findUnAskedPermissions(permissions);
-        //get the permissions we have asked for before but are not granted..
-        //we will store this in a global list to access later.
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (permissionsToRequest.size() > 0) {
-                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_PERMISSIONS_RESULT);
-                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_READ_EXTERNAL_STORAGE);
-                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_WRITE_EXTERNAL_STORAGE);
-            }
-        }
+        allowPermissions();
 
         uploadImage();
 
+        submitUserProfile();
+
+        if(!userProfileUrl.equals("imageUrl") && userProfileUrl != null) {
+            Glide.with(getActivity()).load(userProfileUrl).into(userProfileImage);
+        }
+    }
+
+    public void submitUserProfile() {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(isUserRegisteredAlready) {
-
-                    DocumentReference userDoc = db.collection("Users").document(userIdCreated);
-
-// Set the "isCapital" field of the city 'DC'
-                    userDoc
-                            .update("UserFirstName", userFnameEdit.getText().toString())
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Log.d(TAG, "DocumentSnapshot successfully updated!");
-                                    Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
-
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.w(TAG, "Error updating document", e);
-                                }
-                            });
-
+                    userModel.setUserId(userIdCreated);
+                    updateDataToUserFirebase();
                 } else {
                     setUserModelAndUserMap();
                     addDataToUserFirebase();
                 }
             }
         });
+    }
 
-
+    public void startUploadingImageToFirebase() {
+        if(userIdCreated != null && userProfileImage != null && sharedpreferences.getString("UserIdCreated","document").equals(userModel.getUserId())) {
+            uploadImageToFirebaseStorage();
+        }
     }
 
 
@@ -232,7 +224,7 @@ public class MyProfileFragment extends Fragment {
         userModel.setUserId(userId);
         editor = sharedpreferences.edit();
         editor.putString("UserIdCreated",userId);
-        editor.apply();
+        editor.commit();
 
         db.collection("Users").document(userModel.getUserId()).set(userMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -243,7 +235,8 @@ public class MyProfileFragment extends Fragment {
                                 userModel.getUserLName(), userModel.getUserEmail(), userModel.getUserContact()); //this method returns boolean value
                         editor = sharedpreferences.edit();
                         editor.putBoolean("isUserCreated", isDataInserted);
-                        editor.apply();
+                        editor.commit();
+                        startUploadingImageToFirebase();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -255,6 +248,60 @@ public class MyProfileFragment extends Fragment {
 
     }
 
+    public void updateDataToUserFirebase() {
+             DocumentReference userDoc = db.collection("Users").document(userIdCreated);
+             userDoc.update("UserFirstName", userFnameEdit.getText().toString())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully updated!");
+                        Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
+                        startUploadingImageToFirebase();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error updating document", e);
+                    }
+                });
+    }
+
+    public void uploadImageToFirebaseStorage() {
+        // Create a storage reference from our app
+        StorageReference storageRef = storage.getReference();
+
+        // Create a child reference, imagesRef now points to "mountains.jpg"
+        final StorageReference imagesRef = storageRef.child("Users/" + sharedpreferences.getString("UserIdCreated", "document"));
+
+        // Get the data from an ImageView as bytes
+        userProfileImage.setDrawingCacheEnabled(true);
+        userProfileImage.buildDrawingCache();
+        Bitmap bitmap = ((BitmapDrawable) userProfileImage.getDrawable()).getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        UploadTask uploadTask = imagesRef.putBytes(data);
+
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                // ...
+                userProfileUrl = imagesRef.getDownloadUrl().toString();
+                editor = sharedpreferences.edit();
+                editor.putString("userProfileUrl",userProfileUrl);
+                editor.apply();
+            }
+        });
+    }
+
     public void initializeViews() {
         userProfileImage = (ImageView) getView().findViewById(R.id.user_profile_image);
         userFnameEdit = (EditText) getView().findViewById(R.id.first_name);
@@ -262,6 +309,24 @@ public class MyProfileFragment extends Fragment {
         userEmailIdEdit = (EditText) getView().findViewById(R.id.email_id);
         userContactEdit = (EditText) getView().findViewById(R.id.mobile_no);
         submitButton = (Button) getView().findViewById(R.id.submit_button);
+    }
+
+    public void allowPermissions() {
+        permissions.add(CAMERA);
+        permissions.add(READ_EXTERNAL_STORAGE);
+        permissions.add(WRITE_EXTERNAL_STORAGE);
+
+        permissionsToRequest = findUnAskedPermissions(permissions);
+        //get the permissions we have asked for before but are not granted..
+        //we will store this in a global list to access later.
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (permissionsToRequest.size() > 0) {
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_PERMISSIONS_RESULT);
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_READ_EXTERNAL_STORAGE);
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_WRITE_EXTERNAL_STORAGE);
+            }
+        }
     }
 
     public void uploadImage() {

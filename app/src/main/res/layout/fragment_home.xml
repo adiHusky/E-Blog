@@ -20,7 +20,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/_1sdp"
-            android:layout_marginTop="@dimen/_20sdp"
+            android:layout_marginTop="@dimen/_10sdp"
             android:layout_below="@+id/popular_users"
             android:background="@color/straightLine"
             android:id="@+id/view_1">
@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
-            ads:adSize="BANNER"
+            ads:adSize="SMART_BANNER"
             ads:adUnitId="ca-app-pub-7293397784162310/9883067330">
         </com.google.android.gms.ads.AdView>
     </RelativeLayout>

@@ -8,5 +8,5 @@
     android:elevation="4dp"
     android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
     app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"
-    android:background="@color/toolbar_color">
+    android:background="@color/colorAccent">
 </android.support.v7.widget.Toolbar>

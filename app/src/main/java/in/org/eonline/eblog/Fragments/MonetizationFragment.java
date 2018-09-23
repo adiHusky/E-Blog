@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -21,11 +22,9 @@ import in.org.eonline.eblog.R;
  */
 public class MonetizationFragment extends Fragment {
 
-    private EditText adMobAdUnitId;
+    private EditText adMobAdUnitIdEdit;
     private Button submitAdMobAdUnitId;
     private String adMobUnitId;
-
-    private AdView userAdView;
 
     public MonetizationFragment() {
         // Required empty public constructor
@@ -48,11 +47,30 @@ public class MonetizationFragment extends Fragment {
         submitAdMobAdUnitId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                adMobUnitId = adMobAdUnitId.getText().toString();
+              /*  adMobUnitId = adMobAdUnitIdEdit.getText().toString();
 
                 userAdView = new AdView(getActivity());
-                //userAdView.setAdSize(AdSize.SMART_BANNER);
+                userAdView.setAdSize(AdSize.SMART_BANNER);
                 userAdView.setAdUnitId(adMobUnitId);
+
+                AdRequest adRequest = new AdRequest.Builder()
+                        .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                        .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
+
+
+                userAdView.loadAd(adRequest); */
+
+                adMobUnitId = adMobAdUnitIdEdit.getText().toString();
+
+                View adContainer = getView().findViewById(R.id.adMobView);
+
+                AdView userAdView = new AdView(getActivity());
+
+                userAdView.setAdSize(AdSize.BANNER);
+                userAdView.setAdUnitId(adMobUnitId);
+
+                ((RelativeLayout)adContainer).addView(userAdView);
+
                 AdRequest adRequest = new AdRequest.Builder()
                         .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                         .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
@@ -65,8 +83,8 @@ public class MonetizationFragment extends Fragment {
     }
 
     public void initializeViews() {
-        adMobAdUnitId = (EditText) getView().findViewById(R.id.admob_ad_unit_id);
+        adMobAdUnitIdEdit = (EditText) getView().findViewById(R.id.admob_ad_unit_id);
         submitAdMobAdUnitId = (Button) getView().findViewById(R.id.admob_ad_unit_id_submit);
-        userAdView = (AdView) getView().findViewById(R.id.user_ad_view);
+        //userAdView = (AdView) getView().findViewById(R.id.user_ad_view);
     }
 }

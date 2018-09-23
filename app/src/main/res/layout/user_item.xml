@@ -4,14 +4,19 @@
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="@dimen/_10sdp">
+    android:paddingStart="@dimen/_10sdp"
+    android:paddingTop="@dimen/_10sdp"
+    android:paddingEnd="@dimen/_10sdp">
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width="@dimen/_45sdp"
-        android:layout_height="@dimen/_45sdp"
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="@dimen/_50sdp"
         android:id="@+id/user_image_item"
         android:src="@drawable/him"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_gravity="center_horizontal"
+        card_view:civ_border_width="@dimen/_1sdp"
+        card_view:civ_border_color="@color/colorPrimaryDark"
+        android:background="@drawable/app_edittext_drawable"/>
 
     <TextView
         android:id="@+id/user_name_item"

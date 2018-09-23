@@ -7,62 +7,95 @@
     tools:context=".Fragments.MyProfileFragment">
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width="@dimen/_60sdp"
-        android:layout_height="@dimen/_60sdp"
         android:id="@+id/user_profile_image"
+        android:layout_width="@dimen/_100sdp"
+        android:layout_height="@dimen/_100sdp"
+        android:layout_marginTop="@dimen/_10sdp"
         android:src="@drawable/him"
-        android:layout_marginStart="@dimen/_20sdp"
-        android:layout_marginTop="@dimen/_20sdp"/>
-
-
-
-    <!-- Text Label -->
-
-
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/app_edittext_drawable"/>
 
     <EditText
         android:id="@+id/first_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="53dp"
-        android:ems="15"
-        android:hint="Enter First Name "
-        android:textSize="@dimen/_15sdp" />
+        android:padding="@dimen/_10sdp"
+        android:layout_marginStart="@dimen/_50sdp"
+        android:layout_marginEnd="@dimen/_50sdp"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:ems="10"
+        android:hint="Enter First Name"
+        android:textColorHint="@color/colorAccent"
+        android:textSize="@dimen/_14sdp"
+        android:inputType="text"
+        android:maxLines="1"
+        android:maxLength="20"
+        android:background="@drawable/app_edittext_drawable"/>
 
     <EditText
         android:id="@+id/last_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:ems="15"
+        android:padding="@dimen/_10sdp"
+        android:layout_marginStart="@dimen/_50sdp"
+        android:layout_marginEnd="@dimen/_50sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:ems="10"
         android:hint="Enter Last Name"
-        android:textSize="@dimen/_15sdp" />
+        android:textColorHint="@color/colorAccent"
+        android:textSize="@dimen/_14sdp"
+        android:inputType="text"
+        android:maxLines="1"
+        android:maxLength="20"
+        android:background="@drawable/app_edittext_drawable"/>
 
     <EditText
         android:id="@+id/email_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:ems="15"
-        android:hint="Enter email id"
-        android:textSize="@dimen/_15sdp" />
+        android:padding="@dimen/_10sdp"
+        android:layout_marginStart="@dimen/_50sdp"
+        android:layout_marginEnd="@dimen/_50sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:ems="10"
+        android:hint="Enter Email"
+        android:textColorHint="@color/colorAccent"
+        android:textSize="@dimen/_14sdp"
+        android:inputType="textEmailAddress"
+        android:maxLines="1"
+        android:maxLength="20"
+        android:background="@drawable/app_edittext_drawable"/>
 
     <EditText
         android:id="@+id/mobile_no"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:ems="15"
-        android:hint="Enter Mobile No"
-        android:textSize="@dimen/_15sdp" />
+        android:padding="@dimen/_10sdp"
+        android:layout_marginStart="@dimen/_50sdp"
+        android:layout_marginEnd="@dimen/_50sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:ems="10"
+        android:hint="Enter Mobile Number"
+        android:textColorHint="@color/colorAccent"
+        android:textSize="@dimen/_14sdp"
+        android:inputType="phone"
+        android:maxLength="12"
+        android:maxLines="1"
+        android:background="@drawable/app_edittext_drawable"/>
 
     <Button
         android:id="@+id/submit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="1dp"
-        android:text="Submit" />
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:text="Save Profile"
+        android:background="@drawable/app_button_drawable"
+        android:paddingStart="@dimen/_30sdp"
+        android:paddingEnd="@dimen/_30sdp"
+        android:textColor="#fff"
+        android:textAllCaps="false"
+        android:textSize="@dimen/_16sdp"/>
 
 
 </LinearLayout>

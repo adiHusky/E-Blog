@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Fragments.MonetizationFragment"
-    android:layout_marginTop="@dimen/_50sdp">
+    android:layout_marginTop="@dimen/_50sdp"
+    android:id="@+id/monetization_root_relative_layout">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -13,7 +14,8 @@
         android:layout_centerHorizontal="true"
         android:layout_marginStart="@dimen/_10sdp"
         android:layout_marginTop="@dimen/_20sdp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:id="@+id/enter_admob_linear">
 
         <ImageView
             android:layout_width="@dimen/_50sdp"
@@ -58,19 +60,15 @@
             android:layout_marginTop="@dimen/_10sdp"
             android:text="If you do not have Google AdMob Banner Ad Unit ID then Click Here" />
 
-        <com.google.android.gms.ads.AdView
-            xmlns:ads="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/user_ad_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/_50sdp"
-            ads:adSize="BANNER"
-            ads:adUnitId="none">
-        </com.google.android.gms.ads.AdView>
-
-
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/adMobView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/enter_admob_linear"/>
 
 
 </RelativeLayout>

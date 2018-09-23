@@ -5,7 +5,7 @@ public class UserModel {
     public String userId;
     public String userFName;
     public String userLName;
-    public String userImage;
+    public String userImageUrl;
     public String userEmail;
     public String userContact;
 
@@ -35,11 +35,11 @@ public class UserModel {
     }
 
     public String getUserImage() {
-        return userImage;
+        return userImageUrl;
     }
 
-    public void setUserImage(String userImage) {
-        this.userImage = userImage;
+    public void setUserImage(String userImageUrl) {
+        this.userImageUrl = userImageUrl;
     }
 
     public String getUserEmail() {
