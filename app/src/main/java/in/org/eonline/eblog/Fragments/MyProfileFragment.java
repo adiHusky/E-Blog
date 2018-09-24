@@ -78,6 +78,7 @@ public class MyProfileFragment extends Fragment {
     DatabaseHelper sqliteDatabaseHelper;
     FirebaseFirestore db;
     FirebaseStorage storage;
+    StorageReference storageRef;
     private ImageView userProfileImage;
     private EditText userFnameEdit;
     private EditText userLnameEdit;
@@ -123,7 +124,7 @@ public class MyProfileFragment extends Fragment {
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         isUserRegisteredAlready = sharedpreferences.getBoolean("isUserCreated", false);
         userIdCreated = sharedpreferences.getString("UserIdCreated","document");
-        userProfileUrl = sharedpreferences.getString("userProfileUrl", "imageUrl");
+        //userProfileUrl = sharedpreferences.getString("userProfileUrl", "imageUrl");
 
         initializeViews();
         // get instance of Firebase Firestore Database
@@ -146,9 +147,11 @@ public class MyProfileFragment extends Fragment {
 
         submitUserProfile();
 
-        if(!userProfileUrl.equals("imageUrl") && userProfileUrl != null) {
+        downloadImageFromFirebaseStorage();
+
+        /* if(!userProfileUrl.equals("imageUrl") && userProfileUrl != null) {
             Glide.with(getActivity()).load(userProfileUrl).into(userProfileImage);
-        }
+        } */
     }
 
     public void submitUserProfile() {
@@ -269,7 +272,7 @@ public class MyProfileFragment extends Fragment {
 
     public void uploadImageToFirebaseStorage() {
         // Create a storage reference from our app
-        StorageReference storageRef = storage.getReference();
+        storageRef = storage.getReference();
 
         // Create a child reference, imagesRef now points to "mountains.jpg"
         final StorageReference imagesRef = storageRef.child("Users/" + sharedpreferences.getString("UserIdCreated", "document"));
@@ -288,19 +291,45 @@ public class MyProfileFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
+                Toast.makeText(getContext(), "File could not be uploaded", Toast.LENGTH_SHORT).show();
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                 // ...
-                userProfileUrl = imagesRef.getDownloadUrl().toString();
+                Toast.makeText(getContext(), "File successfully uploaded", Toast.LENGTH_SHORT).show();
+                downloadImageFromFirebaseStorage();
+                /*userProfileUrl = imagesRef.getDownloadUrl().toString();
                 editor = sharedpreferences.edit();
                 editor.putString("userProfileUrl",userProfileUrl);
-                editor.apply();
+                editor.apply(); */
             }
         });
     }
+
+
+    public void downloadImageFromFirebaseStorage() {
+        storageRef = storage.getReference();
+
+        storageRef.child("Users/" + sharedpreferences.getString("UserIdCreated", "document")).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                // Got the download URL for 'users/me/profile.png'
+                Glide.with(getActivity())
+                        .load(uri)
+                        .into(userProfileImage);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
+
+
+    }
+
 
     public void initializeViews() {
         userProfileImage = (ImageView) getView().findViewById(R.id.user_profile_image);
