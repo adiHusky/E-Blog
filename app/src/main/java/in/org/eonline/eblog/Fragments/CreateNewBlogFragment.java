@@ -3,6 +3,7 @@ package in.org.eonline.eblog.Fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -39,6 +40,7 @@ import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.SQLite.DatabaseHelper;
 
 import static android.content.ContentValues.TAG;
 import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
@@ -57,8 +59,10 @@ public class CreateNewBlogFragment extends Fragment  {
     private String bannerAdId;
     private Spinner spinner;
     private String item;
+    DatabaseHelper sqliteDatabaseHelper;
     //private String blogId = "Aditya7506640685";
     BlogModel blogmodel = new BlogModel();
+
     UserModel userModel;
     Map<String, String> blogMap = new HashMap<>();
     private SharedPreferences sharedpreferences;
@@ -86,6 +90,7 @@ public class CreateNewBlogFragment extends Fragment  {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        sqliteDatabaseHelper = new DatabaseHelper(getActivity());
 
         initializeViews();
         db = FirebaseFirestore.getInstance();
@@ -122,55 +127,71 @@ public class CreateNewBlogFragment extends Fragment  {
 
                 addData();
 
-                mAdView.setAdSize(AdSize.BANNER);
+               /* mAdView.setAdSize(AdSize.BANNER);
                 mAdView.setAdUnitId(bannerAdId);
                AdRequest adRequest = new AdRequest.Builder().addTestDevice("551B158596C8082704941DE131CEBAB9").build();
                if
                        (bannerAdId != null) mAdView.setVisibility(view.VISIBLE);
-                mAdView.loadAd(adRequest);
-
+                mAdView.loadAd(adRequest); */
             }
 
         });
-
-
     }
 
-    public void addData() {
-
+    public void addBlogToSQLite() {
+      //  blogId = blogId+"_0";
         String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );
-
         int integer = Integer.parseInt(localblogId)+ 1;
         localblogId = Integer.toString(integer);
-
         blogId = blogId.substring(0, blogId.length() - 1);
-
-
         blogId = blogId + localblogId;
+        blogmodel.setBlogId(blogId);
+        blogMap.put("BlogId",blogmodel.getBlogId());
+        Boolean blogIdInserted =  sqliteDatabaseHelper.insertBlogDataInSQLite(blogId,blogmodel.getBlogHeader(),blogmodel.getBlogContent(),blogmodel.getBlogFooter());
+        if (blogIdInserted)
+        {
+            Toast.makeText(getContext(), "BlogId inserted properly in SQLite", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            Toast.makeText(getContext(), "BlogId insertion failed", Toast.LENGTH_SHORT).show();
+        }
         editor = sharedpreferences.edit();
         editor.putString("blogId_new",blogId);
         editor.apply();
+    }
 
 
+    public void addData() {
 
-
-
-        db.collection("Blogs").document(blogId).set(blogMap, SetOptions.merge())
+        db.collection("Users").document(userId).collection("Blogs").document(blogId).set(blogMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "DocumentSnapshot successfully written!");
-            }
-        })
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getActivity(), "New Blog is created", Toast.LENGTH_LONG).show();
+                        addBlogToSQLite();
+                    }
+                })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
-
-
-
+                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_LONG).show();
                     }
-                });}
+                });
+        db.collection("Blogs").document(blogId).set(blogMap, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getActivity(), "New Blog is created", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
 
 
 
@@ -218,12 +239,7 @@ public class CreateNewBlogFragment extends Fragment  {
 
             }
         });
-
-
     }
-
-
-    ;
 }
 
 

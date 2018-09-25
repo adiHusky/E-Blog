@@ -220,7 +220,7 @@ public class MyProfileFragment extends Fragment {
     }
 
     public void addDataToUserFirebase(){
-        String userId = userModel.getUserFName()+userModel.getUserLName()+userModel.getUserContact()+"0";
+        String userId = userModel.getUserEmail()+"_0";
         userModel.setUserId(userId);
         editor = sharedpreferences.edit();
         editor.putString("UserIdCreated",userId);

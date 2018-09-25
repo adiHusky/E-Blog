@@ -17,13 +17,19 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.nio.file.attribute.DosFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,9 +78,6 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
         initializeViews();
         setDataFirebase();
 
-
-
-
         // Get the instance of Firebase storage
         storage = FirebaseStorage.getInstance();
         // Create a storage reference from our app
@@ -96,52 +99,47 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
 
     public void setDataFirebase(){
         db.collection("Users")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 if (document.exists()) {
-
                                     setUserModel(document);
-
-                                };
-
-
-                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                }
                             }
                             setPopularUsersRecyclerView();
-
-
                         } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+
                         }
                     }
                 });
-        db.collection("Blogs")
-                .get()
+
+
+       CollectionReference colRef=db.collection("Blogs");
+
+                colRef.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 if (document.exists()) {
-
                                     setBlogModel(document);
-
                                 };
-
-
                                 Log.d(TAG, document.getId() + " => " + document.getData());
                             }
                             setPopularBlogsRecyclerView();
-
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
                 });
+
+
+
+
+
 
 
     }
@@ -150,32 +148,29 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
 
         userModel = new UserModel();
         userModel.setUserFName(document.getString("UserFirstName"));
-
-        //userModel.setUserLName(document.getString("UserLastName"));
-
-       // userModel.setUserEmail(document.getString("UserEmailId"));
-
+        userModel.setUserLName(document.getString("UserLastName"));
+        userModel.setUserEmail(document.getString("UserEmailId"));
         // blogModel.setBlogLikes(Integer.parseInt(document.getString("BlogLikes")));
-       // userModel.setUserContact(document.getString("UserContact"));
+        userModel.setUserContact(document.getString("UserContact"));
         userModelsList.add(userModel);
     }
 
 
-    private void setBlogModel(QueryDocumentSnapshot document) {
+    private void setBlogModel(QueryDocumentSnapshot doc) {
 
         blogModel = new BlogModel();
-        blogModel.setBlogHeader(document.getString("BlogHeader"));
-        blogModel.setBlogFooter(document.getString("BlogFooter"));
-        blogModel.setBlogContent(document.getString("BlogContent"));
+        blogModel.setBlogHeader(doc.getString("BlogHeader"));
+        blogModel.setBlogFooter(doc.getString("BlogFooter"));
+        blogModel.setBlogContent(doc.getString("BlogContent"));
         // blogModel.setBlogLikes(Integer.parseInt(document.getString("BlogLikes")));
-        blogModel.setBlogUser(document.getString("BlogUser"));
-        blogModel.setBlogCategory(document.getString("BlogCategory"));
+        blogModel.setBlogUser(doc.getString("BlogUser"));
+        blogModel.setBlogCategory(doc.getString("BlogCategory"));
 
         blogModelsList.add(blogModel);
         // setPopularBlogsRecyclerView();
 
         // blogHeader = document.getString("BlogHeader");
-        Log.v(TAG, "DocumentSnapshot data: " + document.getData() );
+        //Log.v(TAG, "DocumentSnapshot data: " + document.getData() );
         // blogHeaderTextView.setText(blogModel.getBlogHeader());
         // blogContentTextView.setText(blogModel.getBlogContent());
         //blogFooterTextView.setText(blogModel.getBlogFooter());

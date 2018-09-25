@@ -3,6 +3,8 @@ package in.org.eonline.eblog.Fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -33,6 +35,7 @@ import java.util.List;
 import in.org.eonline.eblog.Adapters.BlogAdapter;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.SQLite.DatabaseHelper;
 
 import static android.content.ContentValues.TAG;
 
@@ -40,8 +43,6 @@ import static android.content.ContentValues.TAG;
  * A simple {@link Fragment} subclass.
  */
 public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickListener {
-
-
 
     FirebaseFirestore db;
     private TextView blogHeaderTextView;
@@ -56,8 +57,11 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
     private RecyclerView  yourBlogsRecyclerView;
     private List<BlogModel> blogModelsList = new ArrayList<>();
     private static final String TAG = "FireLog";
-
-
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs_new" ;
+    private String userId;
+    private String blogId;
+    DatabaseHelper sqliteDatabaseHelper;
 
 
     public YourBlogsFragment() {
@@ -76,84 +80,35 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
+
+        sqliteDatabaseHelper = new DatabaseHelper(getActivity());
         db= FirebaseFirestore.getInstance();
         InitializeViews();
-        setData();
-
-
-
-
-
+        setYourBlogsFromFirebase();
     }
 
 
-    public void setData() {
-
-       /* db.collection("Blogs").addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                                       @Override
-                                                       public void onEvent( QuerySnapshot documentSnapshots,  FirebaseFirestoreException e) {
-
-                                                           if (e!= null) {
-
-                                                               Log.d(TAG, "ERROR" + e.getMessage());
-
-                                                           }
-                                                               for (DocumentSnapshot doc: documentSnapshots){
-                                                                   blogHeader = doc.getString("name");
-
-                                                               Log.d(TAG,"name"  + blogHeader);
-                                                           }
-                                                       }
-                                                   }
-
-        ); */
-        db.collection("Blogs")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+    public void setYourBlogsFromFirebase() {
+        CollectionReference blogRef =db.collection("Users").document(userId).collection("Blogs");
+                blogRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                if (document.exists()) {
-
-                                        setBlogModel(document);
-
-                                };
-
-
-                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                if (document.exists())
+                                    setBlogModel(document);
                             }
                             setPopularBlogsRecyclerView();
-
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
                 });
-
-        /*db.collection("Blogs").document("Aditya").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        setBlogModel(document);
-
-                    } else {
-                        blogHeader = "doc no exists";
-                        Log.v(TAG, "No such document");
-                    }
-                } else {
-
-                    blogHeader = " no doc exists";
-                    Log.v(TAG, "get failed with ", task.getException());
-                }
-            }
-        });*/
     }
 
     private void setBlogModel(QueryDocumentSnapshot document) {
-
         blogModel = new BlogModel();
         blogModel.setBlogHeader(document.getString("BlogHeader"));
         blogModel.setBlogFooter(document.getString("BlogFooter"));
@@ -161,22 +116,12 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
        // blogModel.setBlogLikes(Integer.parseInt(document.getString("BlogLikes")));
         blogModel.setBlogUser(document.getString("BlogUser"));
         blogModel.setBlogCategory(document.getString("BlogCategory"));
-
         blogModelsList.add(blogModel);
        // setPopularBlogsRecyclerView();
-
-       // blogHeader = document.getString("BlogHeader");
-        Log.v(TAG, "DocumentSnapshot data: " + document.getData() );
-        // blogHeaderTextView.setText(blogModel.getBlogHeader());
-       // blogContentTextView.setText(blogModel.getBlogContent());
-        //blogFooterTextView.setText(blogModel.getBlogFooter());
-
     }
 
     public  void InitializeViews(){
-
         yourBlogsRecyclerView = (RecyclerView) getView().findViewById(R.id.your_blogs);
-
         blogHeaderTextView = (TextView) getView().findViewById(R.id.blog_header_text);
         blogContentTextView = (TextView) getView().findViewById(R.id.blog_content_text);
         blogFooterTextView = (TextView) getView().findViewById(R.id.blog_footer_text);
