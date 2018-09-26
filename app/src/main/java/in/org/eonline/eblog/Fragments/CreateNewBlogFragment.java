@@ -53,8 +53,8 @@ public class CreateNewBlogFragment extends Fragment  {
     private EditText blogHeaderEdit;
     private EditText blogContentEdit;
     private EditText blogFooterEdit;
-    private AdView mAdView;
-    private EditText bannerAdIdEdit;
+    //private AdView mAdView;
+    //private EditText bannerAdIdEdit;
     private Button submitButton;
     private String bannerAdId;
     private Spinner spinner;
@@ -69,6 +69,7 @@ public class CreateNewBlogFragment extends Fragment  {
     public static final String MyPREFERENCES = "MyPrefs_new" ;
     private String userId;
     private String blogId;
+    private String blogIdBase;
     private SharedPreferences.Editor editor;
 
 
@@ -97,20 +98,20 @@ public class CreateNewBlogFragment extends Fragment  {
        // blogId = blogId+1;
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
+        blogIdBase = userId+"_0";
 
-        blogId = sharedpreferences.getString("blogId_new",userId);
+        blogId = sharedpreferences.getString("blogId_new",blogIdBase);
 
         setSpinner();
 
 
         submitButton.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 //  adMobUnitId = adMobAdUnitId.getText().toString();
-                mAdView = new AdView(getActivity());
+                //mAdView = new AdView(getActivity());
 
-                bannerAdId = bannerAdIdEdit.getText().toString();
+                //bannerAdId = bannerAdIdEdit.getText().toString();
                 blogmodel.setBlogHeader(blogHeaderEdit.getText().toString());
                 blogmodel.setBlogContent(blogContentEdit.getText().toString());
                 blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
@@ -199,9 +200,9 @@ public class CreateNewBlogFragment extends Fragment  {
         blogHeaderEdit = (EditText) getView().findViewById(R.id.blog_header);
         blogContentEdit = (EditText) getView().findViewById(R.id.blog_content);
         blogFooterEdit = (EditText) getView().findViewById(R.id.blog_footer);
-        mAdView = (AdView) getView().findViewById(R.id.adView_user_ad);
-        submitButton = (Button) getView().findViewById(R.id.submit_button);
-        bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
+        //mAdView = (AdView) getView().findViewById(R.id.adView_user_ad);
+        submitButton = (Button) getView().findViewById(R.id.submit_blog_button);
+        //bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
         spinner = (Spinner) getView().findViewById(R.id.spinner_category);
 
 

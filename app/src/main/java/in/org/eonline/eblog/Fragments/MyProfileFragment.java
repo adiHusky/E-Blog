@@ -158,7 +158,7 @@ public class MyProfileFragment extends Fragment {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(isUserRegisteredAlready) {
+                if(sharedpreferences.getBoolean("isUserCreated", false)) {
                     userModel.setUserId(userIdCreated);
                     updateDataToUserFirebase();
                 } else {
@@ -185,7 +185,8 @@ public class MyProfileFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         setUserModel(document);
-                        Toast.makeText(getContext(), "Data is retrieved from firebase", Toast.LENGTH_SHORT).show();
+                        downloadImageFromFirebaseStorage();
+                        Toast.makeText(getContext(), "Data is retrieved from firebase", Toast.LENGTH_LONG).show();
                     } /*else {
                         setUserModelAndUserMap();
                         addDataToUserFirebase();
@@ -223,7 +224,7 @@ public class MyProfileFragment extends Fragment {
     }
 
     public void addDataToUserFirebase(){
-        String userId = userModel.getUserEmail()+"_0";
+        String userId = userModel.getUserEmail();
         userModel.setUserId(userId);
         editor = sharedpreferences.edit();
         editor.putString("UserIdCreated",userId);
@@ -299,7 +300,7 @@ public class MyProfileFragment extends Fragment {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                 // ...
                 Toast.makeText(getContext(), "File successfully uploaded", Toast.LENGTH_SHORT).show();
-                downloadImageFromFirebaseStorage();
+                //downloadImageFromFirebaseStorage();
                 /*userProfileUrl = imagesRef.getDownloadUrl().toString();
                 editor = sharedpreferences.edit();
                 editor.putString("userProfileUrl",userProfileUrl);

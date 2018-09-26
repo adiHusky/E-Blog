@@ -145,7 +145,7 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     }
 
     public void setUserModel(DocumentSnapshot document) {
-
+        //userModelsList = new ArrayList<>();
         userModel = new UserModel();
         userModel.setUserFName(document.getString("UserFirstName"));
         userModel.setUserLName(document.getString("UserLastName"));
@@ -157,7 +157,7 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
 
 
     private void setBlogModel(QueryDocumentSnapshot doc) {
-
+        //blogModelsList = new ArrayList<>();
         blogModel = new BlogModel();
         blogModel.setBlogHeader(doc.getString("BlogHeader"));
         blogModel.setBlogFooter(doc.getString("BlogFooter"));

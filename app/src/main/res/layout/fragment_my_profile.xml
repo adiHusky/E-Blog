@@ -63,7 +63,7 @@
         android:textSize="@dimen/_14sdp"
         android:inputType="textEmailAddress"
         android:maxLines="1"
-        android:maxLength="20"
+        android:maxLength="50"
         android:background="@drawable/app_edittext_drawable"/>
 
     <EditText

@@ -2,85 +2,85 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="10dip"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <!-- Text Label -->
-    <TextView
-        android:layout_width="fill_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="10dip"
-        android:entries="@color/colorPrimaryDark"
-        android:text="Category:" />
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/_20sdp">
 
-    <!-- Spinner Element -->
-    <Spinner
-        android:id="@+id/spinner_category"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:entries="@color/colorPrimary"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Category:"
+            android:textSize="@dimen/_15sdp"
+            android:padding="@dimen/_10sdp"/>
 
-        android:prompt="@string/nav_header_title" />
+        <Spinner
+            android:id="@+id/spinner_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@color/colorPrimary"
+            android:prompt="@string/nav_header_title"
+            android:padding="@dimen/_20sdp"
+            android:layout_marginEnd="@dimen/_20sdp"
+            android:layout_marginStart="@dimen/_20sdp"/>
+    </LinearLayout>
 
     <EditText
         android:id="@+id/blog_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="53dp"
+        android:layout_marginTop="@dimen/_20sdp"
         android:ems="15"
-        android:hint="What would you like to name your site? "
+        android:maxLines="1"
+        android:maxLength="50"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:hint="What would you like to name your Blog? "
         android:textSize="@dimen/_15sdp" />
 
     <EditText
         android:id="@+id/blog_content"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginTop="5dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:maxLines="5"
+        android:maxLength="1000"
+        android:lines="5"
         android:ems="15"
-        android:hint="Enter the content"
+        android:hint="Enter the content of Blog"
         android:textSize="@dimen/_15sdp" />
+
     <EditText
         android:id="@+id/blog_footer"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="@dimen/_20sdp"
         android:ems="15"
-        android:hint="Enter footer of the blog"
-        android:textSize="@dimen/_15sdp" />
-    <EditText
-        android:id="@+id/adview_user_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:ems="15"
-        android:hint="Enter your banner ad unit id"
+        android:maxLines="1"
+        android:maxLength="50"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:hint="Enter the footer of Blog"
         android:textSize="@dimen/_15sdp" />
 
     <Button
-        android:id="@+id/submit_button"
+        android:id="@+id/submit_blog_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="7dp"
-        android:text="Submit" />
-
-
-
-    <com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/adView_user_ad"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        ads:adSize="BANNER"
-        ads:adUnitId="none"
-        android:layout_marginTop="@dimen/_3sdp"
-        >
-
-    </com.google.android.gms.ads.AdView>
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:text="Save Blog"
+        android:background="@drawable/app_button_drawable"
+        android:paddingStart="@dimen/_30sdp"
+        android:paddingEnd="@dimen/_30sdp"
+        android:textColor="#fff"
+        android:textAllCaps="false"
+        android:textSize="@dimen/_16sdp"/>
 
 
 </LinearLayout>
