@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:layout_marginStart="@dimen/_10sdp"
     android:layout_marginEnd="@dimen/_10sdp"
+    android:id="@+id/parent_layout"
     >
 
     <android.support.v7.widget.CardView

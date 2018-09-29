@@ -15,4 +15,7 @@
     <string name="admob_id_hint">Google AdMob Banner Ad Unit ID</string>
     <string name="test_ad_id">For eg.: ca-app-pub-3940256099942544/6300978111</string>
     <string name="submit_button">Submit</string>
+    <string name="dialog_fire_missiles">Fire it Man</string>
+    <string name="fire">fire</string>
+    <string name="cancel">cancel</string>
 </resources>
