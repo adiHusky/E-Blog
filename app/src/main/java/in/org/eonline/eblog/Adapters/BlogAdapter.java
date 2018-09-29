@@ -47,13 +47,7 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
             public void onClick(View v) {
                 clickListner.onClickItem(blogModel); // decides the item in adapter which is clicked
 
-                /*Intent intent = new Intent(context, BlogActivity.class);
-                String blogmodel = (new Gson()).toJson(blogModel);
 
-                intent.putExtra("blog", blogmodel);
-
-
-                context.startActivity(intent); */
             }
         });
     }
@@ -79,11 +73,8 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
         public BlogViewHolder(View itemView) {
             super(itemView);
             blogImageItem = (ImageView) itemView.findViewById(R.id.blog_image_item);
-            //blogHeader =(TextView) itemView.findViewById(R.id.blog_header);
-            //blogFooter = (TextView) itemView.findViewById(R.id.blog_footer);
-            //blogContent=(TextView) itemView.findViewById(R.id.blog_content);
             blogNameItem = (TextView) itemView.findViewById(R.id.blog_header_item);
-            //blogParent = (RelativeLayout) itemView.findViewById(R.id.parent_layout);
+
         }
 
         @Override
