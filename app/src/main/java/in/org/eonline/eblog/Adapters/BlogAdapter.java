@@ -1,7 +1,6 @@
 package in.org.eonline.eblog.Adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,11 +10,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-
 import java.util.List;
 
-import in.org.eonline.eblog.BlogActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.R;
 

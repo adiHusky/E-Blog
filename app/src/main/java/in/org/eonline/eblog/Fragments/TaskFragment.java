@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import in.org.eonline.eblog.Adapters.BlogAdapter;
-import in.org.eonline.eblog.BlogActivity;
+import in.org.eonline.eblog.Activities.BlogActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.R;
 

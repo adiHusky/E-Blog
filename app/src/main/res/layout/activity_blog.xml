@@ -1,56 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="in.org.eonline.eblog.BlogActivity">
+    tools:context="in.org.eonline.eblog.Activities.BlogActivity">
 
-
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
         <TextView
             android:id="@+id/user_blog_header_text"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_5sdp"
             android:layout_marginStart="@dimen/_5sdp"
             android:layout_marginTop="@dimen/_30sdp"
-
             android:textColor="@color/black"
-            android:textSize="@dimen/_20sdp" />
+            android:textSize="@dimen/_16sdp"
+            android:text="Blog Header"
+            android:textStyle="bold"/>
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_10sdp">
+
+                <Button
+                    android:id="@+id/button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="like" />
+
+                <TextView
+                    android:id="@+id/category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/_10sdp"
+                    android:text="Blog Category"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        </LinearLayout>
         <TextView
             android:id="@+id/user_blog_content_text"
             android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:layout_width="371dp"
-            android:layout_height="463dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_5sdp"
             android:layout_marginStart="@dimen/_5sdp"
             android:layout_marginTop="@dimen/_15sdp"
             android:textColor="@color/black"
-            android:textSize="@dimen/_15sdp"
+            android:textSize="@dimen/_14sdp"
+            android:text="Blog Content"
             android:backgroundTint="@color/cardview_shadow_start_color"/>
 
         <TextView
             android:id="@+id/user_blog_footer_text"
-            android:layout_width="match_parent"
-android:backgroundTint="@color/cardview_shadow_start_color"
+            android:layout_width="wrap_content"
+            android:backgroundTint="@color/cardview_shadow_start_color"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_5sdp"
             android:textColor="@color/black"
-            android:textSize="@dimen/_15sdp" />
+            android:textSize="@dimen/_15sdp"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:text="Blog Footer"/>
+
+        </LinearLayout>
+
+</ScrollView>
 
 
 
-    </LinearLayout>
 
 
-
-
-</LinearLayout>
