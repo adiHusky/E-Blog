@@ -169,7 +169,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "New Blog is created", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "New Blog is created in Users collection", Toast.LENGTH_LONG).show();
                         addBlogToSQLite();
                     }
                 })
@@ -183,7 +183,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "New Blog is created", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "New Blog is created in standalone Blogs collection", Toast.LENGTH_LONG).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

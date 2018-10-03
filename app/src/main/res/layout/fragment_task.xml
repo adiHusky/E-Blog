@@ -9,47 +9,17 @@
         android:id="@+id/submit_filter_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
         android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="26dp"
-        android:layout_marginTop="17dp"
+        android:layout_marginTop="@dimen/_10sdp"
         android:background="@drawable/app_button_drawable"
         android:paddingEnd="@dimen/_30sdp"
         android:paddingStart="@dimen/_30sdp"
-        android:text="Filter"
+        android:text="Filter By Blogs Category"
         android:textAllCaps="false"
         android:textColor="#fff"
-        android:textSize="@dimen/_16sdp" />
-
-
-    <TextView
-        android:id="@+id/blog_header_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:textSize="@dimen/_20sdp" />
-
-
-    <TextView
-        android:id="@+id/blog_content_text"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/your_blogs"
-        android:layout_marginTop="21dp"
-        android:textSize="@dimen/_20sdp" />
-
-    <TextView
-        android:id="@+id/blog_footer_text"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/blog_content_text"
-        android:layout_marginTop="22dp"
-        android:textSize="@dimen/_15sdp" />
-
+        android:textSize="@dimen/_14sdp" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/your_blogs"
@@ -57,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/submit_filter_button"
-        android:layout_marginTop="15dp">
+        android:layout_marginTop="@dimen/_10sdp">
 
     </android.support.v7.widget.RecyclerView>
 
