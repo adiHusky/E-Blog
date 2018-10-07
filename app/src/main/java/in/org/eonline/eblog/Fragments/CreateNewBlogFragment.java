@@ -115,7 +115,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 blogmodel.setBlogHeader(blogHeaderEdit.getText().toString());
                 blogmodel.setBlogContent(blogContentEdit.getText().toString());
                 blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
-                blogmodel.setBlogLikes(0);
+                blogmodel.setBlogLikes("0");
                 blogmodel.setBlogUser("Aditya Kamat");
                 blogMap.put("BlogHeader",blogmodel.getBlogHeader());
                 blogMap.put("BlogContent",blogmodel.getBlogContent());

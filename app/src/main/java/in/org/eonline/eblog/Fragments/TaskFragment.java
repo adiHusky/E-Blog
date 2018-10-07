@@ -178,9 +178,10 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogModel.setBlogHeader(blogModelFromDialog.getBlogHeader());
         blogModel.setBlogFooter(blogModelFromDialog.getBlogFooter());
         blogModel.setBlogContent(blogModelFromDialog.getBlogContent());
-        // blogModel.setBlogLikes(Integer.parseInt(document.getString("BlogLikes")));
+        blogModel.setBlogLikes(blogModelFromDialog.getBlogLikes());
         blogModel.setBlogUser(blogModelFromDialog.getBlogUser());
         blogModel.setBlogCategory(blogModelFromDialog.getBlogCategory());
+        blogModel.setBlogId(blogModelFromDialog.getBlogId());
         blogListCategorywise.add(blogModel);
     }
 
@@ -190,9 +191,10 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogModel.setBlogHeader(document.getString("BlogHeader"));
         blogModel.setBlogFooter(document.getString("BlogFooter"));
         blogModel.setBlogContent(document.getString("BlogContent"));
-        // blogModel.setBlogLikes(Integer.parseInt(document.getString("BlogLikes")));
+        blogModel.setBlogLikes(document.getString("BlogLikes"));
         blogModel.setBlogUser(document.getString("BlogUser"));
         blogModel.setBlogCategory(document.getString("BlogCategory"));
+        blogModel.setBlogId(document.getString("BlogId"));
         blogModelsList.add(blogModel);
     }
 

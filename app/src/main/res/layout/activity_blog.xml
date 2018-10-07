@@ -30,22 +30,25 @@
             android:layout_marginTop="@dimen/_10sdp">
 
             <ImageView
+                android:id="@+id/user_blog_button"
                 android:layout_width="@dimen/_16sdp"
                 android:layout_height="@dimen/_16sdp"
                 android:src="@drawable/like"
-                android:layout_marginStart="@dimen/_5sdp"/>
+                android:layout_marginStart="@dimen/_5sdp"
+                android:tint="@color/black"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="150"
+                android:id="@+id/user_blog_likes"
                 android:textColor="@color/black"
                 android:textSize="@dimen/_10sdp"
                 android:layout_marginStart="@dimen/_5sdp"
                 android:layout_marginTop="@dimen/_3sdp"/>
 
             <TextView
-                android:id="@+id/category"
+                android:id="@+id/user_blog_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/_10sdp"

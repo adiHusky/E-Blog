@@ -4,7 +4,7 @@ public class BlogModel {
     public String blogHeader;
     public String blogContent;
     public String blogFooter;
-    public int blogLikes;
+    public String blogLikes;
     public String blogUser;
     public String blogCategory;
     public String blogId;
@@ -64,11 +64,11 @@ public class BlogModel {
         this.blogHeader = blogHeader;
     }
 
-    public int getBlogLikes() {
+    public String getBlogLikes() {
         return blogLikes;
     }
 
-    public void setBlogLikes(int blogLikes) {
+    public void setBlogLikes(String blogLikes) {
         this.blogLikes = blogLikes;
     }
 
