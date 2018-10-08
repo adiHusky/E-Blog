@@ -57,11 +57,9 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
     private String blogId;
     DatabaseHelper sqliteDatabaseHelper;
 
-
     public YourBlogsFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,7 +67,6 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_your_blogs, container, false);
     }
-
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -82,7 +79,6 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         InitializeViews();
         setYourBlogsFromFirebase();
     }
-
 
     public void setYourBlogsFromFirebase() {
         CollectionReference blogRef =db.collection("Users").document(userId).collection("Blogs");

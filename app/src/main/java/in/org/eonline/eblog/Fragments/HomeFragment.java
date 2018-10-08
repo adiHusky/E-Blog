@@ -113,7 +113,6 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
                     }
                 });
 
-
        CollectionReference colRef=db.collection("Blogs");
 
                 colRef.get()
@@ -133,12 +132,6 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
                         }
                     }
                 });
-
-
-
-
-
-
 
     }
 

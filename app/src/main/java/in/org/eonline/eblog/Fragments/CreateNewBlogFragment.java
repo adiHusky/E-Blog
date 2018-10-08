@@ -91,80 +91,36 @@ public class CreateNewBlogFragment extends Fragment  {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        sqliteDatabaseHelper = new DatabaseHelper(getActivity());
-
         initializeViews();
+
+        sqliteDatabaseHelper = new DatabaseHelper(getActivity());
         db = FirebaseFirestore.getInstance();
-       // blogId = blogId+1;
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
-        blogIdBase = userId+"_0";
-
+        blogIdBase = userId + "_0";
         blogId = sharedpreferences.getString("blogId_new",blogIdBase);
-
         setSpinner();
 
 
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //  adMobUnitId = adMobAdUnitId.getText().toString();
-                //mAdView = new AdView(getActivity());
-
-                //bannerAdId = bannerAdIdEdit.getText().toString();
-                blogmodel.setBlogHeader(blogHeaderEdit.getText().toString());
-                blogmodel.setBlogContent(blogContentEdit.getText().toString());
-                blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
-                blogmodel.setBlogLikes("0");
-                blogmodel.setBlogUser("Aditya Kamat");
-                blogMap.put("BlogHeader",blogmodel.getBlogHeader());
-                blogMap.put("BlogContent",blogmodel.getBlogContent());
-                blogMap.put("BlogFooter", blogmodel.getBlogFooter());
-                blogMap.put("BlogCategory",item);
-                blogMap.put("BlogUser", "Aditya Kamat");
-                blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
-
-
-
+                setBlogModelAndMap();
                 addData();
-
-               /* mAdView.setAdSize(AdSize.BANNER);
-                mAdView.setAdUnitId(bannerAdId);
-               AdRequest adRequest = new AdRequest.Builder().addTestDevice("551B158596C8082704941DE131CEBAB9").build();
-               if
-                       (bannerAdId != null) mAdView.setVisibility(view.VISIBLE);
-                mAdView.loadAd(adRequest); */
             }
-
         });
     }
 
     public void addBlogToSQLite() {
-      //  blogId = blogId+"_0";
-        String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );
-        int integer = Integer.parseInt(localblogId)+ 1;
-        localblogId = Integer.toString(integer);
-        blogId = blogId.substring(0, blogId.length() - 1);
-        blogId = blogId + localblogId;
-        blogmodel.setBlogId(blogId);
-        blogMap.put("BlogId",blogmodel.getBlogId());
         Boolean blogIdInserted =  sqliteDatabaseHelper.insertBlogDataInSQLite(blogId,blogmodel.getBlogHeader(),blogmodel.getBlogContent(),blogmodel.getBlogFooter());
-        if (blogIdInserted)
-        {
+        if (blogIdInserted) {
             Toast.makeText(getContext(), "BlogId inserted properly in SQLite", Toast.LENGTH_SHORT).show();
-        }
-        else
-        {
+        } else {
             Toast.makeText(getContext(), "BlogId insertion failed", Toast.LENGTH_SHORT).show();
         }
-        editor = sharedpreferences.edit();
-        editor.putString("blogId_new",blogId);
-        editor.apply();
     }
 
-
     public void addData() {
-
         db.collection("Users").document(userId).collection("Blogs").document(blogId).set(blogMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -194,8 +150,6 @@ public class CreateNewBlogFragment extends Fragment  {
                 });
     }
 
-
-
     public void initializeViews() {
         blogHeaderEdit = (EditText) getView().findViewById(R.id.blog_header);
         blogContentEdit = (EditText) getView().findViewById(R.id.blog_content);
@@ -204,8 +158,6 @@ public class CreateNewBlogFragment extends Fragment  {
         submitButton = (Button) getView().findViewById(R.id.submit_blog_button);
         //bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
         spinner = (Spinner) getView().findViewById(R.id.spinner_category);
-
-
     }
 
     public void setSpinner() {
@@ -222,13 +174,10 @@ public class CreateNewBlogFragment extends Fragment  {
         categories.add("Business");
         categories.add("others");
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, categories);
-
         // Drop down layout style - list view with radio button
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         // attaching data adapter to spinner
         spinner.setAdapter(dataAdapter);
-
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -240,6 +189,32 @@ public class CreateNewBlogFragment extends Fragment  {
 
             }
         });
+    }
+    public void setBlogModelAndMap(){
+
+        blogmodel.setBlogHeader(blogHeaderEdit.getText().toString());
+        blogmodel.setBlogContent(blogContentEdit.getText().toString());
+        blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
+        blogmodel.setBlogLikes("0");
+        blogmodel.setBlogUser("Aditya Kamat");
+        blogMap.put("BlogHeader",blogmodel.getBlogHeader());
+        blogMap.put("BlogContent",blogmodel.getBlogContent());
+        blogMap.put("BlogFooter", blogmodel.getBlogFooter());
+        blogMap.put("BlogCategory",item);
+        blogMap.put("BlogUser", "Aditya Kamat");
+        blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
+
+        // creates blog Id
+        String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );
+        int integer = Integer.parseInt(localblogId)+ 1;
+        localblogId = Integer.toString(integer);
+        blogId = blogId.substring(0, blogId.length() - 1);
+        blogId = blogId + localblogId;
+        blogmodel.setBlogId(blogId);
+        blogMap.put("BlogId",blogmodel.getBlogId());
+        editor = sharedpreferences.edit();
+        editor.putString("blogId_new",blogId);
+        editor.apply();
     }
 }
 

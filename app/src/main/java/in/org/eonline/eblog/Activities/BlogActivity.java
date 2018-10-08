@@ -3,6 +3,9 @@ package in.org.eonline.eblog.Activities;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -10,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +40,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import in.org.eonline.eblog.Fragments.TaskFragment;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
@@ -49,21 +54,19 @@ public class BlogActivity extends AppCompatActivity {
     private TextView blogContent;
     private TextView blogFooter;
     private TextView blogCategory;
-  //  private Boolean isLikeTrue;
     private TextView blogLikes;
     private String bannerId;
     private ImageView userLikesButton;
     private String blogId;
     FirebaseFirestore db;
     Map<String, String> userReadBlogMap = new HashMap<>();
-    private List<UserModel> userModelList = new ArrayList<>();
     private SharedPreferences sharedpreferences;
     public static final String MyPREFERENCES = "MyPrefs_new";
     private String userId;
-  //  private UserModel usermodel;
     private String likeStatus;
     private String likeButtonValue;
     private BlogModel blogModel;
+    FrameLayout frameLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,11 +127,11 @@ public class BlogActivity extends AppCompatActivity {
     public void InitializeViews() {
         blogHeader = findViewById(R.id.user_blog_header_text);
         blogContent = findViewById(R.id.user_blog_content_text);
-        // blogContent.setMovementMethod(new ScrollingMovementMethod());
         blogFooter = findViewById(R.id.user_blog_footer_text);
         blogCategory = findViewById(R.id.user_blog_category);
         blogLikes = findViewById(R.id.user_blog_likes);
         userLikesButton = (ImageView) findViewById(R.id.user_blog_button);
+        frameLayout = (FrameLayout) findViewById(R.id.content_frame);
 
     }
 
@@ -147,17 +150,19 @@ public class BlogActivity extends AppCompatActivity {
                                 String likeStatus = document.getString("LikeStatus");
                                 if (docid.equals(blogId)) {
                                     if (likeStatus.equals("true")) {
-                                        userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.like));
+                                       // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.like));
+                                        userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_24dp);
                                         likeButtonValue = "LIKED";
 
                                     } else {
-                                        userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
-                                        likeButtonValue = "UNLIKED";
+                                       // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                                        userLikesButton.setImageResource(R.drawable.ic_thumb_down_black_24dp);
                                     }
                                 }
                         }
                     } else {
-                        userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                        //userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                        userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
                         likeButtonValue = "LIKE";
                     }
                 }
@@ -166,7 +171,10 @@ public class BlogActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         likeButtonValue = "LIKE";
-                        userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                      //  userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                        userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
+                        userLikesButton.setBackgroundColor(getResources().getColor(R.color.white));
+
                     }
                 });
             }
@@ -181,7 +189,8 @@ public class BlogActivity extends AppCompatActivity {
                 } else {
                     if (likeButtonValue == "LIKED") {
                         int bloglikesNew = Integer.parseInt(blogModel.getBlogLikes()) - 1;
-                        userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                    //    userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                        userLikesButton.setImageResource(R.drawable.ic_thumb_down_black_24dp);
                         likeButtonValue = "UNLIKED";
                         //usermodel.setLikeTrue("false");
                         likeStatus = "false";
@@ -231,10 +240,8 @@ public class BlogActivity extends AppCompatActivity {
 
     public void AddUserBlogMap(BlogModel blogModel) {
         likeStatus = "true";
-        userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.like));
+        userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_24dp);
         likeButtonValue = "LIKED";
-        // userModelList.add(usermodel);
-        //String likevalue = usermodel.getLikeTrue();
         int bloglikesNew = Integer.parseInt(blogModel.getBlogLikes()) + 1;
         String blogLikesString = Integer.toString(bloglikesNew);
         blogLikes.setText(blogLikesString + "Likes");
@@ -259,22 +266,28 @@ public class BlogActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-
-
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-
                     }
                 });
     }
 
-    @Override
+   /* @Override
     public void onBackPressed() {
-
+        openFragment();
         super.onBackPressed();
     }
+
+    public void openFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }*/
+
 }
 

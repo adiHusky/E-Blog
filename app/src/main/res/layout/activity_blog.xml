@@ -33,7 +33,7 @@
                 android:id="@+id/user_blog_button"
                 android:layout_width="@dimen/_16sdp"
                 android:layout_height="@dimen/_16sdp"
-                android:src="@drawable/like"
+                android:src="@drawable/ic_thumb_up_black_like_24dp"
                 android:layout_marginStart="@dimen/_5sdp"
                 android:tint="@color/black"/>
 

@@ -8,41 +8,6 @@ public class UserModel {
     public String userImageUrl;
     public String userEmail;
     public String userContact;
-    public String userReadBlogsId;
-    public String isLikeTrue;
-    public String userButtonValue;
-
-    public String getUserButtonValue() {
-        return userButtonValue;
-    }
-
-    public void setUserButtonValue(String userButtonValue) {
-        this.userButtonValue = userButtonValue;
-    }
-
-
-
-
-    public String getLikeTrue() {
-        return isLikeTrue;
-    }
-
-    public void  setLikeTrue(String likeTrue) {
-        this.isLikeTrue = likeTrue;
-    }
-
-
-
-    public String getUserReadBlogsId() {
-        return userReadBlogsId;
-    }
-
-    public void setUserReadBlogsId(String userReadBlogsId) {
-        this.userReadBlogsId = userReadBlogsId;
-    }
-
-
-
 
     public String getUserId() {
         return userId;

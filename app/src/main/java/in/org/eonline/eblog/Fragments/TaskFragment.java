@@ -40,7 +40,6 @@ import static android.content.ContentValues.TAG;
  */
 public class TaskFragment extends Fragment implements BlogAdapter.ClickListener {
 
-
     FirebaseFirestore db;
     private Button button;
     BlogModel blogModel = new BlogModel();
@@ -49,11 +48,9 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
     private List<BlogModel> blogListCategorywise = new ArrayList<>();
     private int length;
 
-
     public TaskFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,16 +59,10 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         return inflater.inflate(R.layout.fragment_task, container, false);
     }
 
-
-
-
-
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         db= FirebaseFirestore.getInstance();
-
         initializeViews();
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,7 +71,6 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         });
         setYourBlogsFromFirebase();
     }
-
 
     public void initializeViews() {
 
@@ -92,9 +82,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
     public void setAlertDialog() {
         String abc[] = {"Travelling", "Food", "Cosmetics", "Apparels", "Technology", "Cars and Bikes", "Politics", "Socialism", "Bollywood and entertainment", "Business", "others"};
         final List<String> categories = Arrays.asList(abc);
-
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
         final boolean[] checkedSelectedArray = new boolean[]{
                 false,
                 false,
@@ -109,9 +97,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
                 false
         };
         length = checkedSelectedArray.length;
-
         builder.setTitle("Select your category");
-
         builder.setMultiChoiceItems(abc, checkedSelectedArray, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
@@ -129,7 +115,6 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
                     for (int i = 0; i < length; i++) { // it will take all the categories from the dialog box for comparison
                         boolean checked = checkedSelectedArray[i];
                         if (checked) {//it will take the selected category from dialog box
-
                             String blogCategoryCheck = blogModelsList.get(j).getBlogCategory().toString();
                             String blogCategoryFromDialog = categories.get(i).toString();
                             if (blogCategoryCheck.equals(blogCategoryFromDialog)) {//it will compare the category and the blogmodel list
@@ -185,7 +170,6 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogListCategorywise.add(blogModel);
     }
 
-
     private void setBlogModel(QueryDocumentSnapshot document) {
         blogModel = new BlogModel();
         blogModel.setBlogHeader(document.getString("BlogHeader"));
@@ -197,7 +181,6 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogModel.setBlogId(document.getString("BlogId"));
         blogModelsList.add(blogModel);
     }
-
 
     public void setBlogsRecyclerView() { //for populating the recycler view from firebase data
         yourBlogsRecyclerView.setHasFixedSize(true);

@@ -9,8 +9,6 @@ public class BlogModel {
     public String blogCategory;
     public String blogId;
 
-
-
     public String getBlogId() {
         return blogId;
     }
@@ -18,11 +16,6 @@ public class BlogModel {
     public void setBlogId(String blogId) {
         this.blogId = blogId;
     }
-
-
-
-
-
 
     public String getBlogCategory() {
         return blogCategory;
@@ -32,10 +25,6 @@ public class BlogModel {
         this.blogCategory = blogCategory;
     }
 
-
-
-
-
     public String getBlogContent() {
         return blogContent;
     }
@@ -44,8 +33,6 @@ public class BlogModel {
         this.blogContent = blogContent;
     }
 
-
-
     public String getBlogFooter() {
         return blogFooter;
     }
@@ -53,8 +40,6 @@ public class BlogModel {
     public void setBlogFooter(String blogFooter) {
         this.blogFooter = blogFooter;
     }
-
-
 
     public String getBlogHeader() {
         return blogHeader;
@@ -80,5 +65,4 @@ public class BlogModel {
     public void setBlogUser(String blogUser) {
         this.blogUser = blogUser;
     }
-
 }
