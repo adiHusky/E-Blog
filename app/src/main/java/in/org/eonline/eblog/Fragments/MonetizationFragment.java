@@ -1,9 +1,13 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +18,21 @@ import android.widget.RelativeLayout;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import in.org.eonline.eblog.R;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +42,12 @@ public class MonetizationFragment extends Fragment {
     private EditText adMobAdUnitIdEdit;
     private Button submitAdMobAdUnitId;
     private String adMobUnitId;
+     FirebaseFirestore db;
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs_new" ;
+    private  String userId;
+    private List<String> blogModelsList = new ArrayList<String>();
+    Map<String, String> blogMap = new HashMap<>();
 
     public MonetizationFragment() {
         // Required empty public constructor
@@ -41,8 +64,11 @@ public class MonetizationFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        db= FirebaseFirestore.getInstance();
 
         initializeViews();
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
 
         submitAdMobAdUnitId.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,12 +101,73 @@ public class MonetizationFragment extends Fragment {
                         .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                         .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
                 userAdView.loadAd(adRequest);
+
+                addAdMobIdToBlogs(adMobUnitId);
+
             }
         });
 
 
 
     }
+
+    public void addAdMobIdToBlogs(final String adMobUnitId) {
+
+
+           final CollectionReference blogDoc = db.collection("Blogs");
+
+        blogDoc.whereEqualTo("UserId", userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.exists())
+                            //blogModelsList.add(document.getId().toString());
+                           // blogMap.put("BannerAdMobId",adMobUnitId);
+                        blogDoc.document(document.getId()).update("BannerAdMobId",adMobUnitId);
+
+                    }
+
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+
+            }
+        });
+        final CollectionReference blogUserDoc = db.collection("Users").document(userId).collection("Blogs");
+
+        blogUserDoc.whereEqualTo("UserId", userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.exists())
+                            //blogModelsList.add(document.getId().toString());
+                            // blogMap.put("BannerAdMobId",adMobUnitId);
+                            blogUserDoc.document(document.getId()).update("BannerAdMobId",adMobUnitId);
+
+                    }
+
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+
+            }
+        });
+
+
+
+        }
+
+
+
+        //Query blogDoc = db.collection("Blogs").whereEqualTo("","");
+
+
+
+
 
     public void initializeViews() {
         adMobAdUnitIdEdit = (EditText) getView().findViewById(R.id.admob_ad_unit_id);

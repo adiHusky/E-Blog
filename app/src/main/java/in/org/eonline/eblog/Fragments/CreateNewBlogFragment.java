@@ -201,7 +201,7 @@ public class CreateNewBlogFragment extends Fragment  {
         blogMap.put("BlogContent",blogmodel.getBlogContent());
         blogMap.put("BlogFooter", blogmodel.getBlogFooter());
         blogMap.put("BlogCategory",item);
-        blogMap.put("BlogUser", "Aditya Kamat");
+        blogMap.put("UserId",userId);
         blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
 
         // creates blog Id

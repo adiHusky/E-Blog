@@ -47,6 +47,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
     private List<BlogModel> blogModelsList = new ArrayList<>();
     private List<BlogModel> blogListCategorywise = new ArrayList<>();
     private int length;
+    boolean[] checkedSelectedArray = new boolean[11];
 
     public TaskFragment() {
         // Required empty public constructor
@@ -83,19 +84,6 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         String abc[] = {"Travelling", "Food", "Cosmetics", "Apparels", "Technology", "Cars and Bikes", "Politics", "Socialism", "Bollywood and entertainment", "Business", "others"};
         final List<String> categories = Arrays.asList(abc);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        final boolean[] checkedSelectedArray = new boolean[]{
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
-                false
-        };
         length = checkedSelectedArray.length;
         builder.setTitle("Select your category");
         builder.setMultiChoiceItems(abc, checkedSelectedArray, new DialogInterface.OnMultiChoiceClickListener() {
@@ -105,7 +93,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
             }
         });
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener(){
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 blogListCategorywise.clear();
@@ -127,7 +115,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
             }
         });
 
-        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener(){
             @Override
             public void onClick(DialogInterface dialog, int which) { //logic for cancelling
 
@@ -167,6 +155,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogModel.setBlogUser(blogModelFromDialog.getBlogUser());
         blogModel.setBlogCategory(blogModelFromDialog.getBlogCategory());
         blogModel.setBlogId(blogModelFromDialog.getBlogId());
+        blogModel.setBannerAdMobId(blogModelFromDialog.getBannerAdMobId());
         blogListCategorywise.add(blogModel);
     }
 
@@ -179,6 +168,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogModel.setBlogUser(document.getString("BlogUser"));
         blogModel.setBlogCategory(document.getString("BlogCategory"));
         blogModel.setBlogId(document.getString("BlogId"));
+        blogModel.setBannerAdMobId(document.getString("BannerAdMobId"));
         blogModelsList.add(blogModel);
     }
 

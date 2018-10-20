@@ -37,6 +37,7 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
       final  BlogModel blogModel = blogModels.get(position);
 
         holder.blogNameItem.setText(blogModels.get(position).getBlogHeader());
+        holder.blogLikeItem.setText(blogModels.get(position).getBlogLikes()+" Likes");
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,6 +61,7 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
 
         ImageView blogImageItem;
         TextView blogNameItem;
+        TextView blogLikeItem;
         TextView blogHeader;
         TextView blogFooter;
         TextView blogContent;
@@ -70,6 +72,7 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
             super(itemView);
             blogImageItem = (ImageView) itemView.findViewById(R.id.blog_image_item);
             blogNameItem = (TextView) itemView.findViewById(R.id.blog_header_item);
+            blogLikeItem = (TextView) itemView.findViewById(R.id.blog_likes_item);
 
         }
 

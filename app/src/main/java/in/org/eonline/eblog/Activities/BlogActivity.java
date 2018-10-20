@@ -15,9 +15,13 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -67,6 +71,7 @@ public class BlogActivity extends AppCompatActivity {
     private String likeButtonValue;
     private BlogModel blogModel;
     FrameLayout frameLayout;
+    String[] userIdBlog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +96,26 @@ public class BlogActivity extends AppCompatActivity {
             blogCategory.setText(blogModel.getBlogCategory());
             blogId = blogModel.getBlogId();
             blogLikes.setText(blogModel.getBlogLikes() + "Likes");
+            bannerId = blogModel.getBannerAdMobId();
             CheckLikes(blogModel);
+            userIdBlog=blogId.split("\\_");
+            if (bannerId != null) {
+                View adContainer = findViewById(R.id.blogAdMobView);
+
+                AdView userAdView = new AdView(this);
+
+                userAdView.setAdSize(AdSize.BANNER);
+                userAdView.setAdUnitId(bannerId);
+
+                ((RelativeLayout) adContainer).addView(userAdView);
+
+                AdRequest adRequest = new AdRequest.Builder()
+                        .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                        .addTestDevice("F6ECB8AECEA2A45447ADE1C65B01711B").build();
+
+                userAdView.loadAd(adRequest);
+            }
+
 
          /*   DocumentReference blogRef =db.collection("Users").document(userId).collection("UserReadBlogs").document(blogId);
             blogRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -146,19 +170,24 @@ public class BlogActivity extends AppCompatActivity {
                     QuerySnapshot documentSize =  task.getResult();
                     if(documentSize.size() > 0) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                                String docid = document.getId();
-                                String likeStatus = document.getString("LikeStatus");
-                                if (docid.equals(blogId)) {
-                                    if (likeStatus.equals("true")) {
-                                       // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.like));
-                                        userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_24dp);
-                                        likeButtonValue = "LIKED";
+                            String docid = document.getId();
+                            String likeStatus = document.getString("LikeStatus");
+                            if (docid.equals(blogId)) {
+                                if (likeStatus.equals("true")) {
+                                    // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.like));
+                                    userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_24dp);
+                                    likeButtonValue = "LIKED";
 
-                                    } else {
-                                       // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
-                                        userLikesButton.setImageResource(R.drawable.ic_thumb_down_black_24dp);
-                                    }
+                                } else {
+                                    // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                                    userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
+                                    likeButtonValue = "LIKE";
                                 }
+                            } else {
+                                //userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
+                                userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
+                                likeButtonValue = "LIKE";
+                            }
                         }
                     } else {
                         //userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
@@ -180,6 +209,8 @@ public class BlogActivity extends AppCompatActivity {
             }
         });
 
+
+
         userLikesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
@@ -187,56 +218,69 @@ public class BlogActivity extends AppCompatActivity {
                 if (likeButtonValue == "LIKE") {
                     AddUserBlogMap(blogModel);
                 } else {
-                    if (likeButtonValue == "LIKED") {
-                        int bloglikesNew = Integer.parseInt(blogModel.getBlogLikes()) - 1;
-                    //    userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
-                        userLikesButton.setImageResource(R.drawable.ic_thumb_down_black_24dp);
-                        likeButtonValue = "UNLIKED";
-                        //usermodel.setLikeTrue("false");
-                        likeStatus = "false";
-                        String blogLikesNewString = Integer.toString(bloglikesNew);
-                        blogModel.setBlogLikes(blogLikesNewString);
-                        blogLikes.setText(blogLikesNewString + "Likes ");
-                        //  String blogLikesNewString = Integer.toString(bloglikesNew);
-                        // blogModel.setBlogLikes(blogLikesNewString);
-                        //DocumentReference userDoc = db.collection("Blogs").document(blogId);
-                        userReadBlogMap.put("LikeStatus", likeStatus);
-                        userReadBlogMap.put("BlogLikes", blogLikesNewString);
-                        db.collection("Users").document(userId).collection("UserReadBlogs").document(blogId).set(userReadBlogMap)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
+                    int bloglikesNew = Integer.parseInt(blogModel.getBlogLikes()) - 1;
+                    userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
+                    likeButtonValue = "LIKE";
+                    likeStatus = "false";
+                    String blogLikesNewString = Integer.toString(bloglikesNew);
+                    blogModel.setBlogLikes(blogLikesNewString);
+                    blogLikes.setText(blogLikesNewString + "Likes ");
+                    //  String blogLikesNewString = Integer.toString(bloglikesNew);
+                    // blogModel.setBlogLikes(blogLikesNewString);
+                    //DocumentReference userDoc = db.collection("Blogs").document(blogId);
+                    userReadBlogMap.put("LikeStatus", likeStatus);
+                    userReadBlogMap.put("BlogLikes", blogLikesNewString);
+                    db.collection("Users").document(userId).collection("UserReadBlogs").document(blogId).set(userReadBlogMap)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
 
 
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
 
-                                    }
-                                });
-                        DocumentReference userDoc = db.collection("Blogs").document(blogId);
-                        userDoc.update("BlogLikes", blogLikesNewString)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Log.d(TAG, "DocumentSnapshot successfully updated!");
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Log.w(TAG, "Error updating document", e);
-                                    }
-                                });
-                    } else {
-                        AddUserBlogMap(blogModel);
-                    }
+                                }
+                            });
+                    DocumentReference userBlog  = db.collection("Users").document(userIdBlog[0]).collection("Blogs").document(blogId);
+                    userBlog.update("BlogLikes", blogLikesNewString)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Log.d(TAG, "DocumentSnapshot successfully updated!");
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.w(TAG, "Error updating document", e);
+                                }
+                            });
+                    DocumentReference userDoc = db.collection("Blogs").document(blogId);
+                    userDoc.update("BlogLikes", blogLikesNewString)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Log.d(TAG, "DocumentSnapshot successfully updated!");
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.w(TAG, "Error updating document", e);
+                                }
+                            });
+
+
                 }
             }
+
         });
     }
+
+
 
     public void AddUserBlogMap(BlogModel blogModel) {
         likeStatus = "true";
@@ -250,6 +294,21 @@ public class BlogActivity extends AppCompatActivity {
         userReadBlogMap.put("BlogLikes", blogLikesString);
         DocumentReference userDoc = db.collection("Blogs").document(blogId);
         userDoc.update("BlogLikes", blogLikesString)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully updated!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error updating document", e);
+                    }
+                });
+
+        DocumentReference userBlog  = db.collection("Users").document(userIdBlog[0]).collection("Blogs").document(blogId);
+        userBlog.update("BlogLikes", blogLikesString)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

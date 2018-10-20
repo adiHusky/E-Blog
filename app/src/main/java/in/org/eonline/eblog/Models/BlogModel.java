@@ -8,6 +8,17 @@ public class BlogModel {
     public String blogUser;
     public String blogCategory;
     public String blogId;
+    public String BannerAdMobId;
+
+    public String getBannerAdMobId() {
+        return BannerAdMobId;
+    }
+
+    public void setBannerAdMobId(String bannerAdMobId) {
+        BannerAdMobId = bannerAdMobId;
+    }
+
+
 
     public String getBlogId() {
         return blogId;
