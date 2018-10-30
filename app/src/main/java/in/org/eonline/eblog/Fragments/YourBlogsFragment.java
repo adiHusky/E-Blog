@@ -102,12 +102,15 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         blogModel = new BlogModel();
         blogModel.setBlogHeader(document.getString("BlogHeader"));
         blogModel.setBlogFooter(document.getString("BlogFooter"));
-        blogModel.setBlogContent(document.getString("BlogContent"));
+        blogModel.setBlogContent1(document.getString("BlogContent1"));
+        blogModel.setBlogContent2(document.getString("BlogContent2"));
         blogModel.setBlogLikes(document.getString("BlogLikes"));
         blogModel.setBlogUser(document.getString("BlogUser"));
         blogModel.setBlogCategory(document.getString("BlogCategory"));
         blogModel.setBlogId(document.getString("BlogId"));
-        blogModel.setBannerAdMobId(document.getString("BannerAdMobId"));
+        blogModel.setBannerAdMobId(document.getString("BlogUserBannerId"));
+        blogModel.setUserBlogImage1Url(document.getString("BlogImage1Url"));
+        blogModel.setUserBlogImage2Url(document.getString("BlogImage2Url"));
         blogModelsList.add(blogModel);
        // setPopularBlogsRecyclerView();
     }

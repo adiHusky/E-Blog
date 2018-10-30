@@ -46,6 +46,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -133,7 +134,7 @@ public class MyProfileFragment extends Fragment {
         // get instance of Firebase Storage
         storage = FirebaseStorage.getInstance();
 
-        checkUserFirebase();
+        checkUserFirebase();  //call this method only when user has already registered
 
         sqliteDatabaseHelper = new DatabaseHelper(getActivity());
 
@@ -163,13 +164,14 @@ public class MyProfileFragment extends Fragment {
                     updateDataToUserFirebase();
                 } else {
                     setUserModelAndUserMap();
-                    addDataToUserFirebase();
+                    startUploadingImageToFirebase();
                 }
             }
         });
     }
 
     public void startUploadingImageToFirebase() {
+        setUserIdInSharedPref();
         if(userIdCreated != null && userProfileImage != null && sharedpreferences.getString("UserIdCreated","document").equals(userModel.getUserId())) {
             uploadImageToFirebaseStorage();
         }
@@ -198,6 +200,26 @@ public class MyProfileFragment extends Fragment {
         });
     }
 
+    public void downloadImageFromFirebaseStorage() {
+        storageRef = storage.getReference();
+
+        storageRef.child("Users/" + sharedpreferences.getString("UserIdCreated", "document")).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                // Got the download URL for 'users/me/profile.png'
+                userModel.setUserImage(uri.toString());
+                Glide.with(getActivity())
+                        .load(uri)
+                        .into(userProfileImage);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
+    }
+
     public void setUserModel(DocumentSnapshot document){
 
         userModel = new UserModel();
@@ -217,19 +239,22 @@ public class MyProfileFragment extends Fragment {
         userModel.setUserLName(userLnameEdit.getText().toString());
         userModel.setUserEmail(userEmailIdEdit.getText().toString());
         userModel.setUserContact(userContactEdit.getText().toString());
+
         userMap.put("UserFirstName", userModel.getUserFName());
         userMap.put("UserLastName", userModel.getUserLName());
         userMap.put("UserEmailId", userModel.getUserEmail());
         userMap.put("UserContact", userModel.getUserContact());
     }
 
-    public void addDataToUserFirebase(){
+    public void setUserIdInSharedPref() {
         String userId = userModel.getUserEmail();
         userModel.setUserId(userId);
         editor = sharedpreferences.edit();
         editor.putString("UserIdCreated",userId);
         editor.commit();
+    }
 
+    public void addDataToUserFirebase(){
         db.collection("Users").document(userModel.getUserId()).set(userMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -240,7 +265,7 @@ public class MyProfileFragment extends Fragment {
                         editor = sharedpreferences.edit();
                         editor.putBoolean("isUserCreated", isDataInserted);
                         editor.commit();
-                        startUploadingImageToFirebase();
+                      //  startUploadingImageToFirebase();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -300,36 +325,62 @@ public class MyProfileFragment extends Fragment {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                 // ...
                 Toast.makeText(getContext(), "File successfully uploaded", Toast.LENGTH_SHORT).show();
-                //downloadImageFromFirebaseStorage();
+                getimageUrl();
+                    //downloadImageFromFirebaseStorage();
                 /*userProfileUrl = imagesRef.getDownloadUrl().toString();
                 editor = sharedpreferences.edit();
                 editor.putString("userProfileUrl",userProfileUrl);
                 editor.apply(); */
-            }
-        });
-    }
-
-
-    public void downloadImageFromFirebaseStorage() {
-        storageRef = storage.getReference();
-
-        storageRef.child("Users/" + sharedpreferences.getString("UserIdCreated", "document")).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                // Got the download URL for 'users/me/profile.png'
-                Glide.with(getActivity())
-                        .load(uri)
-                        .into(userProfileImage);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
-            }
-        });
-
+                }
+            });
 
     }
+
+
+  public void getimageUrl(){
+      storageRef = storage.getReference();
+
+      storageRef.child("Users/" + sharedpreferences.getString("UserIdCreated", "document")).getDownloadUrl()
+              .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                  @Override
+                  public void onSuccess(Uri uri) {
+                    // Got the download URL for 'users/me/profile.png'
+                      String downloadUrl = uri.toString();
+                      if (downloadUrl != null) {
+                      //updateUserImageUrlInFirebase(downloadUrl);
+                          userModel.setUserImage(downloadUrl);
+                          userMap.put("UserImageUrl", downloadUrl);
+                          addDataToUserFirebase();
+                          //update or create user collection
+                      }
+                  }
+              }).addOnFailureListener(new OnFailureListener() {
+                   @Override
+                   public void onFailure (@NonNull Exception exception){
+                  Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_LONG).show();
+                  }
+              });
+
+  }
+
+  public void updateUserImageUrlInFirebase(String downloadUrl){
+      DocumentReference userDoc = db.collection("Users").document(userIdCreated);
+      userDoc.update("UserImageUrl", downloadUrl)
+              .addOnSuccessListener(new OnSuccessListener<Void>() {
+                  @Override
+                  public void onSuccess(Void aVoid) {
+                      Log.d(TAG, "DocumentSnapshot successfully updated!");
+                      Toast.makeText(getContext(), "Image Id updated successfully", Toast.LENGTH_SHORT).show();
+                      startUploadingImageToFirebase();
+                  }
+              })
+              .addOnFailureListener(new OnFailureListener() {
+                  @Override
+                  public void onFailure(@NonNull Exception e) {
+                      Log.w(TAG, "Error updating document", e);
+                  }
+              });
+  }
 
 
     public void initializeViews() {

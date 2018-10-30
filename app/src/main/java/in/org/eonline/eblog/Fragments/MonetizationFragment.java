@@ -14,11 +14,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -102,7 +105,7 @@ public class MonetizationFragment extends Fragment {
                         .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
                 userAdView.loadAd(adRequest);
 
-                addAdMobIdToBlogs(adMobUnitId);
+                addAdMobIdToUsers(adMobUnitId);
 
             }
         });
@@ -111,10 +114,13 @@ public class MonetizationFragment extends Fragment {
 
     }
 
-    public void addAdMobIdToBlogs(final String adMobUnitId) {
+    public void addAdMobIdToUsers(final String adMobUnitId) {
 
 
-           final CollectionReference blogDoc = db.collection("Blogs");
+
+
+
+          /* final CollectionReference blogDoc = db.collection("Blogs");
 
         blogDoc.whereEqualTo("UserId", userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -123,6 +129,7 @@ public class MonetizationFragment extends Fragment {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         if (document.exists())
+
                             //blogModelsList.add(document.getId().toString());
                            // blogMap.put("BannerAdMobId",adMobUnitId);
                         blogDoc.document(document.getId()).update("BannerAdMobId",adMobUnitId);
@@ -134,9 +141,24 @@ public class MonetizationFragment extends Fragment {
                 }
 
             }
-        });
-        final CollectionReference blogUserDoc = db.collection("Users").document(userId).collection("Blogs");
+        });*/
+        db.collection("Users").document(userId).update("UserBannerId",adMobUnitId)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully updated!");
+                        Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
 
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error updating document", e);
+                    }
+                });;
+
+/*
         blogUserDoc.whereEqualTo("UserId", userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -155,19 +177,8 @@ public class MonetizationFragment extends Fragment {
                 }
 
             }
-        });
-
-
-
+        });*/
         }
-
-
-
-        //Query blogDoc = db.collection("Blogs").whereEqualTo("","");
-
-
-
-
 
     public void initializeViews() {
         adMobAdUnitIdEdit = (EditText) getView().findViewById(R.id.admob_ad_unit_id);

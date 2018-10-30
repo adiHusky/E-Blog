@@ -2,13 +2,43 @@ package in.org.eonline.eblog.Models;
 
 public class BlogModel {
     public String blogHeader;
-    public String blogContent;
+    public String blogContent1;
+    public String blogContent2;
+    public String imageView1;
+    public String imageView2;
     public String blogFooter;
     public String blogLikes;
     public String blogUser;
     public String blogCategory;
     public String blogId;
     public String BannerAdMobId;
+    public String UserImageUrl;
+    public String UserBlogImage1Url;
+    public String UserBlogImage2Url;
+
+    public String getUserBlogImage1Url() {
+        return UserBlogImage1Url;
+    }
+
+    public void setUserBlogImage1Url(String userBlogImage1Url) {
+        UserBlogImage1Url = userBlogImage1Url;
+    }
+
+    public String getUserBlogImage2Url() {
+        return UserBlogImage2Url;
+    }
+
+    public void setUserBlogImage2Url(String userBlogImage2Url) {
+        UserBlogImage2Url = userBlogImage2Url;
+    }
+
+    public String getUserImageUrl() {
+        return UserImageUrl;
+    }
+
+    public void setUserImageUrl(String userImageUrl) {
+        UserImageUrl = userImageUrl;
+    }
 
     public String getBannerAdMobId() {
         return BannerAdMobId;
@@ -36,12 +66,20 @@ public class BlogModel {
         this.blogCategory = blogCategory;
     }
 
-    public String getBlogContent() {
-        return blogContent;
+    public String getBlogContent1() {
+        return blogContent1;
     }
 
-    public void setBlogContent(String blogContent) {
-        this.blogContent = blogContent;
+    public void setBlogContent1(String blogContent1) {
+        this.blogContent1 = blogContent1;
+    }
+
+    public String getBlogContent2() {
+        return blogContent2;
+    }
+
+    public void setBlogContent2(String blogContent2) {
+        this.blogContent2 = blogContent2;
     }
 
     public String getBlogFooter() {

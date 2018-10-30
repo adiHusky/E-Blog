@@ -4,6 +4,7 @@ package in.org.eonline.eblog.Fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,16 +19,23 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.io.Console;
@@ -51,7 +59,10 @@ import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
 public class CreateNewBlogFragment extends Fragment  {
     FirebaseFirestore db;
     private EditText blogHeaderEdit;
-    private EditText blogContentEdit;
+    private EditText blogContentEdit1;
+    private EditText blogContentEdit2;
+    private ImageView blogImageView1;
+    private ImageView blogImageView2;
     private EditText blogFooterEdit;
     //private AdView mAdView;
     //private EditText bannerAdIdEdit;
@@ -102,17 +113,19 @@ public class CreateNewBlogFragment extends Fragment  {
         setSpinner();
 
 
+
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setBlogModelAndMap();
-                addData();
+                getUserBannerIdAndUserImageUrl();
+              //  getUserImageUrl();
+
             }
         });
     }
 
     public void addBlogToSQLite() {
-        Boolean blogIdInserted =  sqliteDatabaseHelper.insertBlogDataInSQLite(blogId,blogmodel.getBlogHeader(),blogmodel.getBlogContent(),blogmodel.getBlogFooter());
+        Boolean blogIdInserted =  sqliteDatabaseHelper.insertBlogDataInSQLite(blogId,blogmodel.getBlogHeader(),blogmodel.getBlogContent1(),blogmodel.getBlogFooter());
         if (blogIdInserted) {
             Toast.makeText(getContext(), "BlogId inserted properly in SQLite", Toast.LENGTH_SHORT).show();
         } else {
@@ -152,12 +165,72 @@ public class CreateNewBlogFragment extends Fragment  {
 
     public void initializeViews() {
         blogHeaderEdit = (EditText) getView().findViewById(R.id.blog_header);
-        blogContentEdit = (EditText) getView().findViewById(R.id.blog_content);
+        blogContentEdit1 = (EditText) getView().findViewById(R.id.blog_content1);
+        blogContentEdit2 = (EditText) getView().findViewById(R.id.blog_content2);
+        blogImageView1 = (ImageView) getView().findViewById(R.id.blog_image_1);
+        blogImageView2= (ImageView) getView().findViewById(R.id.blog_image_2);
         blogFooterEdit = (EditText) getView().findViewById(R.id.blog_footer);
         //mAdView = (AdView) getView().findViewById(R.id.adView_user_ad);
         submitButton = (Button) getView().findViewById(R.id.submit_blog_button);
         //bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
         spinner = (Spinner) getView().findViewById(R.id.spinner_category);
+    }
+    public void getUserBannerIdAndUserImageUrl(){
+        DocumentReference docRef = db.collection("Users").document(userId);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                      blogmodel.setBannerAdMobId(document.get("UserBannerId").toString());
+                      blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
+                      if(blogmodel.getBannerAdMobId()!=null && blogmodel.getUserImageUrl()!=null ) {
+                          setBlogModelAndMap();
+                          addData();
+                      }else{
+                          Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                      }
+                       // Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d(TAG, "No such document");
+                        Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
+    }
+
+    public void getUserImageUrl(){
+
+       DocumentReference docRef = db.collection("Users").document(userId);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
+                        if(blogmodel.getUserImageUrl()!=null) {
+                            setBlogModelAndMap();
+                            addData();
+                        }else{
+                            Toast.makeText(getActivity(), "Issue in Image loading", Toast.LENGTH_LONG).show();
+                        }
+                        // Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d(TAG, "No such document");
+                        Toast.makeText(getActivity(), "Issue in Image loading", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
     }
 
     public void setSpinner() {
@@ -193,16 +266,26 @@ public class CreateNewBlogFragment extends Fragment  {
     public void setBlogModelAndMap(){
 
         blogmodel.setBlogHeader(blogHeaderEdit.getText().toString());
-        blogmodel.setBlogContent(blogContentEdit.getText().toString());
+        blogmodel.setBlogContent1(blogContentEdit1.getText().toString());
+        blogmodel.setBlogContent2(blogContentEdit2.getText().toString());
         blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
         blogmodel.setBlogLikes("0");
         blogmodel.setBlogUser("Aditya Kamat");
+        blogmodel.setUserBlogImage1Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fadikamat80827130040?alt=media&token=02cebd83-8869-4f29-9016-5cd97f22c878");
+        blogmodel.setUserBlogImage2Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fanantjadhav.8355%40gmail.com?alt=media&token=b5c9812c-0cc9-452f-aab5-82a27eaac9c1");
         blogMap.put("BlogHeader",blogmodel.getBlogHeader());
-        blogMap.put("BlogContent",blogmodel.getBlogContent());
+        blogMap.put("BlogContent1",blogmodel.getBlogContent1());
+        blogMap.put("BlogContent2",blogmodel.getBlogContent2());
         blogMap.put("BlogFooter", blogmodel.getBlogFooter());
         blogMap.put("BlogCategory",item);
         blogMap.put("UserId",userId);
         blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
+        blogMap.put("BlogUserBannerId",blogmodel.getBannerAdMobId());
+        blogMap.put("BlogUserImageUrl",blogmodel.getUserImageUrl());
+        blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
+        blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+
+
 
         // creates blog Id
         String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );

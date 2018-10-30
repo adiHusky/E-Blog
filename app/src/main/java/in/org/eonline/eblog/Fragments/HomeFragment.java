@@ -152,12 +152,15 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
         blogModel = new BlogModel();
         blogModel.setBlogHeader(doc.getString("BlogHeader"));
         blogModel.setBlogFooter(doc.getString("BlogFooter"));
-        blogModel.setBlogContent(doc.getString("BlogContent"));
+        blogModel.setBlogContent1(doc.getString("BlogContent1"));
+        blogModel.setBlogContent2(doc.getString("BlogContent2"));
         blogModel.setBlogLikes(doc.getString("BlogLikes"));
         blogModel.setBlogUser(doc.getString("BlogUser"));
         blogModel.setBlogCategory(doc.getString("BlogCategory"));
         blogModel.setBlogId(doc.getString("BlogId"));
-        blogModel.setBannerAdMobId(doc.getString("BannerAdMobId"));
+        blogModel.setBannerAdMobId(doc.getString("BlogUserBannerId"));
+        blogModel.setUserBlogImage1Url(doc.getString("BlogImage1Url"));
+        blogModel.setUserBlogImage2Url(doc.getString("BlogImage2Url"));
 
         blogModelsList.add(blogModel);
         // setPopularBlogsRecyclerView();

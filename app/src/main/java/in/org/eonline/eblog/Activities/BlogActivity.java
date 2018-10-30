@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -55,12 +56,15 @@ import static in.org.eonline.eblog.Fragments.YourBlogsFragment.MyPREFERENCES;
 public class BlogActivity extends AppCompatActivity {
 
     private TextView blogHeader;
-    private TextView blogContent;
+    private TextView blogContent1;
+    private TextView blogContent2;
     private TextView blogFooter;
     private TextView blogCategory;
     private TextView blogLikes;
     private String bannerId;
     private ImageView userLikesButton;
+    private ImageView blogImageView1;
+    private ImageView blogImageView2;
     private String blogId;
     FirebaseFirestore db;
     Map<String, String> userReadBlogMap = new HashMap<>();
@@ -88,15 +92,20 @@ public class BlogActivity extends AppCompatActivity {
 
         if (getIntent().hasExtra("blog")) {
             blogModel = new Gson().fromJson(getIntent().getStringExtra("blog"), BlogModel.class);
-
-
             blogHeader.setText(blogModel.getBlogHeader());
-            blogContent.setText(blogModel.getBlogContent());
+            blogContent1.setText(blogModel.getBlogContent1());
+            blogContent2.setText(blogModel.getBlogContent2());
             blogFooter.setText(blogModel.getBlogFooter());
             blogCategory.setText(blogModel.getBlogCategory());
             blogId = blogModel.getBlogId();
             blogLikes.setText(blogModel.getBlogLikes() + "Likes");
             bannerId = blogModel.getBannerAdMobId();
+            Glide.with(BlogActivity.this)
+                    .load(blogModel.getUserBlogImage1Url())
+                    .into(blogImageView1);
+            Glide.with(BlogActivity.this)
+                    .load(blogModel.getUserBlogImage2Url())
+                    .into(blogImageView2);
             CheckLikes(blogModel);
             userIdBlog=blogId.split("\\_");
             if (bannerId != null) {
@@ -150,12 +159,15 @@ public class BlogActivity extends AppCompatActivity {
 
     public void InitializeViews() {
         blogHeader = findViewById(R.id.user_blog_header_text);
-        blogContent = findViewById(R.id.user_blog_content_text);
+        blogContent1 = findViewById(R.id.user_blog_content_text1);
+        blogContent2 = findViewById(R.id.user_blog_content_text2);
         blogFooter = findViewById(R.id.user_blog_footer_text);
         blogCategory = findViewById(R.id.user_blog_category);
         blogLikes = findViewById(R.id.user_blog_likes);
         userLikesButton = (ImageView) findViewById(R.id.user_blog_button);
         frameLayout = (FrameLayout) findViewById(R.id.content_frame);
+        blogImageView1= (ImageView) findViewById(R.id.blog_image_activity_1);
+        blogImageView2= (ImageView) findViewById(R.id.blog_image_activity_2);
 
     }
 

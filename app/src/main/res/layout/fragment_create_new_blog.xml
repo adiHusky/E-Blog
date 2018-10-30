@@ -41,15 +41,49 @@
         android:layout_marginEnd="@dimen/_10sdp"
         android:hint="What would you like to name your Blog? "
         android:textSize="@dimen/_15sdp" />
+    <ImageView
+        android:id="@+id/blog_image_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:ems="15"
+        android:maxLines="1"
+        android:maxLength="50"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:hint="What would you like to name your Blog? "
+        android:textSize="@dimen/_15sdp" />
 
     <EditText
-        android:id="@+id/blog_content"
+        android:id="@+id/blog_content1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_10sdp"
         android:layout_marginEnd="@dimen/_10sdp"
         android:maxLines="5"
-        android:maxLength="1000"
+        android:lines="5"
+        android:ems="15"
+        android:hint="Enter the content of Blog"
+        android:textSize="@dimen/_15sdp" />
+    <ImageView
+        android:id="@+id/blog_image_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:ems="15"
+        android:maxLines="1"
+        android:maxLength="50"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:hint="What would you like to name your Blog? "
+        android:textSize="@dimen/_15sdp" />
+    <EditText
+        android:id="@+id/blog_content2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:maxLines="5"
         android:lines="5"
         android:ems="15"
         android:hint="Enter the content of Blog"
