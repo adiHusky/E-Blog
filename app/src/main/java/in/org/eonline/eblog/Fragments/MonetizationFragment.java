@@ -98,7 +98,7 @@ public class MonetizationFragment extends Fragment {
                 userAdView.setAdSize(AdSize.BANNER);
                 userAdView.setAdUnitId(adMobUnitId);
 
-                ((RelativeLayout)adContainer).addView(userAdView);
+                //((RelativeLayout)adContainer).addView(userAdView);
 
                 AdRequest adRequest = new AdRequest.Builder()
                         .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)

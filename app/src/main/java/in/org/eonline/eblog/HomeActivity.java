@@ -26,12 +26,14 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import in.org.eonline.eblog.Activities.Login;
 import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
 import in.org.eonline.eblog.Fragments.HomeFragment;
 import in.org.eonline.eblog.Fragments.MonetizationFragment;
@@ -167,7 +169,9 @@ public class HomeActivity extends AppCompatActivity
             MyProfileFragment myProfileFragment = new MyProfileFragment();
             openFragment(myProfileFragment);
         } else if (id == R.id.nav_logout) {
-            //TODO
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(HomeActivity.this, Login.class);
+            startActivity(intent);
         } else if (id == R.id.nav_about_us) {
             //TODO
         } else if (id == R.id.nav_tc) {

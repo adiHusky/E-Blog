@@ -182,7 +182,7 @@ public class CreateNewBlogFragment extends Fragment  {
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
+                    if (document.exists()) {  //ToDo: this is wrong condition, need to change
                       blogmodel.setBannerAdMobId(document.get("UserBannerId").toString());
                       blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
                       if(blogmodel.getBannerAdMobId()!=null && blogmodel.getUserImageUrl()!=null ) {
@@ -270,7 +270,7 @@ public class CreateNewBlogFragment extends Fragment  {
         blogmodel.setBlogContent2(blogContentEdit2.getText().toString());
         blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
         blogmodel.setBlogLikes("0");
-        blogmodel.setBlogUser("Aditya Kamat");
+        blogmodel.setBlogUser("Aditya Kamat");  // Todo: why this is hardcoded?
         blogmodel.setUserBlogImage1Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fadikamat80827130040?alt=media&token=02cebd83-8869-4f29-9016-5cd97f22c878");
         blogmodel.setUserBlogImage2Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fanantjadhav.8355%40gmail.com?alt=media&token=b5c9812c-0cc9-452f-aab5-82a27eaac9c1");
         blogMap.put("BlogHeader",blogmodel.getBlogHeader());
