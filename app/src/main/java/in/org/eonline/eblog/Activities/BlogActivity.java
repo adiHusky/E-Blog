@@ -1,6 +1,7 @@
 package in.org.eonline.eblog.Activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -45,7 +46,10 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import in.org.eonline.eblog.Fragments.HomeFragment;
+import in.org.eonline.eblog.Fragments.MyProfileFragment;
 import in.org.eonline.eblog.Fragments.TaskFragment;
+import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
@@ -54,7 +58,6 @@ import static android.content.ContentValues.TAG;
 import static in.org.eonline.eblog.Fragments.YourBlogsFragment.MyPREFERENCES;
 
 public class BlogActivity extends AppCompatActivity {
-
     private TextView blogHeader;
     private TextView blogContent1;
     private TextView blogContent2;
@@ -83,13 +86,10 @@ public class BlogActivity extends AppCompatActivity {
         //To make activity Full Screen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_blog);
-
         InitializeViews();
-
         db = FirebaseFirestore.getInstance();
         sharedpreferences = this.getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated", "AdityaKamat75066406850");
-
         if (getIntent().hasExtra("blog")) {
             blogModel = new Gson().fromJson(getIntent().getStringExtra("blog"), BlogModel.class);
             blogHeader.setText(blogModel.getBlogHeader());
@@ -110,52 +110,17 @@ public class BlogActivity extends AppCompatActivity {
             userIdBlog=blogId.split("\\_");
             if (bannerId != null) {
                 View adContainer = findViewById(R.id.blogAdMobView);
-
                 AdView userAdView = new AdView(this);
-
                 userAdView.setAdSize(AdSize.BANNER);
                 userAdView.setAdUnitId(bannerId);
-
                 ((RelativeLayout) adContainer).addView(userAdView);
-
                 AdRequest adRequest = new AdRequest.Builder()
                         .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                         .addTestDevice("F6ECB8AECEA2A45447ADE1C65B01711B").build();
-
                 userAdView.loadAd(adRequest);
             }
-
-
-         /*   DocumentReference blogRef =db.collection("Users").document(userId).collection("UserReadBlogs").document(blogId);
-            blogRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                    String doc= documentSnapshot.getData().get("LikeStatus").toString();
-                    if(doc.equals("true"))
-                    {
-                        userLikesButton.setText("LIKED");
-                        likeButtonValue = "LIKED";
-
-                    }
-                    else
-                    if(documentSnapshot.getString("LikeStatus")=="false")
-                    {
-                        userLikesButton.setText("UNLIKED");
-                        likeButtonValue = "UNLIKED";
-                    }
-                    else
-                    if(e!=null)
-                    {
-                        userLikesButton.setText("LIKE");
-                        likeButtonValue="LIKE";
-                    }
-
-                }
-                });*/
-
         }
     }
-
 
     public void InitializeViews() {
         blogHeader = findViewById(R.id.user_blog_header_text);
@@ -168,13 +133,10 @@ public class BlogActivity extends AppCompatActivity {
         frameLayout = (FrameLayout) findViewById(R.id.content_frame);
         blogImageView1= (ImageView) findViewById(R.id.blog_image_activity_1);
         blogImageView2= (ImageView) findViewById(R.id.blog_image_activity_2);
-
     }
-
 
     public void CheckLikes(final BlogModel blogModel) {
         CollectionReference blogRef = db.collection("Users").document(userId).collection("UserReadBlogs");
-
         blogRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -185,11 +147,11 @@ public class BlogActivity extends AppCompatActivity {
                             String docid = document.getId();
                             String likeStatus = document.getString("LikeStatus");
                             if (docid.equals(blogId)) {
-                                if (likeStatus.equals("true")) {
+                                if (likeStatus.toString().equals("true")) {
                                     // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.like));
                                     userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_24dp);
                                     likeButtonValue = "LIKED";
-
+                                    break;
                                 } else {
                                     // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
                                     userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
@@ -207,7 +169,6 @@ public class BlogActivity extends AppCompatActivity {
                         likeButtonValue = "LIKE";
                     }
                 }
-
                 task.addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
@@ -220,8 +181,6 @@ public class BlogActivity extends AppCompatActivity {
                 });
             }
         });
-
-
 
         userLikesButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -246,14 +205,11 @@ public class BlogActivity extends AppCompatActivity {
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-
-
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
-
                                 }
                             });
                     DocumentReference userBlog  = db.collection("Users").document(userIdBlog[0]).collection("Blogs").document(blogId);
@@ -284,8 +240,6 @@ public class BlogActivity extends AppCompatActivity {
                                     Log.w(TAG, "Error updating document", e);
                                 }
                             });
-
-
                 }
             }
 
@@ -345,20 +299,22 @@ public class BlogActivity extends AppCompatActivity {
                     }
                 });
     }
-
-   /* @Override
+   @Override
     public void onBackPressed() {
-        openFragment();
-        super.onBackPressed();
+       Intent intent = new Intent(BlogActivity.this, HomeActivity.class);
+       startActivity(intent);
+       super.onBackPressed();
     }
 
     public void openFragment() {
+        HomeFragment fragment  = new HomeFragment();
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.
-        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.replace(R.id.content_frame, fragment);
+        //fragmentTransaction.detach(fragment);
+        //fragmentTransaction.attach(fragment);
         fragmentTransaction.commit();
-    }*/
+    }
 
 }
 

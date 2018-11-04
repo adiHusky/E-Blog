@@ -36,7 +36,9 @@ import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
 import in.org.eonline.eblog.Fragments.HomeFragment;
 import in.org.eonline.eblog.Fragments.MonetizationFragment;
 import in.org.eonline.eblog.Fragments.MyProfileFragment;
+import in.org.eonline.eblog.Fragments.ReportBugFragment;
 import in.org.eonline.eblog.Fragments.TaskFragment;
+import in.org.eonline.eblog.Fragments.TermsConditionsFragment;
 import in.org.eonline.eblog.Fragments.YourBlogsFragment;
 
 public class HomeActivity extends AppCompatActivity
@@ -169,7 +171,11 @@ public class HomeActivity extends AppCompatActivity
         } else if (id == R.id.nav_about_us) {
             //TODO
         } else if (id == R.id.nav_tc) {
-            //TODO
+            TermsConditionsFragment termsConditionsFragment = new TermsConditionsFragment();
+            openFragment(termsConditionsFragment);
+        } else if (id == R.id.nav_report_bug){
+            ReportBugFragment reportBugFragment = new ReportBugFragment();
+            openFragment(reportBugFragment);
         }
 
         drawer.closeDrawer(GravityCompat.START);
