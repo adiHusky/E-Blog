@@ -2,12 +2,14 @@ package in.org.eonline.eblog.Fragments;
 
 
 import android.app.AlertDialog;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -62,6 +64,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
 
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
         db= FirebaseFirestore.getInstance();
         initializeViews();
         button.setOnClickListener(new View.OnClickListener() {
@@ -198,5 +201,6 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         String blogmodel = (new Gson()).toJson(model);
         intent.putExtra("blog", blogmodel);
         getActivity().startActivity(intent);
+
     }
 }

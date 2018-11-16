@@ -4,9 +4,11 @@ package in.org.eonline.eblog.Fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -21,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -51,6 +54,8 @@ import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
 
 import static android.content.ContentValues.TAG;
+import static android.graphics.Color.RED;
+import static android.graphics.Color.blue;
 import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
 
 /**
@@ -63,17 +68,20 @@ public class CreateNewBlogFragment extends Fragment  {
     private EditText blogContentEdit2;
     private ImageView blogImageView1;
     private ImageView blogImageView2;
+    private TextView errorHeader;
+    private TextView errorContent1;
+    private TextView errorContent2;
+    private TextView errorFooter;
+    private ImageView errorImage;
+    private ImageView errorImage1;
+    private ImageView errorImage2;
+    private ImageView errorImage3;
     private EditText blogFooterEdit;
-    //private AdView mAdView;
-    //private EditText bannerAdIdEdit;
     private Button submitButton;
-    private String bannerAdId;
     private Spinner spinner;
     private String item;
     DatabaseHelper sqliteDatabaseHelper;
-    //private String blogId = "Aditya7506640685";
     BlogModel blogmodel = new BlogModel();
-
     UserModel userModel;
     Map<String, String> blogMap = new HashMap<>();
     private SharedPreferences sharedpreferences;
@@ -83,27 +91,19 @@ public class CreateNewBlogFragment extends Fragment  {
     private String blogIdBase;
     private SharedPreferences.Editor editor;
 
-
     public CreateNewBlogFragment() {
-        // Required empty public constructor
+
     }
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_create_new_blog, container, false);
-
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         initializeViews();
-
         sqliteDatabaseHelper = new DatabaseHelper(getActivity());
         db = FirebaseFirestore.getInstance();
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
@@ -111,15 +111,11 @@ public class CreateNewBlogFragment extends Fragment  {
         blogIdBase = userId + "_0";
         blogId = sharedpreferences.getString("blogId_new",blogIdBase);
         setSpinner();
-
-
-
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                setVisibilityGone();
                 getUserBannerIdAndUserImageUrl();
-              //  getUserImageUrl();
-
             }
         });
     }
@@ -170,10 +166,29 @@ public class CreateNewBlogFragment extends Fragment  {
         blogImageView1 = (ImageView) getView().findViewById(R.id.blog_image_1);
         blogImageView2= (ImageView) getView().findViewById(R.id.blog_image_2);
         blogFooterEdit = (EditText) getView().findViewById(R.id.blog_footer);
-        //mAdView = (AdView) getView().findViewById(R.id.adView_user_ad);
         submitButton = (Button) getView().findViewById(R.id.submit_blog_button);
         //bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
         spinner = (Spinner) getView().findViewById(R.id.spinner_category);
+        errorHeader = (TextView) getView().findViewById(R.id.error_header);
+        errorContent1=(TextView) getView().findViewById(R.id.error_content1);
+        errorContent2=(TextView) getView().findViewById(R.id.error_content2);
+        errorFooter=(TextView) getView().findViewById(R.id.error_footer);
+        errorImage=(ImageView) getView().findViewById(R.id.error_image);
+        errorImage1=(ImageView) getView().findViewById(R.id.error_image1);
+        errorImage2=(ImageView) getView().findViewById(R.id.error_image2);
+        errorImage3=(ImageView) getView().findViewById(R.id.error_image3);
+        setVisibilityGone();
+    }
+    public void setVisibilityGone(){
+        errorImage.setVisibility(View.GONE);
+        errorImage.setVisibility(View.GONE);
+        errorImage1.setVisibility(View.GONE);
+        errorImage2.setVisibility(View.GONE);
+        errorImage3.setVisibility(View.GONE);
+        errorHeader.setVisibility(View.GONE);
+        errorContent1.setVisibility(View.GONE);
+        errorContent2.setVisibility(View.GONE);
+        errorFooter.setVisibility(View.GONE);
     }
     public void getUserBannerIdAndUserImageUrl(){
         DocumentReference docRef = db.collection("Users").document(userId);
@@ -183,11 +198,16 @@ public class CreateNewBlogFragment extends Fragment  {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {  //ToDo: this is wrong condition, need to change
-                      blogmodel.setBannerAdMobId(document.get("UserBannerId").toString());
-                      blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
+                        try {
+                            blogmodel.setBannerAdMobId(document.get("UserBannerId").toString());
+                        }
+                        catch(NullPointerException e) {
+                            Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                        }
+                        blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
                       if(blogmodel.getBannerAdMobId()!=null && blogmodel.getUserImageUrl()!=null ) {
                           setBlogModelAndMap();
-                          addData();
+
                       }else{
                           Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
                       }
@@ -201,36 +221,6 @@ public class CreateNewBlogFragment extends Fragment  {
                 }
             }
         });
-
-    }
-
-    public void getUserImageUrl(){
-
-       DocumentReference docRef = db.collection("Users").document(userId);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
-                        if(blogmodel.getUserImageUrl()!=null) {
-                            setBlogModelAndMap();
-                            addData();
-                        }else{
-                            Toast.makeText(getActivity(), "Issue in Image loading", Toast.LENGTH_LONG).show();
-                        }
-                        // Log.d(TAG, "DocumentSnapshot data: " + document.getData());
-                    } else {
-                        Log.d(TAG, "No such document");
-                        Toast.makeText(getActivity(), "Issue in Image loading", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Log.d(TAG, "get failed with ", task.getException());
-                }
-            }
-        });
-
     }
 
     public void setSpinner() {
@@ -256,10 +246,8 @@ public class CreateNewBlogFragment extends Fragment  {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 item = parent.getItemAtPosition(position).toString();
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
     }
@@ -270,36 +258,59 @@ public class CreateNewBlogFragment extends Fragment  {
         blogmodel.setBlogContent2(blogContentEdit2.getText().toString());
         blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
         blogmodel.setBlogLikes("0");
-        blogmodel.setBlogUser("Aditya Kamat");  // Todo: why this is hardcoded?
         blogmodel.setUserBlogImage1Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fadikamat80827130040?alt=media&token=02cebd83-8869-4f29-9016-5cd97f22c878");
         blogmodel.setUserBlogImage2Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fanantjadhav.8355%40gmail.com?alt=media&token=b5c9812c-0cc9-452f-aab5-82a27eaac9c1");
-        blogMap.put("BlogHeader",blogmodel.getBlogHeader());
-        blogMap.put("BlogContent1",blogmodel.getBlogContent1());
-        blogMap.put("BlogContent2",blogmodel.getBlogContent2());
-        blogMap.put("BlogFooter", blogmodel.getBlogFooter());
-        blogMap.put("BlogCategory",item);
-        blogMap.put("UserId",userId);
-        blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
-        blogMap.put("BlogUserBannerId",blogmodel.getBannerAdMobId());
-        blogMap.put("BlogUserImageUrl",blogmodel.getUserImageUrl());
-        blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
-        blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+        validateData(blogmodel);
+    }
 
+    public void validateData(BlogModel blogModel){
 
-
-        // creates blog Id
-        String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );
-        int integer = Integer.parseInt(localblogId)+ 1;
-        localblogId = Integer.toString(integer);
-        blogId = blogId.substring(0, blogId.length() - 1);
-        blogId = blogId + localblogId;
-        blogmodel.setBlogId(blogId);
-        blogMap.put("BlogId",blogmodel.getBlogId());
-        editor = sharedpreferences.edit();
-        editor.putString("blogId_new",blogId);
-        editor.apply();
+      if(blogmodel.getBlogHeader().toString().equals("")||blogModel.getBlogHeader().toString().length()<=7  ) {
+          errorHeader.setVisibility(View.VISIBLE);
+          errorImage.setVisibility(View.VISIBLE);
+      }
+      if(blogModel.getBlogContent1().toString().equals("")||blogModel.getBlogContent1().toString().length()<=100) {
+          errorContent1.setVisibility(View.VISIBLE);
+          errorImage1.setVisibility(View.VISIBLE);
+      }
+      if(blogModel.getBlogContent2().toString().equals("")||blogModel.getBlogContent2().toString().length()<=100) {
+          errorContent2.setVisibility(View.VISIBLE);
+          errorImage2.setVisibility(View.VISIBLE);
+      }
+      if(blogModel.getBlogFooter().toString().equals("") ) {
+                      errorFooter.setVisibility(View.VISIBLE);
+                      errorImage3.setVisibility(View.VISIBLE);
+      } else {
+          blogMap.put("BlogHeader",blogmodel.getBlogHeader());
+          blogMap.put("BlogContent1",blogmodel.getBlogContent1());
+          blogMap.put("BlogContent2",blogmodel.getBlogContent2());
+          blogMap.put("BlogFooter", blogmodel.getBlogFooter());
+          blogMap.put("BlogCategory",item);
+          blogMap.put("UserId",userId);
+          blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
+          blogMap.put("BlogUserBannerId",blogmodel.getBannerAdMobId());
+          blogMap.put("BlogUserImageUrl",blogmodel.getUserImageUrl());
+          blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
+          blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+          String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );
+          int integer = Integer.parseInt(localblogId)+ 1;
+          localblogId = Integer.toString(integer);
+          blogId = blogId.substring(0, blogId.length() - 1);
+          blogId = blogId + localblogId;
+          blogmodel.setBlogId(blogId);
+          blogMap.put("BlogId",blogmodel.getBlogId());
+          editor = sharedpreferences.edit();
+          editor.putString("blogId_new",blogId);
+          editor.apply();
+          addData();
+      }
     }
 }
+
+
+
+
+
 
 
 

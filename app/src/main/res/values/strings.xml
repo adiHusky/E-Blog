@@ -18,4 +18,7 @@
     <string name="dialog_fire_missiles">Fire it Man</string>
     <string name="fire">fire</string>
     <string name="cancel">cancel</string>
+
+    <!-- OAuth 2.0 Web Application type client Id -->
+    <string name="client_id">208525305220-hq4b7qa997di3qlbj3ol7dp8teo058jq.apps.googleusercontent.com</string>
 </resources>

@@ -303,17 +303,17 @@ public class BlogActivity extends AppCompatActivity {
     public void onBackPressed() {
        Intent intent = new Intent(BlogActivity.this, HomeActivity.class);
        startActivity(intent);
+      // openFragment();
        super.onBackPressed();
     }
 
     public void openFragment() {
-        HomeFragment fragment  = new HomeFragment();
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.content_frame, fragment);
-        //fragmentTransaction.detach(fragment);
-        //fragmentTransaction.attach(fragment);
-        fragmentTransaction.commit();
+        Fragment frg=new HomeFragment();
+       // frg = getSupportFragmentManager().findFragmentByTag("nav_home");
+        final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
     }
 
 }
