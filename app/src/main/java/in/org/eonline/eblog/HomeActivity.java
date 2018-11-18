@@ -62,7 +62,7 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
 
         initializeViews();
-        openFragment(new HomeFragment());
+        openFragment(new HomeFragment(), "nav_home");
         //getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, new HomeFragment(), "EXPLORE").commit();
 
         db = FirebaseFirestore.getInstance();
@@ -151,25 +151,32 @@ public class HomeActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
+        String fragmentTag;
         if (id == R.id.nav_home) {
             HomeFragment homeFragment = new HomeFragment();
-            openFragment(homeFragment);
+            fragmentTag="nav_home";
+            openFragment(homeFragment,fragmentTag);
+
         } else if (id == R.id.nav_new_blog) {
             CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
-            openFragment(createNewBlogFragment);
+            fragmentTag="nav_home";
+            openFragment(createNewBlogFragment,fragmentTag);
         } else if (id == R.id.nav_blog_history) {
             YourBlogsFragment yourBlogsFragment = new YourBlogsFragment();
-            openFragment(yourBlogsFragment);
+            fragmentTag="nav_blog_history";
+            openFragment(yourBlogsFragment,fragmentTag);
         } else if (id == R.id.nav_monetize) {
             MonetizationFragment monetizationFragment = new MonetizationFragment();
-            openFragment(monetizationFragment);
+            fragmentTag="nav_monetize";
+            openFragment(monetizationFragment,fragmentTag);
         } else if (id == R.id.nav_task) {
             TaskFragment taskFragment = new TaskFragment();
-            openFragment(taskFragment);
+            fragmentTag="nav_task";
+            openFragment(taskFragment,fragmentTag);
         } else if (id == R.id.nav_profile) {
             MyProfileFragment myProfileFragment = new MyProfileFragment();
-            openFragment(myProfileFragment);
+            fragmentTag="nav_profile";
+            openFragment(myProfileFragment,fragmentTag);
         } else if (id == R.id.nav_logout) {
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(HomeActivity.this, Login.class);
@@ -178,21 +185,23 @@ public class HomeActivity extends AppCompatActivity
             //TODO
         } else if (id == R.id.nav_tc) {
             TermsConditionsFragment termsConditionsFragment = new TermsConditionsFragment();
-            openFragment(termsConditionsFragment);
+            fragmentTag="nav_tc";
+            openFragment(termsConditionsFragment,fragmentTag);
         } else if (id == R.id.nav_report_bug){
             ReportBugFragment reportBugFragment = new ReportBugFragment();
-            openFragment(reportBugFragment);
+            fragmentTag="nav_report_bug";
+            openFragment(reportBugFragment,fragmentTag);
         }
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    public void openFragment(Fragment fragment) {
+    public void openFragment(Fragment fragment, String fragmentTag) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.content_frame, fragment);
-        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.replace(R.id.content_frame, fragment,fragmentTag);
+        fragmentTransaction.addToBackStack(fragmentTag);
         fragmentTransaction.commit();
     }
 

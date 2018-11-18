@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -43,6 +44,15 @@ public class ReportBugFragment extends Fragment {
     Map<String, String> bugMap = new HashMap<>();
     private SharedPreferences sharedpreferences;
     public static final String MyPREFERENCES = "MyPrefs_new" ;
+    private TextView errorName;
+    private TextView errorBrand;
+    private TextView errorOSVersion;
+    private TextView errorMessage;
+    private ImageView errorImage1;
+    private ImageView errorImage2;
+    private ImageView errorImage3;
+    private ImageView errorImage4;
+
 
     public ReportBugFragment() {
         // Required empty public constructor
@@ -64,6 +74,7 @@ public class ReportBugFragment extends Fragment {
         submitBug.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                setVisibilityGone();
                 setBugUserMap();
             }
         });
@@ -75,6 +86,27 @@ public class ReportBugFragment extends Fragment {
         bugOSVersion = (EditText) getView().findViewById(R.id.reporter_OS_version);
         bugMessage= (EditText) getView().findViewById(R.id.reporter_message);
         submitBug = (Button) getView().findViewById(R.id.submit_report_bug);
+        errorBrand= (TextView) getView().findViewById(R.id.error_brand);
+        errorName=(TextView) getView().findViewById(R.id.error_name);
+        errorOSVersion=(TextView) getView().findViewById(R.id.error_version);
+        errorMessage=(TextView) getView().findViewById(R.id.error_message);
+        errorImage1=(ImageView) getView().findViewById(R.id.error1_image);
+        errorImage2=(ImageView) getView().findViewById(R.id.error2_image);
+        errorImage3=(ImageView) getView().findViewById(R.id.error3_image);
+        errorImage4=(ImageView) getView().findViewById(R.id.error4_image);
+        setVisibilityGone();
+    }
+
+    public void setVisibilityGone(){
+        errorMessage.setVisibility(View.GONE);
+        errorOSVersion.setVisibility(View.GONE);
+        errorName.setVisibility(View.GONE);
+        errorBrand.setVisibility(View.GONE);
+        errorImage1.setVisibility(View.GONE);
+        errorImage2.setVisibility(View.GONE);
+        errorImage4.setVisibility(View.GONE);
+        errorImage3.setVisibility(View.GONE);
+
     }
 
   public void setBugUserMap(){
@@ -82,13 +114,37 @@ public class ReportBugFragment extends Fragment {
        bugModel.setBugBrandMode1(bugBrandMode1.getText().toString());
        bugModel.setBugOSVersion(bugOSVersion.getText().toString());
        bugModel.setBugMessage(bugMessage.getText().toString());
-       bugMap.put("BugUserName",bugModel.getBugUserName());
-       bugMap.put("BugBrandModel",bugModel.getBugBrandMode1());
-       bugMap.put("BugOSVersion",bugModel.getBugOSVersion());
-       bugMap.put("BugMessage",bugModel.getBugMessage());
-       addBugDataToFirebase();
+      validateData();
   }
-
+public void validateData(){
+      if(bugModel.getBugUserName().toString().equals(""))
+      {
+          errorName.setVisibility(View.VISIBLE);
+          errorImage1.setVisibility(View.VISIBLE);
+      }
+      if (bugModel.getBugBrandMode1().toString().equals(""))
+      {
+          errorBrand.setVisibility(View.VISIBLE);
+          errorImage2.setVisibility(View.VISIBLE);
+      }
+      if (bugModel.getBugOSVersion().toString().equals(""))
+      {
+          errorOSVersion.setVisibility(View.VISIBLE);
+          errorImage3.setVisibility(View.VISIBLE);
+      }
+      if (bugModel.getBugMessage().toString().equals(""))
+      {
+          errorMessage.setVisibility(View.VISIBLE);
+          errorImage4.setVisibility(View.VISIBLE);
+      }
+      else{
+          bugMap.put("BugUserName",bugModel.getBugUserName());
+          bugMap.put("BugBrandModel",bugModel.getBugBrandMode1());
+          bugMap.put("BugOSVersion",bugModel.getBugOSVersion());
+          bugMap.put("BugMessage",bugModel.getBugMessage());
+          addBugDataToFirebase();
+      }
+}
     public void addBugDataToFirebase(){
         db.collection("ReportedBugs").document(userId).set(bugMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {

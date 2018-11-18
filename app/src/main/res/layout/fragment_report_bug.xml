@@ -37,6 +37,28 @@
         android:layout_marginEnd="@dimen/_10sdp"
         android:hint="Name"
         android:textSize="@dimen/_15sdp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp">
+            <ImageView
+                android:id="@+id/error1_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_error_black_24dp"/>
+            <TextView
+                android:id="@+id/error_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/_1sdp"
+                android:layout_marginTop="@dimen/_1sdp"
+                android:text="Name cannot be left blank"
+                android:maxLength="200"
+                android:maxLines="3"
+                android:textColor="@color/error"
+                />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/reporter_brand_model"
@@ -50,6 +72,28 @@
             android:layout_marginEnd="@dimen/_10sdp"
             android:hint="Mobile brand and model name"
             android:textSize="@dimen/_15sdp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp">
+            <ImageView
+                android:id="@+id/error2_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_error_black_24dp"/>
+            <TextView
+                android:id="@+id/error_brand"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/_1sdp"
+                android:layout_marginTop="@dimen/_1sdp"
+                android:text="Brand name and Model cannot be left blank"
+                android:maxLength="200"
+                android:maxLines="3"
+                android:textColor="@color/error"
+                />
+        </LinearLayout>
 
         <EditText
         android:id="@+id/reporter_OS_version"
@@ -63,6 +107,28 @@
         android:layout_marginEnd="@dimen/_10sdp"
         android:hint="OS Version"
         android:textSize="@dimen/_15sdp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp">
+            <ImageView
+                android:id="@+id/error3_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_error_black_24dp"/>
+            <TextView
+                android:id="@+id/error_version"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/_1sdp"
+                android:layout_marginTop="@dimen/_1sdp"
+                android:text="OS version cannot be left blank"
+                android:maxLength="200"
+                android:maxLines="3"
+                android:textColor="@color/error"
+                />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/reporter_message"
@@ -76,6 +142,28 @@
             android:layout_marginEnd="@dimen/_10sdp"
             android:hint="Please describe your issue"
             android:textSize="@dimen/_15sdp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp">
+            <ImageView
+                android:id="@+id/error4_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_error_black_24dp"/>
+            <TextView
+                android:id="@+id/error_message"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/_1sdp"
+                android:layout_marginTop="@dimen/_1sdp"
+                android:text="Description cannot be left blank"
+                android:maxLength="200"
+                android:maxLines="3"
+                android:textColor="@color/error"
+                />
+        </LinearLayout>
 
         <Button
             android:id="@+id/submit_report_bug"
