@@ -16,6 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -48,6 +51,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
     private List<BlogModel> blogListCategorywise = new ArrayList<>();
     private int length;
     boolean[] checkedSelectedArray = new boolean[11];
+    private AdView mAdView;
 
     public TaskFragment() {
         // Required empty public constructor
@@ -71,6 +75,11 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
             }
         });
         setYourBlogsFromFirebase();
+
+        MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
+        mAdView = (AdView) getView().findViewById(R.id.tasks_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     public void initializeViews() {

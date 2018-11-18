@@ -50,11 +50,12 @@
             android:textSize="@dimen/_15sdp" />
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_100sdp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/blog_image_1"
             android:src="@drawable/photocamera"
             android:background="#d1cfcf"
+            android:padding="@dimen/_10sdp"
             android:layout_margin="@dimen/_10sdp"/>
 
         <EditText
@@ -68,11 +69,12 @@
             android:textSize="@dimen/_15sdp" />
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_100sdp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/blog_image_2"
             android:src="@drawable/photocamera"
             android:background="#d1cfcf"
+            android:padding="@dimen/_10sdp"
             android:layout_margin="@dimen/_10sdp"/>
 
         <EditText
@@ -113,6 +115,16 @@
             android:textColor="#fff"
             android:textSize="@dimen/_16sdp" />
 
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/createNewBlog_adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            ads:adSize="SMART_BANNER"
+            ads:adUnitId="ca-app-pub-7293397784162310/4406082209">
+        </com.google.android.gms.ads.AdView>
     </LinearLayout>
+
+
 
 </ScrollView>

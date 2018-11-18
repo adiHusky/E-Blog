@@ -16,6 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -56,6 +59,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
     private String userId;
     private String blogId;
     DatabaseHelper sqliteDatabaseHelper;
+    private AdView mAdView;
 
     public YourBlogsFragment() {
         // Required empty public constructor
@@ -78,6 +82,11 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         db= FirebaseFirestore.getInstance();
         InitializeViews();
         setYourBlogsFromFirebase();
+
+        MobileAds.initialize(getContext(),"ca-app-pub-7722811932766421~9001519486");
+        mAdView = (AdView) getView().findViewById(R.id.yourBlogs_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     public void setYourBlogsFromFirebase() {

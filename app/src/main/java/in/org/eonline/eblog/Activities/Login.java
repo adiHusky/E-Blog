@@ -1,12 +1,18 @@
 package in.org.eonline.eblog.Activities;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -27,6 +33,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
 public class Login extends AppCompatActivity {
 
@@ -34,6 +41,8 @@ public class Login extends AppCompatActivity {
     private FirebaseAuth mAuth;
     GoogleSignInClient mGoogleSignInClient;
     public static final int RC_SIGN_IN = 101;
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,12 +75,23 @@ public class Login extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                signIn();
+                connectivityReceiver = new ConnectivityReceiver(getApplicationContext());
+                // Initialize SDK before setContentView(Layout ID)
+                isInternetPresent = connectivityReceiver.isConnectingToInternet();
+                if (isInternetPresent) {
+                    signIn();
+                } else {
+                    showErrorDialog();
+                    //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
     private void signIn() {
+        //call this signout() function before every sign in call in order to get google login account chooser/picker
+        //mGoogleSignInClient.signOut();
+
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -128,12 +148,21 @@ public class Login extends AppCompatActivity {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         //updateUI(currentUser);
-        if(currentUser != null) {
+        if (currentUser != null) {
             Toast.makeText(Login.this, "User is already signed in...", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(Login.this, HomeActivity.class);
             startActivity(intent);
         }
     }
 
+    private void showErrorDialog(){
+        final Dialog dialog = new Dialog(Login.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        dialog.setContentView(R.layout.error_dialog);
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.show();
+    }
 
 }

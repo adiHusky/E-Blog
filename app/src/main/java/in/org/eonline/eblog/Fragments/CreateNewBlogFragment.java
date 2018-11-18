@@ -1,12 +1,21 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -26,6 +35,7 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,8 +47,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Console;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +66,7 @@ import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
 
+import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
 
@@ -58,6 +75,8 @@ import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
  */
 public class CreateNewBlogFragment extends Fragment  {
     FirebaseFirestore db;
+    StorageReference storageRef;
+    FirebaseStorage storage;
     private EditText blogHeaderEdit;
     private EditText blogContentEdit1;
     private EditText blogContentEdit2;
@@ -80,8 +99,12 @@ public class CreateNewBlogFragment extends Fragment  {
     public static final String MyPREFERENCES = "MyPrefs_new" ;
     private String userId;
     private String blogId;
-    private String blogIdBase;
-    private SharedPreferences.Editor editor;
+    public String blogIdBase;
+    public SharedPreferences.Editor editor;
+    public Uri picUri;
+    public Bitmap myBitmap1;
+    public Bitmap myBitmap2;
+    private AdView mAdView;
 
 
     public CreateNewBlogFragment() {
@@ -106,6 +129,7 @@ public class CreateNewBlogFragment extends Fragment  {
 
         sqliteDatabaseHelper = new DatabaseHelper(getActivity());
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
         blogIdBase = userId + "_0";
@@ -114,12 +138,34 @@ public class CreateNewBlogFragment extends Fragment  {
 
 
 
+        setBlogImages();
+
+
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getUserBannerIdAndUserImageUrl();
-              //  getUserImageUrl();
+               //upload blog images to firebase storage first, then get the download url of images to store in Users & Blogs collection
+               uploadBlogImagesToFirebaseStorage();
+            }
+        });
 
+        MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
+        mAdView = (AdView) getView().findViewById(R.id.createNewBlog_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+    }
+
+    public void setBlogImages() {
+        blogImageView1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(getPickImageChooserIntent(), 201);
+            }
+        });
+        blogImageView2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(getPickImageChooserIntent(), 202);
             }
         });
     }
@@ -175,6 +221,8 @@ public class CreateNewBlogFragment extends Fragment  {
         //bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
         spinner = (Spinner) getView().findViewById(R.id.spinner_category);
     }
+
+
     public void getUserBannerIdAndUserImageUrl(){
         DocumentReference docRef = db.collection("Users").document(userId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -271,8 +319,6 @@ public class CreateNewBlogFragment extends Fragment  {
         blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
         blogmodel.setBlogLikes("0");
         blogmodel.setBlogUser("Aditya Kamat");  // Todo: why this is hardcoded?
-        blogmodel.setUserBlogImage1Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fadikamat80827130040?alt=media&token=02cebd83-8869-4f29-9016-5cd97f22c878");
-        blogmodel.setUserBlogImage2Url("https://firebasestorage.googleapis.com/v0/b/eblog-88c43.appspot.com/o/Users%2Fanantjadhav.8355%40gmail.com?alt=media&token=b5c9812c-0cc9-452f-aab5-82a27eaac9c1");
         blogMap.put("BlogHeader",blogmodel.getBlogHeader());
         blogMap.put("BlogContent1",blogmodel.getBlogContent1());
         blogMap.put("BlogContent2",blogmodel.getBlogContent2());
@@ -282,22 +328,220 @@ public class CreateNewBlogFragment extends Fragment  {
         blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
         blogMap.put("BlogUserBannerId",blogmodel.getBannerAdMobId());
         blogMap.put("BlogUserImageUrl",blogmodel.getUserImageUrl());
-        blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
-        blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+    }
 
-
-
+    public String createBlogId() {
         // creates blog Id
         String  localblogId = blogId.substring(blogId.length()-1,  blogId.length() );
         int integer = Integer.parseInt(localblogId)+ 1;
         localblogId = Integer.toString(integer);
         blogId = blogId.substring(0, blogId.length() - 1);
         blogId = blogId + localblogId;
+
         blogmodel.setBlogId(blogId);
         blogMap.put("BlogId",blogmodel.getBlogId());
         editor = sharedpreferences.edit();
         editor.putString("blogId_new",blogId);
         editor.apply();
+
+        return blogId;
+    }
+
+
+    public Intent getPickImageChooserIntent() {
+
+        // Determine Uri of camera image to save.
+        Uri outputFileUri = getCaptureImageOutputUri();
+
+        List<Intent> allIntents = new ArrayList<>();
+        PackageManager packageManager = getActivity().getPackageManager();
+
+        // collect all camera intents
+        Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
+        for (ResolveInfo res : listCam) {
+            Intent intent = new Intent(captureIntent);
+            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            intent.setPackage(res.activityInfo.packageName);
+            if (outputFileUri != null) {
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+            }
+            allIntents.add(intent);
+        }
+
+        // collect all gallery intents
+        Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        galleryIntent.setType("image/*");
+        List<ResolveInfo> listGallery = packageManager.queryIntentActivities(galleryIntent, 0);
+        for (ResolveInfo res : listGallery) {
+            Intent intent = new Intent(galleryIntent);
+            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            intent.setPackage(res.activityInfo.packageName);
+            allIntents.add(intent);
+        }
+
+        // the main intent is the last in the list (fucking android) so pickup the useless one
+        Intent mainIntent = allIntents.get(allIntents.size() - 1);
+        for (Intent intent : allIntents) {
+            if (intent.getComponent().getClassName().equals("com.android.documentsui.DocumentsActivity")) {
+                mainIntent = intent;
+                break;
+            }
+        }
+        allIntents.remove(mainIntent);
+
+        // Create a chooser from the main intent
+        Intent chooserIntent = Intent.createChooser(mainIntent, "Select source");
+
+        // Add all other intents
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, allIntents.toArray(new Parcelable[allIntents.size()]));
+
+        return chooserIntent;
+    }
+
+    private Uri getCaptureImageOutputUri() {
+        Uri outputFileUri = null;
+        File getImage = getActivity().getExternalCacheDir();
+        if (getImage != null) {
+            outputFileUri = Uri.fromFile(new File(getImage.getPath(), "profile.png"));
+        }
+        return outputFileUri;
+
+        /*File photoFile = null;
+        try {
+            photoFile = createImageFile();
+        } catch (IOException ex) {
+            // Error occurred while creating the File
+            Toast.makeText(getContext(), "Error While Capturing Image", Toast.LENGTH_SHORT).show();
+        }
+        Uri outputFileUri = null;
+        if (photoFile != null) {
+            outputFileUri = FileProvider.getUriForFile(getContext(), "in.org.eonline.eblog.fileprovider", photoFile);
+        }
+        return outputFileUri; */
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Bitmap bitmap;
+        if (resultCode == RESULT_OK && requestCode == 201) {
+            if (getPickImageResultUri(data) != null) {
+                picUri = getPickImageResultUri(data);
+                try {
+                    myBitmap1 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
+                    //myBitmap = rotateImageIfRequired(myBitmap, picUri);
+                    //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
+                    blogImageView1.setImageBitmap(myBitmap1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Unable to set Image", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                bitmap = (Bitmap) data.getExtras().get("data");
+                myBitmap1 = bitmap;
+                blogImageView1.setImageBitmap(myBitmap1);
+            }
+        }
+
+        if (resultCode == RESULT_OK && requestCode == 202) {
+            if (getPickImageResultUri(data) != null) {
+                picUri = getPickImageResultUri(data);
+                try {
+                    myBitmap2 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
+                    //myBitmap = rotateImageIfRequired(myBitmap, picUri);
+                    //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
+                    blogImageView2.setImageBitmap(myBitmap2);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Unable to set Image", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                bitmap = (Bitmap) data.getExtras().get("data");
+                myBitmap2 = bitmap;
+                blogImageView2.setImageBitmap(myBitmap2);
+            }
+        }
+    }
+
+    public Uri getPickImageResultUri(Intent data) {
+        boolean isCamera = true;
+        if (data != null) {
+            String action = data.getAction();
+            isCamera = action != null && action.equals(MediaStore.ACTION_IMAGE_CAPTURE);
+        }
+        return isCamera ? getCaptureImageOutputUri() : data.getData();
+    }
+
+    public void uploadBlogImagesToFirebaseStorage() {
+        // Create a storage reference from our app
+        storageRef = storage.getReference();
+        List<Bitmap> bitmaps = new ArrayList<>();
+        Bitmap bitmap1;
+        Bitmap bitmap2;
+        // Create a child reference, imagesRef now points to "mountains.jpg"
+        String blogid = createBlogId();
+        final StorageReference imagesRef = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogid);
+
+        // Get the data from an ImageView as bytes
+        blogImageView1.setDrawingCacheEnabled(true);
+        blogImageView1.buildDrawingCache();
+        blogImageView2.setDrawingCacheEnabled(true);
+        blogImageView2.buildDrawingCache();
+
+        bitmap1 = ((BitmapDrawable) blogImageView1.getDrawable()).getBitmap();
+        bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
+        bitmaps.add(bitmap1);
+        bitmaps.add(bitmap2);
+
+        for(Bitmap item : bitmaps){
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            item.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] data = baos.toByteArray();
+            UploadTask uploadTask = imagesRef.putBytes(data);
+
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                    Toast.makeText(getContext(), "File could not be uploaded", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Toast.makeText(getContext(), "File successfully uploaded", Toast.LENGTH_SHORT).show();
+                    getimageUrl();
+                }
+            });
+        }
+
+        getUserBannerIdAndUserImageUrl();
+
+    }
+
+    public void getimageUrl(){
+        storageRef = storage.getReference();
+
+        storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId).getDownloadUrl()
+                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        // Got the download URL for 'users/me/profile.png'
+                        String downloadUrl = uri.toString();
+                        if (downloadUrl != null) {
+                            blogmodel.setUserBlogImage1Url(downloadUrl);
+                            blogmodel.setUserBlogImage2Url(downloadUrl);
+                            blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
+                            blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure (@NonNull Exception exception){
+                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_LONG).show();
+            }
+        });
+
     }
 }
 

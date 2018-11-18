@@ -35,6 +35,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -100,7 +103,7 @@ public class MyProfileFragment extends Fragment {
     private ArrayList<String> permissionsToRequest;
     private ArrayList<String> permissionsRejected = new ArrayList<>();
     private ArrayList<String> permissions = new ArrayList<>();
-
+    private AdView mAdView;
     private final static int ALL_PERMISSIONS_RESULT = 107;
     private final static int ALL_WRITE_EXTERNAL_STORAGE = 108;
     private final static int ALL_READ_EXTERNAL_STORAGE = 109;
@@ -153,6 +156,11 @@ public class MyProfileFragment extends Fragment {
         /* if(!userProfileUrl.equals("imageUrl") && userProfileUrl != null) {
             Glide.with(getActivity()).load(userProfileUrl).into(userProfileImage);
         } */
+
+        MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
+        mAdView = (AdView) getView().findViewById(R.id.myProfile_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     public void submitUserProfile() {

@@ -42,5 +42,16 @@
 
     </android.support.v7.widget.RecyclerView>
 
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/yourBlogs_adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        ads:adSize="SMART_BANNER"
+        ads:adUnitId="ca-app-pub-7722811932766421/2741139567">
+    </com.google.android.gms.ads.AdView>
+
 
 </RelativeLayout>
