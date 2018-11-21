@@ -1,7 +1,9 @@
 package in.org.eonline.eblog.Activities;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
@@ -24,14 +26,23 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserInfo;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import in.org.eonline.eblog.HomeActivity;
+import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
@@ -43,6 +54,12 @@ public class Login extends AppCompatActivity {
     public static final int RC_SIGN_IN = 101;
     ConnectivityReceiver connectivityReceiver;
     Boolean isInternetPresent = false;
+    Map<String, String> userMap = new HashMap<>();
+    FirebaseFirestore db;
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs_new" ;
+    private SharedPreferences.Editor editor;
+    private String userIdCreated;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +70,9 @@ public class Login extends AppCompatActivity {
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        userIdCreated = sharedpreferences.getString("UserIdCreated","document");
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -125,7 +145,37 @@ public class Login extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             //Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
+                            if(user != null) {
+                                String FullName = "";
+                                String FirstName = "";
+                                String LastName = "";
+                                UserModel userModel = new UserModel();
+                                try{
+                                    FullName = user.getDisplayName();
+                                } catch(NullPointerException e) {
+                                    Toast.makeText(Login.this, "Display Name from FirebaseUser is empty", Toast.LENGTH_SHORT).show();
+                                }
+                                for (UserInfo userInfo : user.getProviderData()) {
+                                    if (FullName == null && userInfo.getDisplayName() != null) {
+                                        FullName = userInfo.getDisplayName();
+                                    }
+                                }
+                                if(FullName.contains(" ")) {
+                                    FirstName = FullName.substring(0, FullName.indexOf(" "));
+                                    LastName = FullName.substring(FullName.indexOf(" "));
+                                } else {
+                                    FirstName = FullName;
+                                    LastName = "Not Available";
+                                }
+                                userModel.setUserFName(FirstName);
+                                userModel.setUserLName(LastName);
+                                userModel.setUserEmail(user.getEmail());
+                                userModel.setUserId(user.getEmail());
+                                editor = sharedpreferences.edit();
+                                editor.putString("UserIdCreated",userModel.getUserId());
+                                editor.commit();
+                                addDataToUserFirebase(userModel);
+                            }
                             Toast.makeText(Login.this, "signInWithCredential:success", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(Login.this, HomeActivity.class);
                             startActivity(intent);
@@ -140,6 +190,26 @@ public class Login extends AppCompatActivity {
                         // ...
                     }
                 });
+    }
+
+    public void addDataToUserFirebase(UserModel userModel){
+        userMap.put("UserFirstName", userModel.getUserFName());
+        userMap.put("UserLastName", userModel.getUserLName());
+        userMap.put("UserEmailId", userModel.getUserEmail());
+        db.collection("Users").document(userModel.getUserId()).set(userMap, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(Login.this, "Data is successfully saved", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(Login.this, "Some error occured", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
     }
 
     @Override

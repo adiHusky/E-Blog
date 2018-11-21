@@ -1,6 +1,7 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +10,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -24,12 +27,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -80,12 +87,14 @@ public class CreateNewBlogFragment extends Fragment  {
     private EditText blogHeaderEdit;
     private EditText blogContentEdit1;
     private EditText blogContentEdit2;
-    private ImageView blogImageView1;
-    private ImageView blogImageView2;
+    private ImageView blogImageView1, blogImageView2;
+    private LinearLayout uploadImage1, uploadImage2;
     private EditText blogFooterEdit;
     //private AdView mAdView;
     //private EditText bannerAdIdEdit;
     private Button submitButton;
+    private ImageView cancelImage1;
+    private ImageView cancelImage2;
     private String bannerAdId;
     private Spinner spinner;
     private String item;
@@ -105,7 +114,15 @@ public class CreateNewBlogFragment extends Fragment  {
     public Bitmap myBitmap1;
     public Bitmap myBitmap2;
     private AdView mAdView;
-
+    private TextView errorHeader;
+    private TextView errorContent1;
+    private TextView errorContent2;
+    private TextView errorFooter;
+    private ImageView errorImage;
+    private ImageView errorImage1;
+    private ImageView errorImage2;
+    private ImageView errorImage3;
+    public Dialog dialog;
 
     public CreateNewBlogFragment() {
         // Required empty public constructor
@@ -144,8 +161,38 @@ public class CreateNewBlogFragment extends Fragment  {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                setVisibilityGone();
                //upload blog images to firebase storage first, then get the download url of images to store in Users & Blogs collection
-               uploadBlogImagesToFirebaseStorage();
+               boolean isValidated = validateData();
+               if(isValidated) {
+                   dialog = new Dialog(getContext());
+                   dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                   dialog.setContentView(R.layout.progressbar);
+                   ProgressBar progress = (ProgressBar) dialog.findViewById(R.id.progressBarServerData);
+                   progress.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.MULTIPLY);
+                   dialog.setCancelable(false);
+                   dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                   dialog.show();
+                   uploadBlogImagesToFirebaseStorage();
+               }
+            }
+        });
+
+        cancelImage1.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                blogImageView1.setImageBitmap(null);
+                uploadImage1.setVisibility(View.VISIBLE);
+                cancelImage1.setVisibility(View.GONE);
+            }
+        });
+
+        cancelImage2.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                blogImageView2.setImageBitmap(null);
+                uploadImage2.setVisibility(View.VISIBLE);
+                cancelImage2.setVisibility(View.GONE);
             }
         });
 
@@ -155,14 +202,40 @@ public class CreateNewBlogFragment extends Fragment  {
         mAdView.loadAd(adRequest);
     }
 
+    public boolean validateData() {
+
+        if (blogHeaderEdit.getText().toString().equals("") || blogHeaderEdit.getText().toString().length() <= 7) {
+            errorHeader.setVisibility(View.VISIBLE);
+            errorImage.setVisibility(View.VISIBLE);
+            return false;
+        }
+        if (blogContentEdit1.getText().toString().equals("") || blogContentEdit1.getText().toString().length() <= 100) {
+            errorContent1.setVisibility(View.VISIBLE);
+            errorImage1.setVisibility(View.VISIBLE);
+            return false;
+        }
+        if (blogContentEdit2.getText().toString().equals("") || blogContentEdit2.getText().toString().length() <= 100) {
+            errorContent2.setVisibility(View.VISIBLE);
+            errorImage2.setVisibility(View.VISIBLE);
+            return false;
+        }
+        if (blogFooterEdit.getText().toString().equals("")) {
+            errorFooter.setVisibility(View.VISIBLE);
+            errorImage3.setVisibility(View.VISIBLE);
+            return false;
+        }
+
+        return true;
+    }
+
     public void setBlogImages() {
-        blogImageView1.setOnClickListener(new View.OnClickListener() {
+        uploadImage1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivityForResult(getPickImageChooserIntent(), 201);
             }
         });
-        blogImageView2.setOnClickListener(new View.OnClickListener() {
+        uploadImage2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivityForResult(getPickImageChooserIntent(), 202);
@@ -173,9 +246,9 @@ public class CreateNewBlogFragment extends Fragment  {
     public void addBlogToSQLite() {
         Boolean blogIdInserted =  sqliteDatabaseHelper.insertBlogDataInSQLite(blogId,blogmodel.getBlogHeader(),blogmodel.getBlogContent1(),blogmodel.getBlogFooter());
         if (blogIdInserted) {
-            Toast.makeText(getContext(), "BlogId inserted properly in SQLite", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext(), "BlogId inserted properly in SQLite", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(getContext(), "BlogId insertion failed", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext(), "BlogId insertion failed", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -192,6 +265,9 @@ public class CreateNewBlogFragment extends Fragment  {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_LONG).show();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 });
         db.collection("Blogs").document(blogId).set(blogMap, SetOptions.merge())
@@ -199,14 +275,28 @@ public class CreateNewBlogFragment extends Fragment  {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Toast.makeText(getActivity(), "New Blog is created in standalone Blogs collection", Toast.LENGTH_LONG).show();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                            clearEditText();
+                        }
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_LONG).show();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 });
+    }
+
+    public void clearEditText(){
+        blogHeaderEdit.setText("");
+        blogContentEdit1.setText("");
+        blogContentEdit2.setText("");
+        blogFooterEdit.setText("");
     }
 
     public void initializeViews() {
@@ -215,13 +305,36 @@ public class CreateNewBlogFragment extends Fragment  {
         blogContentEdit2 = (EditText) getView().findViewById(R.id.blog_content2);
         blogImageView1 = (ImageView) getView().findViewById(R.id.blog_image_1);
         blogImageView2= (ImageView) getView().findViewById(R.id.blog_image_2);
+        uploadImage1 = (LinearLayout) getView().findViewById(R.id.upload_image_1);
+        uploadImage2 = (LinearLayout) getView().findViewById(R.id.upload_image_2);
         blogFooterEdit = (EditText) getView().findViewById(R.id.blog_footer);
         //mAdView = (AdView) getView().findViewById(R.id.adView_user_ad);
         submitButton = (Button) getView().findViewById(R.id.submit_blog_button);
         //bannerAdIdEdit = (EditText) getView().findViewById(R.id.adview_user_id);
         spinner = (Spinner) getView().findViewById(R.id.spinner_category);
+        errorHeader = (TextView) getView().findViewById(R.id.error_header);
+        errorContent1=(TextView) getView().findViewById(R.id.error_content1);
+        errorContent2=(TextView) getView().findViewById(R.id.error_content2);
+        errorFooter=(TextView) getView().findViewById(R.id.error_footer);
+        errorImage=(ImageView) getView().findViewById(R.id.error_image);
+        errorImage1=(ImageView) getView().findViewById(R.id.error_image1);
+        errorImage2=(ImageView) getView().findViewById(R.id.error_image2);
+        errorImage3=(ImageView) getView().findViewById(R.id.error_image3);
+        cancelImage1 = (ImageView) getView().findViewById(R.id.submit_cancel_image1);
+        cancelImage2 = (ImageView) getView().findViewById(R.id.submit_cancel_image2);
+        setVisibilityGone();
     }
 
+    public void setVisibilityGone(){
+        errorImage.setVisibility(View.GONE);
+        errorImage1.setVisibility(View.GONE);
+        errorImage2.setVisibility(View.GONE);
+        errorImage3.setVisibility(View.GONE);
+        errorHeader.setVisibility(View.GONE);
+        errorContent1.setVisibility(View.GONE);
+        errorContent2.setVisibility(View.GONE);
+        errorFooter.setVisibility(View.GONE);
+    }
 
     public void getUserBannerIdAndUserImageUrl(){
         DocumentReference docRef = db.collection("Users").document(userId);
@@ -231,9 +344,15 @@ public class CreateNewBlogFragment extends Fragment  {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {  //ToDo: this is wrong condition, need to change
-                      blogmodel.setBannerAdMobId(document.get("UserBannerId").toString());
-                      blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
-                      if(blogmodel.getBannerAdMobId()!=null && blogmodel.getUserImageUrl()!=null ) {
+                        try {
+                            blogmodel.setBannerAdMobId(document.get("UserBannerId").toString());
+                            blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
+                        }
+                        catch(NullPointerException e) {
+                            Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                        }
+
+                      if(blogmodel.getBannerAdMobId()!= null) {
                           setBlogModelAndMap();
                           addData();
                       }else{
@@ -246,6 +365,9 @@ public class CreateNewBlogFragment extends Fragment  {
                     }
                 } else {
                     Log.d(TAG, "get failed with ", task.getException());
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
                 }
             }
         });
@@ -432,7 +554,10 @@ public class CreateNewBlogFragment extends Fragment  {
                     myBitmap1 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
                     //myBitmap = rotateImageIfRequired(myBitmap, picUri);
                     //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
+                    blogImageView1.setVisibility(View.VISIBLE);
                     blogImageView1.setImageBitmap(myBitmap1);
+                    uploadImage1.setVisibility(View.GONE);
+                    cancelImage1.setVisibility(View.VISIBLE);
                 } catch (IOException e) {
                     e.printStackTrace();
                     Toast.makeText(getContext(), "Unable to set Image", Toast.LENGTH_SHORT).show();
@@ -440,7 +565,10 @@ public class CreateNewBlogFragment extends Fragment  {
             } else {
                 bitmap = (Bitmap) data.getExtras().get("data");
                 myBitmap1 = bitmap;
+                blogImageView1.setVisibility(View.VISIBLE);
                 blogImageView1.setImageBitmap(myBitmap1);
+                uploadImage1.setVisibility(View.GONE);
+                cancelImage1.setVisibility(View.VISIBLE);
             }
         }
 
@@ -451,7 +579,10 @@ public class CreateNewBlogFragment extends Fragment  {
                     myBitmap2 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
                     //myBitmap = rotateImageIfRequired(myBitmap, picUri);
                     //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
+                    blogImageView2.setVisibility(View.VISIBLE);
                     blogImageView2.setImageBitmap(myBitmap2);
+                    uploadImage2.setVisibility(View.GONE);
+                    cancelImage2.setVisibility(View.VISIBLE);
                 } catch (IOException e) {
                     e.printStackTrace();
                     Toast.makeText(getContext(), "Unable to set Image", Toast.LENGTH_SHORT).show();
@@ -459,7 +590,10 @@ public class CreateNewBlogFragment extends Fragment  {
             } else {
                 bitmap = (Bitmap) data.getExtras().get("data");
                 myBitmap2 = bitmap;
+                blogImageView2.setVisibility(View.VISIBLE);
                 blogImageView2.setImageBitmap(myBitmap2);
+                uploadImage2.setVisibility(View.GONE);
+                cancelImage2.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -476,12 +610,12 @@ public class CreateNewBlogFragment extends Fragment  {
     public void uploadBlogImagesToFirebaseStorage() {
         // Create a storage reference from our app
         storageRef = storage.getReference();
-        List<Bitmap> bitmaps = new ArrayList<>();
+        //List<Bitmap> bitmaps = new ArrayList<>();
         Bitmap bitmap1;
-        Bitmap bitmap2;
+        //Bitmap bitmap2;
         // Create a child reference, imagesRef now points to "mountains.jpg"
         String blogid = createBlogId();
-        final StorageReference imagesRef = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogid);
+
 
         // Get the data from an ImageView as bytes
         blogImageView1.setDrawingCacheEnabled(true);
@@ -489,16 +623,47 @@ public class CreateNewBlogFragment extends Fragment  {
         blogImageView2.setDrawingCacheEnabled(true);
         blogImageView2.buildDrawingCache();
 
-        bitmap1 = ((BitmapDrawable) blogImageView1.getDrawable()).getBitmap();
-        bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
-        bitmaps.add(bitmap1);
-        bitmaps.add(bitmap2);
+        //bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
+        //bitmaps.add(bitmap1);
+        //bitmaps.add(bitmap2);
 
-        for(Bitmap item : bitmaps){
+        final StorageReference imagesRef1 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogid + "img1");
+        //final StorageReference imagesRef2 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogid + "img2");
+        bitmap1 = ((BitmapDrawable) blogImageView1.getDrawable()).getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap1.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data1 = baos.toByteArray();
+        UploadTask uploadTask1 = imagesRef1.putBytes(data1);
+        uploadTask1.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+                Toast.makeText(getContext(), "File 1 could not be uploaded", Toast.LENGTH_SHORT).show();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(getContext(), "File 1 successfully uploaded", Toast.LENGTH_SHORT).show();
+                //getimageUrl();
+                uploadImage2();
+            }
+        });
+
+        //ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+
+
+
+
+        /*for(Bitmap item : bitmaps){
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             item.compress(Bitmap.CompressFormat.JPEG, 100, baos);
             byte[] data = baos.toByteArray();
-            UploadTask uploadTask = imagesRef.putBytes(data);
+            UploadTask uploadTask = imagesRef1.putBytes(data);
+            UploadTask uploadTask1 = imagesRef2.putBytes(data);
 
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -513,16 +678,42 @@ public class CreateNewBlogFragment extends Fragment  {
                     getimageUrl();
                 }
             });
-        }
+        } */
 
-        getUserBannerIdAndUserImageUrl();
+        //getUserBannerIdAndUserImageUrl();
 
+    }
+
+    public void uploadImage2() {
+        final StorageReference imagesRef2 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId + "img2");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Bitmap bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
+        bitmap2.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data2 = baos.toByteArray();
+        UploadTask uploadTask2 = imagesRef2.putBytes(data2);
+        uploadTask2.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+                Toast.makeText(getContext(), "File 2 could not be uploaded", Toast.LENGTH_SHORT).show();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(getContext(), "File 2 successfully uploaded", Toast.LENGTH_SHORT).show();
+                getimageUrl();
+            }
+        });
     }
 
     public void getimageUrl(){
         storageRef = storage.getReference();
+        String imageRef1 = "Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId + "img1";
 
-        storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId).getDownloadUrl()
+        storageRef.child(imageRef1).getDownloadUrl()
                 .addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
@@ -530,18 +721,46 @@ public class CreateNewBlogFragment extends Fragment  {
                         String downloadUrl = uri.toString();
                         if (downloadUrl != null) {
                             blogmodel.setUserBlogImage1Url(downloadUrl);
-                            blogmodel.setUserBlogImage2Url(downloadUrl);
                             blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
-                            blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
                         }
+                        getImageUrl2();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure (@NonNull Exception exception){
                 Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_LONG).show();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
             }
         });
 
+    }
+
+    public void getImageUrl2() {
+        String imageRef2 = "Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId + "img2";
+
+        storageRef.child(imageRef2).getDownloadUrl()
+                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        // Got the download URL for 'users/me/profile.png'
+                        String downloadUrl = uri.toString();
+                        if (downloadUrl != null) {
+                            blogmodel.setUserBlogImage2Url(downloadUrl);
+                            blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+                        }
+                        getUserBannerIdAndUserImageUrl();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure (@NonNull Exception exception){
+                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_LONG).show();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
     }
 }
 
