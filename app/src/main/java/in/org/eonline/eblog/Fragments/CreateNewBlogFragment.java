@@ -1,6 +1,7 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -62,9 +64,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import in.org.eonline.eblog.HomeActivity;
@@ -72,6 +78,8 @@ import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
+import in.org.eonline.eblog.Utilities.ImageUtility;
+import in.org.eonline.eblog.Utilities.PermissionUtils;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
@@ -123,6 +131,10 @@ public class CreateNewBlogFragment extends Fragment  {
     private ImageView errorImage2;
     private ImageView errorImage3;
     public Dialog dialog;
+    private File destFile, sourceFile;
+    private File file;
+    String dateFormatter;
+    public static final String IMAGE_DIRECTORY = "E-Blogger";
 
     public CreateNewBlogFragment() {
         // Required empty public constructor
@@ -200,6 +212,10 @@ public class CreateNewBlogFragment extends Fragment  {
         mAdView = (AdView) getView().findViewById(R.id.createNewBlog_adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
+
+        Calendar ct = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        dateFormatter = df.format(ct.getTime());
     }
 
     public boolean validateData() {
@@ -277,8 +293,8 @@ public class CreateNewBlogFragment extends Fragment  {
                         Toast.makeText(getActivity(), "New Blog is created in standalone Blogs collection", Toast.LENGTH_LONG).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
-                            clearEditText();
                         }
+                        clearEditText();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -297,6 +313,14 @@ public class CreateNewBlogFragment extends Fragment  {
         blogContentEdit1.setText("");
         blogContentEdit2.setText("");
         blogFooterEdit.setText("");
+
+        blogImageView1.setImageBitmap(null);
+        uploadImage1.setVisibility(View.VISIBLE);
+        cancelImage1.setVisibility(View.GONE);
+
+        blogImageView2.setImageBitmap(null);
+        uploadImage2.setVisibility(View.VISIBLE);
+        cancelImage2.setVisibility(View.GONE);
     }
 
     public void initializeViews() {
@@ -345,11 +369,16 @@ public class CreateNewBlogFragment extends Fragment  {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {  //ToDo: this is wrong condition, need to change
                         try {
-                            blogmodel.setBannerAdMobId(document.get("UserBannerId").toString());
-                            blogmodel.setUserImageUrl(document.get("UserImageUrl").toString());
+                            String bannerId = document.getString("UserBannerId");
+                            String userImageUrl = document.getString("UserImageUrl");
+                            blogmodel.setBannerAdMobId(bannerId);
+                            blogmodel.setUserImageUrl(userImageUrl);
                         }
                         catch(NullPointerException e) {
                             Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                         }
 
                       if(blogmodel.getBannerAdMobId()!= null) {
@@ -357,11 +386,17 @@ public class CreateNewBlogFragment extends Fragment  {
                           addData();
                       }else{
                           Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                          if (dialog != null && dialog.isShowing()) {
+                              dialog.dismiss();
+                          }
                       }
                        // Log.d(TAG, "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d(TAG, "No such document");
                         Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 } else {
                     Log.d(TAG, "get failed with ", task.getException());
@@ -550,18 +585,23 @@ public class CreateNewBlogFragment extends Fragment  {
         if (resultCode == RESULT_OK && requestCode == 201) {
             if (getPickImageResultUri(data) != null) {
                 picUri = getPickImageResultUri(data);
-                try {
-                    myBitmap1 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
+
+                bitmap = compressImage(picUri);
+
+                blogImageView1.setVisibility(View.VISIBLE);
+                blogImageView1.setImageBitmap(bitmap);
+                uploadImage1.setVisibility(View.GONE);
+                cancelImage1.setVisibility(View.VISIBLE);
+
+                /*try {
+                    //myBitmap1 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
                     //myBitmap = rotateImageIfRequired(myBitmap, picUri);
                     //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
-                    blogImageView1.setVisibility(View.VISIBLE);
-                    blogImageView1.setImageBitmap(myBitmap1);
-                    uploadImage1.setVisibility(View.GONE);
-                    cancelImage1.setVisibility(View.VISIBLE);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     Toast.makeText(getContext(), "Unable to set Image", Toast.LENGTH_SHORT).show();
-                }
+                } */
             } else {
                 bitmap = (Bitmap) data.getExtras().get("data");
                 myBitmap1 = bitmap;
@@ -575,18 +615,23 @@ public class CreateNewBlogFragment extends Fragment  {
         if (resultCode == RESULT_OK && requestCode == 202) {
             if (getPickImageResultUri(data) != null) {
                 picUri = getPickImageResultUri(data);
-                try {
-                    myBitmap2 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
+
+                bitmap = compressImage(picUri);
+
+                blogImageView2.setVisibility(View.VISIBLE);
+                blogImageView2.setImageBitmap(bitmap);
+                uploadImage2.setVisibility(View.GONE);
+                cancelImage2.setVisibility(View.VISIBLE);
+
+                /*try {
+                    //myBitmap2 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
                     //myBitmap = rotateImageIfRequired(myBitmap, picUri);
                     //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
-                    blogImageView2.setVisibility(View.VISIBLE);
-                    blogImageView2.setImageBitmap(myBitmap2);
-                    uploadImage2.setVisibility(View.GONE);
-                    cancelImage2.setVisibility(View.VISIBLE);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     Toast.makeText(getContext(), "Unable to set Image", Toast.LENGTH_SHORT).show();
-                }
+                } */
             } else {
                 bitmap = (Bitmap) data.getExtras().get("data");
                 myBitmap2 = bitmap;
@@ -597,6 +642,26 @@ public class CreateNewBlogFragment extends Fragment  {
             }
         }
     }
+
+
+    public Bitmap compressImage(Uri picuri) {
+        Bitmap bmp;
+        file = new File(Environment.getExternalStorageDirectory() + "/" + IMAGE_DIRECTORY);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        sourceFile = new File(ImageUtility.getInstance().getPathFromGooglePhotosUri(getActivity(), picuri));
+        destFile = new File(file, "img_" + dateFormatter.format(new Date().toString() + ".png"));
+
+        try {
+            ImageUtility.getInstance().copyFile(sourceFile, destFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bmp = ImageUtility.getInstance().decodeFile(destFile);
+        return bmp;
+    }
+
 
     public Uri getPickImageResultUri(Intent data) {
         boolean isCamera = true;
