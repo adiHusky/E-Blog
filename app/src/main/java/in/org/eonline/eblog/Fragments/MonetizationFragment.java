@@ -1,12 +1,14 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.Utilities.CommonDialog;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
 import static android.content.ContentValues.TAG;
 
@@ -53,6 +57,10 @@ public class MonetizationFragment extends Fragment {
     private  String userId;
     private List<String> blogModelsList = new ArrayList<String>();
     Map<String, String> blogMap = new HashMap<>();
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
+    public SwipeRefreshLayout mySwipeRequestLayout;
+    public Dialog dialog;
 
     public MonetizationFragment() {
         // Required empty public constructor
@@ -75,6 +83,7 @@ public class MonetizationFragment extends Fragment {
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
         checkAdmobId();
+        refreshMyProfile();
 
         submitAdMobAdUnitId.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,15 +125,52 @@ public class MonetizationFragment extends Fragment {
 
 
     }
+    public void refreshMyProfile(){
+        mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onRefreshOperation();
+                mySwipeRequestLayout.setRefreshing(false);
+            }
+        });
+    }
+
+    public void onRefreshOperation(){
+        Fragment frg = new MonetizationFragment();
+
+        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
+    }
+
+
 
     public void addAdMobIdToUsers(final String adMobUnitId) {
+        connectivityReceiver = new ConnectivityReceiver(getActivity());
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+            dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+            dialog.show();
+            addDataToUserFirebase();
 
+        } else {
+            CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
+
+
+        }
+
+    public void addDataToUserFirebase(){
         db.collection("Users").document(userId).update("UserBannerId",adMobUnitId)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "DocumentSnapshot successfully updated!");
                         Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
 
                     }
                 })
@@ -132,20 +178,48 @@ public class MonetizationFragment extends Fragment {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error updating document", e);
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                        dialog.dismiss();
                     }
                 });
-        }
+    }
 
     public void initializeViews() {
         adMobAdUnitIdEdit = (EditText) getView().findViewById(R.id.admob_ad_unit_id);
         submitAdMobAdUnitId = (Button) getView().findViewById(R.id.admob_ad_unit_id_submit);
         //userAdView = (AdView) getView().findViewById(R.id.user_ad_view);
+        mySwipeRequestLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_monetize);
     }
 
     public void checkAdmobId()
     {
+
+        connectivityReceiver = new ConnectivityReceiver(getActivity());
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+            dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+            dialog.show();
+            enterUsersFirebaseForAmobId();
+
+        } else {
+            CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
+
+
+    }
+
+    public void enterUsersFirebaseForAmobId(){
         DocumentReference docRef = db.collection("Users").document(userId);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        docRef.get().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                dialog.dismiss();
+            }
+        })
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
@@ -154,17 +228,24 @@ public class MonetizationFragment extends Fragment {
                         try {
                             adMobAdUnitIdEdit.setText(document.getString("UserBannerId").toString());
                             Toast.makeText(getContext(), "Admob ID present", Toast.LENGTH_LONG).show();
+                            dialog.dismiss();
                         }
                         catch(NullPointerException e){
                             Toast.makeText(getContext(), "Enter Admob ID", Toast.LENGTH_LONG).show();
+                            dialog.dismiss();
                         }
-                    } /*else {
-                        setUserModelAndUserMap();
-                        addDataToUserFirebase();
-                    } */
+                    }
+
+                    else {
+                        dialog.dismiss();
+                        /*setUserModelAndUserMap();
+                        addDataToUserFirebase();*/
+                    }
                 } else {
                     Toast.makeText(getContext(), "Enter Admob ID", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 }
+
             }
         });
 

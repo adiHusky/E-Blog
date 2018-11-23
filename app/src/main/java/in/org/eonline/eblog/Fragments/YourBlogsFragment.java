@@ -1,6 +1,7 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,6 +22,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -35,6 +38,8 @@ import in.org.eonline.eblog.Activities.BlogActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
+import in.org.eonline.eblog.Utilities.CommonDialog;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -60,6 +65,10 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
     private String blogId;
     DatabaseHelper sqliteDatabaseHelper;
     private AdView mAdView;
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
+    public Dialog dialog;
+    public SwipeRefreshLayout mySwipeRequestLayout;
 
     public YourBlogsFragment() {
         // Required empty public constructor
@@ -82,25 +91,83 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         db= FirebaseFirestore.getInstance();
         InitializeViews();
         setYourBlogsFromFirebase();
-
+        refreshMyProfile();
         MobileAds.initialize(getContext(),"ca-app-pub-7722811932766421~9001519486");
         mAdView = (AdView) getView().findViewById(R.id.yourBlogs_adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
     }
 
+    public void refreshMyProfile(){
+
+        mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+                                                      @Override
+                                                      public void onRefresh() {
+
+                                                          onRefreshOperation();
+                                                          mySwipeRequestLayout.setRefreshing(false);
+                                                      }
+                                                  }
+        );
+
+    }
+
+    public void onRefreshOperation(){
+        Fragment frg = new YourBlogsFragment();
+        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
+    }
+
     public void setYourBlogsFromFirebase() {
+        connectivityReceiver = new ConnectivityReceiver(getActivity());
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+            dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+            dialog.show();
+            enterBlogsFirebase();
+        } else {
+            CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
+
+
+    }
+
+    public void enterBlogsFirebase(){
         CollectionReference blogRef =db.collection("Users").document(userId).collection("Blogs");
-                blogRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        blogRef.get().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
+                dialog.dismiss();
+            }
+        })
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
+                            int i=0;
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                if (document.exists())
+                                if (document.exists()) {
                                     setBlogModel(document);
+
+                                }
+
+                            }
+                            if(i==0)
+                            {
+                                CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.no_data);
                             }
                             setPopularBlogsRecyclerView();
+                            dialog.dismiss();
+
                         } else {
+                            dialog.dismiss();
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
@@ -129,6 +196,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         blogHeaderTextView = (TextView) getView().findViewById(R.id.blog_header_text);
         blogContentTextView = (TextView) getView().findViewById(R.id.blog_content_text);
         blogFooterTextView = (TextView) getView().findViewById(R.id.blog_footer_text);
+        mySwipeRequestLayout = (SwipeRefreshLayout)getView().findViewById(R.id.swiperefresh_your_blogs);
     }
 
     public void setPopularBlogsRecyclerView() {

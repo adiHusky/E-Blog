@@ -1,11 +1,13 @@
 package in.org.eonline.eblog.Fragments;
 
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,6 +19,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -36,6 +39,9 @@ import in.org.eonline.eblog.Activities.BlogActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.Utilities.CommonDialog;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+
 
 import static android.content.ContentValues.TAG;
 
@@ -55,7 +61,10 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     private List<BlogModel> blogModels = new ArrayList<>();
     FirebaseStorage storage;
     StorageReference storageRef;
-
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
+    public Dialog dialog;
+    public SwipeRefreshLayout mySwipeRequestLayout;
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -75,6 +84,7 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
 
         initializeViews();
         setDataFirebase();
+        refreshMyProfile();
 
         // Get the instance of Firebase storage
         storage = FirebaseStorage.getInstance();
@@ -93,10 +103,35 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     public void initializeViews() {
         popularUsersRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_users);
         popularBlogsRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_blogs);
+        mySwipeRequestLayout=(SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_home);
+    }
+
+    public void refreshMyProfile(){
+
+        mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+                                                      @Override
+                                                      public void onRefresh() {
+
+                                                          onRefreshOperation();
+                                                          mySwipeRequestLayout.setRefreshing(false);
+                                                      }
+                                                  }
+        );
+
+    }
+
+    public void onRefreshOperation(){
+        Fragment frg = new HomeFragment();
+
+        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
     }
 
     public void setDataFirebase(){
-        db.collection("Users")
+       /* db.collection("Users")
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -111,23 +146,58 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
 
                         }
                     }
-                });
+                }); */
+        connectivityReceiver = new ConnectivityReceiver(getActivity());
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+            dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+            dialog.show();
+            enterBlogsFirebase();
+        } else {
+            CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
 
-       CollectionReference colRef=db.collection("Blogs");
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
 
-                colRef.get()
+
+    }
+
+    public void enterBlogsFirebase(){
+        CollectionReference colRef=db.collection("Blogs");
+
+        colRef.get().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
+                dialog.dismiss();
+            }
+        })
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
+                            int i=0;
                             for (QueryDocumentSnapshot document : task.getResult()) {
+                                i++;
                                 if (document.exists()) {
                                     setBlogModel(document);
-                                };
+                                }
+                                else
+                                {
+                                    CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
+                                }
+                               ;
                                 Log.d(TAG, document.getId() + " => " + document.getData());
                             }
+                            if(i==0) {
+                                CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.no_data);
+                            }
                             setPopularBlogsRecyclerView();
+                            dialog.dismiss();
                         } else {
+                            CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
+                            dialog.dismiss();
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }

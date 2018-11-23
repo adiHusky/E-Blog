@@ -1,5 +1,6 @@
 package in.org.eonline.eblog.Fragments;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +32,8 @@ import in.org.eonline.eblog.Models.BugModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
+import in.org.eonline.eblog.Utilities.CommonDialog;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
 
 public class ReportBugFragment extends Fragment {
@@ -52,6 +56,10 @@ public class ReportBugFragment extends Fragment {
     private ImageView errorImage2;
     private ImageView errorImage3;
     private ImageView errorImage4;
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
+    public SwipeRefreshLayout mySwipeRequestLayout;
+    public Dialog dialog;
 
 
     public ReportBugFragment() {
@@ -69,15 +77,33 @@ public class ReportBugFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         initializeViews();
         db = FirebaseFirestore.getInstance();
+        refreshMyProfile();
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
-        submitBug.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setVisibilityGone();
-                setBugUserMap();
-            }
-        });
+
+        submitBugFunction();
+
+
+    }
+
+    public void submitBugFunction(){
+        connectivityReceiver = new ConnectivityReceiver(getActivity());
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+
+            submitBug.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    setVisibilityGone();
+                    setBugUserMap();
+                }
+            });
+        } else {
+            CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void initializeViews() {
@@ -95,6 +121,30 @@ public class ReportBugFragment extends Fragment {
         errorImage3=(ImageView) getView().findViewById(R.id.error3_image);
         errorImage4=(ImageView) getView().findViewById(R.id.error4_image);
         setVisibilityGone();
+        mySwipeRequestLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_report_bug);
+    }
+
+
+    public void refreshMyProfile(){
+
+        mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+            @Override
+            public void onRefresh() {
+                onRefreshOperation();
+                mySwipeRequestLayout.setRefreshing(false);
+            }
+        });
+    }
+    public void onRefreshOperation(){
+
+        Fragment frg = new ReportBugFragment();
+
+        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
+        clearEditText();
     }
 
     public void setVisibilityGone(){
@@ -146,20 +196,46 @@ public void validateData(){
       }
 }
     public void addBugDataToFirebase(){
+        connectivityReceiver = new ConnectivityReceiver(getActivity());
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+            dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+            dialog.show();
+            addBugtoUserFirebase();
+        } else {
+            CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    public void addBugtoUserFirebase(){
         db.collection("ReportedBugs").document(userId).set(bugMap, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Toast.makeText(getActivity(), "Bug Reported Successfully", Toast.LENGTH_LONG).show();
+                        dialog.dismiss();
 
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                         Toast.makeText(getActivity(), "Some error occured while reporting bug", Toast.LENGTH_LONG).show();
+                        dialog.dismiss();
                     }
                 });
+    }
+
+    public void clearEditText(){
+        bugUserName.setText("");
+        bugBrandMode1.setText("");
+        bugOSVersion.setText("");
+        bugMessage.setText("");
     }
 
 

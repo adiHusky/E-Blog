@@ -44,7 +44,9 @@ import java.util.Map;
 import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+
 
 public class Login extends AppCompatActivity {
 
@@ -101,7 +103,7 @@ public class Login extends AppCompatActivity {
                 if (isInternetPresent) {
                     signIn();
                 } else {
-                    showErrorDialog();
+                    CommonDialog.getInstance().showErrorDialog(Login.this, R.drawable.no_internet);
                     //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
                 }
             }
@@ -223,16 +225,6 @@ public class Login extends AppCompatActivity {
             Intent intent = new Intent(Login.this, HomeActivity.class);
             startActivity(intent);
         }
-    }
-
-    private void showErrorDialog(){
-        final Dialog dialog = new Dialog(Login.this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-        dialog.setContentView(R.layout.error_dialog);
-        dialog.setCanceledOnTouchOutside(true);
-        dialog.show();
     }
 
 }

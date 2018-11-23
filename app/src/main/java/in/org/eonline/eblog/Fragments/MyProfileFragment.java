@@ -3,6 +3,8 @@ package in.org.eonline.eblog.Fragments;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,7 +25,9 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -65,9 +69,13 @@ import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import in.org.eonline.eblog.Activities.Login;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
+import in.org.eonline.eblog.Utilities.CommonDialog;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+
 
 import static android.Manifest.permission.CAMERA;
 import static android.app.Activity.RESULT_OK;
@@ -99,6 +107,7 @@ public class MyProfileFragment extends Fragment {
     private String userIdCreated;
     private String userProfileUrl;
     private Uri picUri;
+    public Dialog dialog;
     private Bitmap myBitmap;
     private ArrayList<String> permissionsToRequest;
     private ArrayList<String> permissionsRejected = new ArrayList<>();
@@ -107,6 +116,9 @@ public class MyProfileFragment extends Fragment {
     private final static int ALL_PERMISSIONS_RESULT = 107;
     private final static int ALL_WRITE_EXTERNAL_STORAGE = 108;
     private final static int ALL_READ_EXTERNAL_STORAGE = 109;
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
+    public SwipeRefreshLayout mySwipeRequestLayout;
 
 
     public MyProfileFragment() {
@@ -153,6 +165,8 @@ public class MyProfileFragment extends Fragment {
 
         downloadImageFromFirebaseStorage();
 
+        refreshMyProfile();
+
         /* if(!userProfileUrl.equals("imageUrl") && userProfileUrl != null) {
             Glide.with(getActivity()).load(userProfileUrl).into(userProfileImage);
         } */
@@ -163,16 +177,65 @@ public class MyProfileFragment extends Fragment {
         mAdView.loadAd(adRequest);
     }
 
+    public void refreshMyProfile(){
+
+        mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+            @Override
+            public void onRefresh() {
+
+                onRefreshOperation();
+                mySwipeRequestLayout.setRefreshing(false);
+            }
+        }
+        );
+
+}
+    public void onRefreshOperation(){
+
+        Fragment frg = new MyProfileFragment();
+
+        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
+    }
+
+
+
     public void submitUserProfile() {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(sharedpreferences.getBoolean("isUserCreated", false)) {
                     userModel.setUserId(userIdCreated);
-                    updateDataToUserFirebase();
+                    connectivityReceiver = new ConnectivityReceiver(getActivity());
+                    // Initialize SDK before setContentView(Layout ID)
+                    isInternetPresent = connectivityReceiver.isConnectingToInternet();
+                    if (isInternetPresent) {
+                        dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+                        dialog.show();
+                        updateDataToUserFirebase();
+                    } else {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+                        //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+                    }
+
+
                 } else {
-                    setUserModelAndUserMap();
-                    startUploadingImageToFirebase();
+                    connectivityReceiver = new ConnectivityReceiver(getActivity());
+                    // Initialize SDK before setContentView(Layout ID)
+                    isInternetPresent = connectivityReceiver.isConnectingToInternet();
+                    if (isInternetPresent) {
+                        dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+                        dialog.show();
+                        setUserModelAndUserMap();
+                        startUploadingImageToFirebase();
+                    } else {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+                        //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+                    }
+
                 }
             }
         });
@@ -187,8 +250,35 @@ public class MyProfileFragment extends Fragment {
 
 
     public void checkUserFirebase() {
+        connectivityReceiver = new ConnectivityReceiver(getActivity());
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+            dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+            dialog.show();
+            enterUserFirebase();
+        } else {
+            CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
+
+
+
+
+    }
+
+    public void enterUserFirebase(){
         DocumentReference docRef = db.collection("Users").document(userIdCreated);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        docRef.get().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                Toast.makeText(getContext(), "Server is down", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }
+        })
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
@@ -196,13 +286,20 @@ public class MyProfileFragment extends Fragment {
                     if (document.exists()) {
                         setUserModel(document);
                         downloadImageFromFirebaseStorage();
+                        dialog.dismiss();
+
+
                         Toast.makeText(getContext(), "Data is retrieved from firebase", Toast.LENGTH_LONG).show();
                     } /*else {
                         setUserModelAndUserMap();
                         addDataToUserFirebase();
                     } */
                 } else {
-                    Toast.makeText(getContext(), "Server is down", Toast.LENGTH_SHORT).show();
+                    CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                    Toast.makeText(getContext(), "server is down", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+
+
                 }
             }
         });
@@ -219,11 +316,17 @@ public class MyProfileFragment extends Fragment {
                 Glide.with(getActivity())
                         .load(uri)
                         .into(userProfileImage);
+          //      dialog.dismiss();
+
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
+                CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                dialog.dismiss();
+
+
             }
         });
     }
@@ -273,13 +376,18 @@ public class MyProfileFragment extends Fragment {
                         editor = sharedpreferences.edit();
                         editor.putBoolean("isUserCreated", isDataInserted);
                         editor.commit();
+                        dialog.dismiss();
+
                       //  startUploadingImageToFirebase();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                         Toast.makeText(getContext(), "Some error occured", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+
                     }
                 });
 
@@ -299,7 +407,10 @@ public class MyProfileFragment extends Fragment {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                         Log.w(TAG, "Error updating document", e);
+                        dialog.dismiss();
+
                     }
                 });
     }
@@ -322,10 +433,13 @@ public class MyProfileFragment extends Fragment {
         UploadTask uploadTask = imagesRef.putBytes(data);
 
         uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
+                CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                 Toast.makeText(getContext(), "File could not be uploaded", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+
+
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -340,7 +454,8 @@ public class MyProfileFragment extends Fragment {
                 editor.putString("userProfileUrl",userProfileUrl);
                 editor.apply(); */
                 }
-            });
+            })
+               ;
 
     }
 
@@ -365,6 +480,9 @@ public class MyProfileFragment extends Fragment {
               }).addOnFailureListener(new OnFailureListener() {
                    @Override
                    public void onFailure (@NonNull Exception exception){
+                       CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                       dialog.dismiss();
+
                   Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_LONG).show();
                   }
               });
@@ -398,6 +516,7 @@ public class MyProfileFragment extends Fragment {
         userEmailIdEdit = (EditText) getView().findViewById(R.id.email_id);
         userContactEdit = (EditText) getView().findViewById(R.id.mobile_no);
         submitButton = (Button) getView().findViewById(R.id.submit_button);
+        mySwipeRequestLayout =(SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_profile);
     }
 
     public void allowPermissions() {
