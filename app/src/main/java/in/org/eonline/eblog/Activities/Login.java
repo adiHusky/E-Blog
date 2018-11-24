@@ -175,6 +175,7 @@ public class Login extends AppCompatActivity {
                                 userModel.setUserId(user.getEmail());
                                 editor = sharedpreferences.edit();
                                 editor.putString("UserIdCreated",userModel.getUserId());
+                                editor.putBoolean("isUserCreated", true);
                                 editor.commit();
                                 addDataToUserFirebase(userModel);
                             }

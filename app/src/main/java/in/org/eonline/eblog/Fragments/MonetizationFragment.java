@@ -88,22 +88,10 @@ public class MonetizationFragment extends Fragment {
         submitAdMobAdUnitId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              /*  adMobUnitId = adMobAdUnitIdEdit.getText().toString();
-
-                userAdView = new AdView(getActivity());
-                userAdView.setAdSize(AdSize.SMART_BANNER);
-                userAdView.setAdUnitId(adMobUnitId);
-
-                AdRequest adRequest = new AdRequest.Builder()
-                        .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                        .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
-
-
-                userAdView.loadAd(adRequest); */
 
                 adMobUnitId = adMobAdUnitIdEdit.getText().toString();
 
-                View adContainer = getView().findViewById(R.id.adMobView);
+                /*View adContainer = getView().findViewById(R.id.adMobView);
 
                 AdView userAdView = new AdView(getActivity());
 
@@ -115,7 +103,7 @@ public class MonetizationFragment extends Fragment {
                 AdRequest adRequest = new AdRequest.Builder()
                         .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                         .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
-                userAdView.loadAd(adRequest);
+                userAdView.loadAd(adRequest); */
 
                 addAdMobIdToUsers(adMobUnitId);
 
@@ -146,14 +134,14 @@ public class MonetizationFragment extends Fragment {
 
 
 
-    public void addAdMobIdToUsers(final String adMobUnitId) {
+    public void addAdMobIdToUsers(String adMobUnitId) {
         connectivityReceiver = new ConnectivityReceiver(getActivity());
         // Initialize SDK before setContentView(Layout ID)
         isInternetPresent = connectivityReceiver.isConnectingToInternet();
         if (isInternetPresent) {
             dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
             dialog.show();
-            addDataToUserFirebase();
+            addDataToUserFirebase(adMobUnitId);
 
         } else {
             CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
@@ -163,8 +151,8 @@ public class MonetizationFragment extends Fragment {
 
         }
 
-    public void addDataToUserFirebase(){
-        db.collection("Users").document(userId).update("UserBannerId",adMobUnitId)
+    public void addDataToUserFirebase(String adMobUnitId){
+        db.collection("Users").document(userId).update("UserBannerId", adMobUnitId)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

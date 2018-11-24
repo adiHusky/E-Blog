@@ -58,7 +58,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/_20sdp"
-            android:text="@string/submit_button" />
+            android:text="@string/submit_button"
+            android:background="@drawable/app_button_drawable"
+            android:paddingStart="@dimen/_25sdp"
+            android:paddingEnd="@dimen/_25sdp"
+            android:textColor="#fff"
+            android:textAllCaps="false"
+            android:textSize="@dimen/_16sdp"/>
 
         <TextView
             android:layout_width="wrap_content"

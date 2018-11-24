@@ -92,6 +92,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         InitializeViews();
         setYourBlogsFromFirebase();
         refreshMyProfile();
+
         MobileAds.initialize(getContext(),"ca-app-pub-7722811932766421~9001519486");
         mAdView = (AdView) getView().findViewById(R.id.yourBlogs_adView);
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -99,18 +100,13 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
     }
 
     public void refreshMyProfile(){
-
         mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-
-                                                      @Override
-                                                      public void onRefresh() {
-
-                                                          onRefreshOperation();
-                                                          mySwipeRequestLayout.setRefreshing(false);
-                                                      }
-                                                  }
-        );
-
+            @Override
+            public void onRefresh() {
+                onRefreshOperation();
+                mySwipeRequestLayout.setRefreshing(false);
+                }
+        });
     }
 
     public void onRefreshOperation(){
@@ -157,7 +153,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
                                     setBlogModel(document);
 
                                 }
-
+                                i++;
                             }
                             if(i==0)
                             {

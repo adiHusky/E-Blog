@@ -19,6 +19,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -60,6 +63,7 @@ public class ReportBugFragment extends Fragment {
     Boolean isInternetPresent = false;
     public SwipeRefreshLayout mySwipeRequestLayout;
     public Dialog dialog;
+    private AdView mAdView;
 
 
     public ReportBugFragment() {
@@ -83,7 +87,10 @@ public class ReportBugFragment extends Fragment {
 
         submitBugFunction();
 
-
+        MobileAds.initialize(getContext(),"ca-app-pub-7722811932766421~9001519486");
+        mAdView = (AdView) getView().findViewById(R.id.reportBug_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     public void submitBugFunction(){

@@ -66,6 +66,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -75,6 +76,7 @@ import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+import in.org.eonline.eblog.Utilities.ImageUtility;
 
 
 import static android.Manifest.permission.CAMERA;
@@ -119,6 +121,10 @@ public class MyProfileFragment extends Fragment {
     ConnectivityReceiver connectivityReceiver;
     Boolean isInternetPresent = false;
     public SwipeRefreshLayout mySwipeRequestLayout;
+    private File destFile, sourceFile;
+    private File file;
+    String dateFormatter;
+    public static final String IMAGE_DIRECTORY = "E-Blogger";
 
 
     public MyProfileFragment() {
@@ -163,7 +169,7 @@ public class MyProfileFragment extends Fragment {
 
         submitUserProfile();
 
-        downloadImageFromFirebaseStorage();
+        //downloadImageFromFirebaseStorage();
 
         refreshMyProfile();
 
@@ -175,6 +181,11 @@ public class MyProfileFragment extends Fragment {
         mAdView = (AdView) getView().findViewById(R.id.myProfile_adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
+
+        Calendar ct = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        dateFormatter = df.format(ct.getTime());
+
     }
 
     public void refreshMyProfile(){
@@ -259,13 +270,8 @@ public class MyProfileFragment extends Fragment {
             enterUserFirebase();
         } else {
             CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
-
             //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
         }
-
-
-
-
     }
 
     public void enterUserFirebase(){
@@ -277,29 +283,38 @@ public class MyProfileFragment extends Fragment {
                 Toast.makeText(getContext(), "Server is down", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
-        })
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         setUserModel(document);
-                        downloadImageFromFirebaseStorage();
-                        dialog.dismiss();
-
-
+                        try {
+                            String userImageUrl = document.getString("UserImageUrl");
+                            if(userImageUrl != null) {
+                                downloadImageFromFirebaseStorage();
+                            } else {
+                                if (dialog != null && dialog.isShowing()) {
+                                    dialog.dismiss();
+                                }
+                            }
+                        }
+                        catch(NullPointerException e) {
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
+                        }
                         Toast.makeText(getContext(), "Data is retrieved from firebase", Toast.LENGTH_LONG).show();
-                    } /*else {
-                        setUserModelAndUserMap();
-                        addDataToUserFirebase();
-                    } */
+                    } else {
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                    }
                 } else {
                     CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                     Toast.makeText(getContext(), "server is down", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
-
-
                 }
             }
         });
@@ -316,8 +331,7 @@ public class MyProfileFragment extends Fragment {
                 Glide.with(getActivity())
                         .load(uri)
                         .into(userProfileImage);
-          //      dialog.dismiss();
-
+                dialog.dismiss();
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -325,14 +339,11 @@ public class MyProfileFragment extends Fragment {
             public void onFailure(@NonNull Exception exception) {
                 CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                 dialog.dismiss();
-
-
             }
         });
     }
 
     public void setUserModel(DocumentSnapshot document){
-
         userModel = new UserModel();
         userModel.setUserFName(document.getString("UserFirstName"));
         userFnameEdit.setText(userModel.getUserFName());
@@ -350,7 +361,6 @@ public class MyProfileFragment extends Fragment {
         userModel.setUserLName(userLnameEdit.getText().toString());
         userModel.setUserEmail(userEmailIdEdit.getText().toString());
         userModel.setUserContact(userContactEdit.getText().toString());
-
         userMap.put("UserFirstName", userModel.getUserFName());
         userMap.put("UserLastName", userModel.getUserLName());
         userMap.put("UserEmailId", userModel.getUserEmail());
@@ -377,7 +387,6 @@ public class MyProfileFragment extends Fragment {
                         editor.putBoolean("isUserCreated", isDataInserted);
                         editor.commit();
                         dialog.dismiss();
-
                       //  startUploadingImageToFirebase();
                     }
                 })
@@ -387,10 +396,8 @@ public class MyProfileFragment extends Fragment {
                         CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                         Toast.makeText(getContext(), "Some error occured", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
-
                     }
                 });
-
     }
 
     public void updateDataToUserFirebase() {
@@ -648,7 +655,11 @@ public class MyProfileFragment extends Fragment {
         if (resultCode == RESULT_OK) {
             if (getPickImageResultUri(data) != null) {
                 picUri = getPickImageResultUri(data);
-                try {
+
+                bitmap = compressImage(picUri);
+                userProfileImage.setImageBitmap(bitmap);
+
+                /*try {
                     myBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), picUri);
                     //myBitmap = rotateImageIfRequired(myBitmap, picUri);
                     //myBitmap = getResizedBirotateImageIfRequiredtmap(myBitmap, 500);
@@ -656,13 +667,31 @@ public class MyProfileFragment extends Fragment {
                 } catch (IOException e) {
                     e.printStackTrace();
                     Toast.makeText(getContext(), "Unable to set Image", Toast.LENGTH_SHORT).show();
-                }
+                } */
             } else {
                 bitmap = (Bitmap) data.getExtras().get("data");
                 myBitmap = bitmap;
                 userProfileImage.setImageBitmap(myBitmap);
             }
         }
+    }
+
+    public Bitmap compressImage(Uri picuri) {
+        Bitmap bmp;
+        file = new File(Environment.getExternalStorageDirectory() + "/" + IMAGE_DIRECTORY);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        sourceFile = new File(ImageUtility.getInstance().getPathFromGooglePhotosUri(getActivity(), picuri));
+        destFile = new File(file, "img_" + dateFormatter.format(new Date().toString() + ".png"));
+
+        try {
+            ImageUtility.getInstance().copyFile(sourceFile, destFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bmp = ImageUtility.getInstance().decodeFile(destFile);
+        return bmp;
     }
 
     /**

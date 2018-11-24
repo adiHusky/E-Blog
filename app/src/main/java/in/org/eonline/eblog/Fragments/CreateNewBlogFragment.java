@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -135,6 +136,8 @@ public class CreateNewBlogFragment extends Fragment  {
     private File file;
     String dateFormatter;
     public static final String IMAGE_DIRECTORY = "E-Blogger";
+    private boolean isImageOnePresent = false;
+    private boolean isImageTwoPresent = false;
 
     public CreateNewBlogFragment() {
         // Required empty public constructor
@@ -145,10 +148,8 @@ public class CreateNewBlogFragment extends Fragment  {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_create_new_blog, container, false);
-
     }
 
     @Override
@@ -165,10 +166,7 @@ public class CreateNewBlogFragment extends Fragment  {
         blogId = sharedpreferences.getString("blogId_new",blogIdBase);
         setSpinner();
 
-
-
         setBlogImages();
-
 
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -185,7 +183,20 @@ public class CreateNewBlogFragment extends Fragment  {
                    dialog.setCancelable(false);
                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
                    dialog.show();
-                   uploadBlogImagesToFirebaseStorage();
+
+                   createBlogId();
+                   isImageOnePresent = hasImage(blogImageView1);
+                   isImageTwoPresent = hasImage(blogImageView2);
+
+                   if(isImageOnePresent && isImageTwoPresent) {
+                       uploadBlogImagesToFirebaseStorage();
+                   } else if (!isImageOnePresent && !isImageTwoPresent) {
+                       getUserBannerIdAndUserImageUrl();
+                   } else if(isImageOnePresent && !isImageTwoPresent) {
+                       uploadBlogImagesToFirebaseStorage();
+                   } else if(!isImageOnePresent && isImageTwoPresent) {
+                       uploadImage2();
+                   }
                }
             }
         });
@@ -381,10 +392,10 @@ public class CreateNewBlogFragment extends Fragment  {
                             }
                         }
 
-                      if(blogmodel.getBannerAdMobId()!= null) {
+                      if (blogmodel.getBannerAdMobId()!= null) {
                           setBlogModelAndMap();
                           addData();
-                      }else{
+                      } else {
                           Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
                           if (dialog != null && dialog.isShowing()) {
                               dialog.dismiss();
@@ -679,20 +690,13 @@ public class CreateNewBlogFragment extends Fragment  {
         Bitmap bitmap1;
         //Bitmap bitmap2;
         // Create a child reference, imagesRef now points to "mountains.jpg"
-        String blogid = createBlogId();
-
+        //String blogid = createBlogId();
 
         // Get the data from an ImageView as bytes
         blogImageView1.setDrawingCacheEnabled(true);
         blogImageView1.buildDrawingCache();
-        blogImageView2.setDrawingCacheEnabled(true);
-        blogImageView2.buildDrawingCache();
 
-        //bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
-        //bitmaps.add(bitmap1);
-        //bitmaps.add(bitmap2);
-
-        final StorageReference imagesRef1 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogid + "img1");
+        final StorageReference imagesRef1 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId + "img1");
         //final StorageReference imagesRef2 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogid + "img2");
         bitmap1 = ((BitmapDrawable) blogImageView1.getDrawable()).getBitmap();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -713,43 +717,20 @@ public class CreateNewBlogFragment extends Fragment  {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Toast.makeText(getContext(), "File 1 successfully uploaded", Toast.LENGTH_SHORT).show();
                 //getimageUrl();
-                uploadImage2();
-            }
-        });
-
-        //ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-
-
-
-
-        /*for(Bitmap item : bitmaps){
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            item.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            byte[] data = baos.toByteArray();
-            UploadTask uploadTask = imagesRef1.putBytes(data);
-            UploadTask uploadTask1 = imagesRef2.putBytes(data);
-
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
-                    Toast.makeText(getContext(), "File could not be uploaded", Toast.LENGTH_SHORT).show();
-                }
-            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(getContext(), "File successfully uploaded", Toast.LENGTH_SHORT).show();
+                if(isImageTwoPresent) {
+                    uploadImage2();
+                } else {
                     getimageUrl();
                 }
-            });
-        } */
-
-        //getUserBannerIdAndUserImageUrl();
-
+            }
+        });
     }
 
     public void uploadImage2() {
+
+        blogImageView2.setDrawingCacheEnabled(true);
+        blogImageView2.buildDrawingCache();
+
         final StorageReference imagesRef2 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId + "img2");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Bitmap bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
@@ -769,7 +750,11 @@ public class CreateNewBlogFragment extends Fragment  {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Toast.makeText(getContext(), "File 2 successfully uploaded", Toast.LENGTH_SHORT).show();
-                getimageUrl();
+                if(isImageOnePresent) {
+                    getimageUrl();
+                } else {
+                    getImageUrl2();
+                }
             }
         });
     }
@@ -788,7 +773,11 @@ public class CreateNewBlogFragment extends Fragment  {
                             blogmodel.setUserBlogImage1Url(downloadUrl);
                             blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
                         }
-                        getImageUrl2();
+                        if(isImageTwoPresent) {
+                            getImageUrl2();
+                        } else {
+                            getUserBannerIdAndUserImageUrl();
+                        }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -826,6 +815,17 @@ public class CreateNewBlogFragment extends Fragment  {
                 }
             }
         });
+    }
+
+    private boolean hasImage(@NonNull ImageView view) {
+        Drawable drawable = view.getDrawable();
+        boolean hasImage = (drawable != null);
+
+        if (hasImage && (drawable instanceof BitmapDrawable)) {
+            hasImage = ((BitmapDrawable)drawable).getBitmap() != null;
+        }
+
+        return hasImage;
     }
 }
 

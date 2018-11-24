@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,7 +28,7 @@
                 android:text="Blog Category:"
                 android:textSize="@dimen/_15sdp"
                 android:layout_marginStart="@dimen/_10sdp"
-                android:layout_marginTop="@dimen/_10sdp"/>
+                android:layout_marginTop="@dimen/_5sdp"/>
 
             <Spinner
                 android:id="@+id/spinner_category"
@@ -84,9 +89,6 @@
             android:ems="15"
             android:hint="Enter the content of Blog - Part 1"
             android:textSize="@dimen/_15sdp" />
-
-
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -280,21 +282,24 @@
             android:background="@drawable/app_button_drawable"
             android:paddingEnd="@dimen/_30sdp"
             android:paddingStart="@dimen/_30sdp"
-            android:text="Save Blog"
+            android:text="Create Blog"
             android:textAllCaps="false"
             android:textColor="#fff"
             android:textSize="@dimen/_16sdp" />
 
-        <com.google.android.gms.ads.AdView
-            xmlns:ads="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/createNewBlog_adView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            ads:adSize="SMART_BANNER"
-            ads:adUnitId="ca-app-pub-7293397784162310/4406082209">
-        </com.google.android.gms.ads.AdView>
     </LinearLayout>
 
+    </ScrollView>
+
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/createNewBlog_adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        ads:adSize="SMART_BANNER"
+        ads:adUnitId="ca-app-pub-7293397784162310/4406082209">
+    </com.google.android.gms.ads.AdView>
 
 
-</ScrollView>
+
+</LinearLayout>
