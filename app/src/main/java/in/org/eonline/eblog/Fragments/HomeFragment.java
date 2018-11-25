@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -36,6 +37,7 @@ import java.util.List;
 import in.org.eonline.eblog.Adapters.BlogAdapter;
 import in.org.eonline.eblog.Adapters.UserAdapter;
 import in.org.eonline.eblog.Activities.BlogActivity;
+import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
@@ -65,6 +67,7 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     Boolean isInternetPresent = false;
     public Dialog dialog;
     public SwipeRefreshLayout mySwipeRequestLayout;
+    View view;
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -75,13 +78,14 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false);
+
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         db = FirebaseFirestore.getInstance();
-
+        blogModelsList.clear();
         initializeViews();
         setDataFirebase();
         refreshMyProfile();
@@ -122,10 +126,12 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     }
 
     public void onRefreshOperation(){
-        Fragment frg = new HomeFragment();
-
-        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+       // getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        Fragment frg = null;
+        frg = getFragmentManager().findFragmentByTag("nav_home");
+        final FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(frg);
+        blogModelsList.clear();
         ft.attach(frg);
         ft.commit();
     }
@@ -170,7 +176,9 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
             @Override
             public void onFailure(@NonNull Exception e) {
                 CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
-                dialog.dismiss();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
             }
         })
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -194,10 +202,16 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
                                 CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.no_data);
                             }
                             setPopularBlogsRecyclerView();
-                            dialog.dismiss();
+                            if (dialog != null && dialog.isShowing()) {
+                                if (dialog != null && dialog.isShowing()) {
+                                    dialog.dismiss();
+                                }
+                            }
                         } else {
                             CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
-                            dialog.dismiss();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
@@ -266,4 +280,6 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
         intent.putExtra("blog", blogmodel);
         getActivity().startActivity(intent);
     }
+
+
 }

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -110,8 +111,11 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
     }
 
     public void onRefreshOperation(){
-        Fragment frg = new YourBlogsFragment();
-        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+        //getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        Fragment frg = null;
+        frg = getFragmentManager().findFragmentByTag("nav_blog_history");
+        final FragmentTransaction ft = getFragmentManager().beginTransaction();
+        blogModelsList.clear();
         ft.detach(frg);
         ft.attach(frg);
         ft.commit();
@@ -140,7 +144,9 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
             @Override
             public void onFailure(@NonNull Exception e) {
                 CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
-                dialog.dismiss();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
             }
         })
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -160,10 +166,14 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
                                 CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.no_data);
                             }
                             setPopularBlogsRecyclerView();
-                            dialog.dismiss();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
 
                         } else {
-                            dialog.dismiss();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }

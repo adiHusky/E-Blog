@@ -1,7 +1,9 @@
 package in.org.eonline.eblog;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -10,6 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -34,6 +37,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+import in.org.eonline.eblog.Activities.BlogActivity;
 import in.org.eonline.eblog.Activities.Login;
 import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
 import in.org.eonline.eblog.Fragments.HomeFragment;
@@ -55,6 +59,8 @@ public class HomeActivity extends AppCompatActivity
     NavigationView navigationView;
     DrawerLayout drawer;
     GoogleSignInClient mGoogleSignInClient;
+    public String fragmentTag;
+    private Boolean exit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +68,7 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
 
         initializeViews();
+        fragmentTag="nav_home";
         openFragment(new HomeFragment(), "nav_home");
         //getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, new HomeFragment(), "EXPLORE").commit();
 
@@ -106,7 +113,29 @@ public class HomeActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (exit) {
+                super.onBackPressed();
+            }
+            else {
+                android.support.v4.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+                if (fragment != null) {
+                    if(fragment.getTag() == "nav_home") {
+                        finish();
+                    } else {
+                        openFragment(new HomeFragment(), "nav_home");
+                    }
+                } else {
+                    /* Toast.makeText(this, "Press Back again to Exit.", Toast.LENGTH_SHORT).show();
+                    exit = true;
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            exit = false;
+                        }
+                    }, 3 * 1000); */
+                    finish();
+                }
+            }
         }
     }
 
@@ -151,7 +180,7 @@ public class HomeActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        String fragmentTag;
+
         if (id == R.id.nav_home) {
             HomeFragment homeFragment = new HomeFragment();
             fragmentTag="nav_home";
@@ -159,7 +188,7 @@ public class HomeActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_new_blog) {
             CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
-            fragmentTag="nav_home";
+            fragmentTag="create_new_fragment";
             openFragment(createNewBlogFragment,fragmentTag);
         } else if (id == R.id.nav_blog_history) {
             YourBlogsFragment yourBlogsFragment = new YourBlogsFragment();
@@ -201,7 +230,7 @@ public class HomeActivity extends AppCompatActivity
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment,fragmentTag);
-        fragmentTransaction.addToBackStack(fragmentTag);
+        //fragmentTransaction.addToBackStack(fragmentTag);
         fragmentTransaction.commit();
     }
 
@@ -221,4 +250,6 @@ public class HomeActivity extends AppCompatActivity
                     }
                 });
     }
+
+
 }

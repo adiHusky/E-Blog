@@ -2,12 +2,15 @@ package in.org.eonline.eblog.Fragments;
 
 
 import android.app.Dialog;
+
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -124,13 +127,15 @@ public class MonetizationFragment extends Fragment {
     }
 
     public void onRefreshOperation(){
-        Fragment frg = new MonetizationFragment();
-
-        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+        //getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        Fragment frg = null;
+        frg = getFragmentManager().findFragmentByTag("nav_monetize");
+        final FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(frg);
         ft.attach(frg);
         ft.commit();
     }
+
 
 
 
@@ -158,7 +163,9 @@ public class MonetizationFragment extends Fragment {
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "DocumentSnapshot successfully updated!");
                         Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
 
                     }
                 })
@@ -167,7 +174,9 @@ public class MonetizationFragment extends Fragment {
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error updating document", e);
                         CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
-                        dialog.dismiss();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 });
     }
@@ -204,7 +213,9 @@ public class MonetizationFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Exception e) {
                 CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
-                dialog.dismiss();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
             }
         })
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -216,22 +227,30 @@ public class MonetizationFragment extends Fragment {
                         try {
                             adMobAdUnitIdEdit.setText(document.getString("UserBannerId").toString());
                             Toast.makeText(getContext(), "Admob ID present", Toast.LENGTH_LONG).show();
-                            dialog.dismiss();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                         }
                         catch(NullPointerException e){
                             Toast.makeText(getContext(), "Enter Admob ID", Toast.LENGTH_LONG).show();
-                            dialog.dismiss();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                         }
                     }
 
                     else {
-                        dialog.dismiss();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                         /*setUserModelAndUserMap();
                         addDataToUserFirebase();*/
                     }
                 } else {
                     Toast.makeText(getContext(), "Enter Admob ID", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
                 }
 
             }

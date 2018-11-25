@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -144,10 +145,10 @@ public class ReportBugFragment extends Fragment {
         });
     }
     public void onRefreshOperation(){
-
-        Fragment frg = new ReportBugFragment();
-
-        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+      //  getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        Fragment frg = null;
+        frg = getFragmentManager().findFragmentByTag("nav_report_bug");
+        final FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(frg);
         ft.attach(frg);
         ft.commit();
@@ -224,7 +225,9 @@ public void validateData(){
                     @Override
                     public void onSuccess(Void aVoid) {
                         Toast.makeText(getActivity(), "Bug Reported Successfully", Toast.LENGTH_LONG).show();
-                        dialog.dismiss();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
 
                     }
                 })
@@ -233,7 +236,9 @@ public void validateData(){
                     public void onFailure(@NonNull Exception e) {
                         CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                         Toast.makeText(getActivity(), "Some error occured while reporting bug", Toast.LENGTH_LONG).show();
-                        dialog.dismiss();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 });
     }

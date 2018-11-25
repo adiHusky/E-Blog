@@ -4,7 +4,7 @@ package in.org.eonline.eblog.Fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.FragmentTransaction;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,6 +26,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -203,10 +204,10 @@ public class MyProfileFragment extends Fragment {
 
 }
     public void onRefreshOperation(){
-
-        Fragment frg = new MyProfileFragment();
-
-        final android.support.v4.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+       // getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        Fragment frg = null;
+        frg = getFragmentManager().findFragmentByTag("nav_profile");
+        final FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(frg);
         ft.attach(frg);
         ft.commit();
@@ -281,7 +282,9 @@ public class MyProfileFragment extends Fragment {
             public void onFailure(@NonNull Exception e) {
                 CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                 Toast.makeText(getContext(), "Server is down", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
             }
         }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override

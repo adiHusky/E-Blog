@@ -26,6 +26,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -79,6 +81,8 @@ import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
+import in.org.eonline.eblog.Utilities.CommonDialog;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 import in.org.eonline.eblog.Utilities.ImageUtility;
 import in.org.eonline.eblog.Utilities.PermissionUtils;
 
@@ -138,6 +142,9 @@ public class CreateNewBlogFragment extends Fragment  {
     public static final String IMAGE_DIRECTORY = "E-Blogger";
     private boolean isImageOnePresent = false;
     private boolean isImageTwoPresent = false;
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
+    public SwipeRefreshLayout mySwipeRequestLayout;
 
     public CreateNewBlogFragment() {
         // Required empty public constructor
@@ -171,35 +178,20 @@ public class CreateNewBlogFragment extends Fragment  {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setVisibilityGone();
-               //upload blog images to firebase storage first, then get the download url of images to store in Users & Blogs collection
-               boolean isValidated = validateData();
-               if(isValidated) {
-                   dialog = new Dialog(getContext());
-                   dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                   dialog.setContentView(R.layout.progressbar);
-                   ProgressBar progress = (ProgressBar) dialog.findViewById(R.id.progressBarServerData);
-                 //  progress.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.MULTIPLY);
-                   dialog.setCancelable(false);
-                   dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-                   dialog.show();
-
-                   createBlogId();
-                   isImageOnePresent = hasImage(blogImageView1);
-                   isImageTwoPresent = hasImage(blogImageView2);
-
-                   if(isImageOnePresent && isImageTwoPresent) {
-                       uploadBlogImagesToFirebaseStorage();
-                   } else if (!isImageOnePresent && !isImageTwoPresent) {
-                       getUserBannerIdAndUserImageUrl();
-                   } else if(isImageOnePresent && !isImageTwoPresent) {
-                       uploadBlogImagesToFirebaseStorage();
-                   } else if(!isImageOnePresent && isImageTwoPresent) {
-                       uploadImage2();
-                   }
-               }
+                connectivityReceiver = new ConnectivityReceiver(getActivity());
+                // Initialize SDK before setContentView(Layout ID)
+                isInternetPresent = connectivityReceiver.isConnectingToInternet();
+                if (isInternetPresent) {
+                    submitButtonLogic();
+                }
+                else
+                {
+                    CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+                }
             }
         });
+
+
 
         cancelImage1.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -228,6 +220,30 @@ public class CreateNewBlogFragment extends Fragment  {
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
         dateFormatter = df.format(ct.getTime());
     }
+
+    public void submitButtonLogic(){
+        setVisibilityGone();
+        //upload blog images to firebase storage first, then get the download url of images to store in Users & Blogs collection
+        boolean isValidated = validateData();
+        if(isValidated) {
+            dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+            dialog.show();
+            createBlogId();
+            isImageOnePresent = hasImage(blogImageView1);
+            isImageTwoPresent = hasImage(blogImageView2);
+
+            if(isImageOnePresent && isImageTwoPresent) {
+                uploadBlogImagesToFirebaseStorage();
+            } else if (!isImageOnePresent && !isImageTwoPresent) {
+                getUserBannerIdAndUserImageUrl();
+            } else if(isImageOnePresent && !isImageTwoPresent) {
+                uploadBlogImagesToFirebaseStorage();
+            } else if(!isImageOnePresent && isImageTwoPresent) {
+                uploadImage2();
+            }
+        }
+    }
+
 
     public boolean validateData() {
 
@@ -259,13 +275,34 @@ public class CreateNewBlogFragment extends Fragment  {
         uploadImage1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivityForResult(getPickImageChooserIntent(), 201);
+                connectivityReceiver = new ConnectivityReceiver(getActivity());
+                // Initialize SDK before setContentView(Layout ID)
+                isInternetPresent = connectivityReceiver.isConnectingToInternet();
+                if (isInternetPresent) {
+                    startActivityForResult(getPickImageChooserIntent(), 201);
+                }
+                else
+                {
+                    CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+                }
+
+
             }
         });
         uploadImage2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivityForResult(getPickImageChooserIntent(), 202);
+                connectivityReceiver = new ConnectivityReceiver(getActivity());
+                // Initialize SDK before setContentView(Layout ID)
+                isInternetPresent = connectivityReceiver.isConnectingToInternet();
+                if (isInternetPresent) {
+                    startActivityForResult(getPickImageChooserIntent(), 202);
+                }
+                else
+                {
+                    CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
+                }
+
             }
         });
     }
@@ -827,6 +864,8 @@ public class CreateNewBlogFragment extends Fragment  {
 
         return hasImage;
     }
+
+
 }
 
 

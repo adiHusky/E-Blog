@@ -1,5 +1,6 @@
 package in.org.eonline.eblog.Activities;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -53,6 +55,8 @@ import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.Utilities.CommonDialog;
+import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
 import static android.content.ContentValues.TAG;
 import static in.org.eonline.eblog.Fragments.YourBlogsFragment.MyPREFERENCES;
@@ -79,6 +83,10 @@ public class BlogActivity extends AppCompatActivity {
     private BlogModel blogModel;
     FrameLayout frameLayout;
     String[] userIdBlog;
+    ConnectivityReceiver connectivityReceiver;
+    Boolean isInternetPresent = false;
+    public SwipeRefreshLayout mySwipeRequestLayout;
+    public Dialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,33 +100,47 @@ public class BlogActivity extends AppCompatActivity {
         userId = sharedpreferences.getString("UserIdCreated", "AdityaKamat75066406850");
         if (getIntent().hasExtra("blog")) {
             blogModel = new Gson().fromJson(getIntent().getStringExtra("blog"), BlogModel.class);
-            blogHeader.setText(blogModel.getBlogHeader());
-            blogContent1.setText(blogModel.getBlogContent1());
-            blogContent2.setText(blogModel.getBlogContent2());
-            blogFooter.setText(blogModel.getBlogFooter());
-            blogCategory.setText(blogModel.getBlogCategory());
-            blogId = blogModel.getBlogId();
-            blogLikes.setText(blogModel.getBlogLikes() + "Likes");
-            bannerId = blogModel.getBannerAdMobId();
-            Glide.with(BlogActivity.this)
-                    .load(blogModel.getUserBlogImage1Url())
-                    .into(blogImageView1);
-            Glide.with(BlogActivity.this)
-                    .load(blogModel.getUserBlogImage2Url())
-                    .into(blogImageView2);
-            CheckLikes(blogModel);
-            userIdBlog=blogId.split("\\_");
-            if (bannerId != null) {
-                View adContainer = findViewById(R.id.blogAdMobView);
-                AdView userAdView = new AdView(this);
-                userAdView.setAdSize(AdSize.BANNER);
-                userAdView.setAdUnitId(bannerId);
-                ((RelativeLayout) adContainer).addView(userAdView);
-                AdRequest adRequest = new AdRequest.Builder()
-                        .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                        .addTestDevice("F6ECB8AECEA2A45447ADE1C65B01711B").build();
-                userAdView.loadAd(adRequest);
+            connectivityReceiver = new ConnectivityReceiver(this);
+            // Initialize SDK before setContentView(Layout ID)
+            isInternetPresent = connectivityReceiver.isConnectingToInternet();
+            if (isInternetPresent) {
+                dialog = CommonDialog.getInstance().showProgressDialog(this);
+                dialog.show();
+                setBlogDataAndImage();
+            } else {
+                CommonDialog.getInstance().showErrorDialog(this, R.drawable.no_internet);
+                //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
             }
+        }
+    }
+
+    public void setBlogDataAndImage(){
+        blogHeader.setText(blogModel.getBlogHeader());
+        blogContent1.setText(blogModel.getBlogContent1());
+        blogContent2.setText(blogModel.getBlogContent2());
+        blogFooter.setText(blogModel.getBlogFooter());
+        blogCategory.setText(blogModel.getBlogCategory());
+        blogId = blogModel.getBlogId();
+        blogLikes.setText(blogModel.getBlogLikes() + "Likes");
+        bannerId = blogModel.getBannerAdMobId();
+        Glide.with(BlogActivity.this)
+                .load(blogModel.getUserBlogImage1Url())
+                .into(blogImageView1);
+        Glide.with(BlogActivity.this)
+                .load(blogModel.getUserBlogImage2Url())
+                .into(blogImageView2);
+        CheckLikes(blogModel);
+        userIdBlog=blogId.split("\\_");
+        if (bannerId != null) {
+            View adContainer = findViewById(R.id.blogAdMobView);
+            AdView userAdView = new AdView(this);
+            userAdView.setAdSize(AdSize.SMART_BANNER);
+            userAdView.setAdUnitId(bannerId);
+            ((RelativeLayout) adContainer).addView(userAdView);
+            AdRequest adRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    .addTestDevice("F6ECB8AECEA2A45447ADE1C65B01711B").build();
+            userAdView.loadAd(adRequest);
         }
     }
 
@@ -151,22 +173,34 @@ public class BlogActivity extends AppCompatActivity {
                                     // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.like));
                                     userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_24dp);
                                     likeButtonValue = "LIKED";
+                                    if (dialog != null && dialog.isShowing()) {
+                                        dialog.dismiss();
+                                    }
                                     break;
                                 } else {
                                     // userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
                                     userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
                                     likeButtonValue = "LIKE";
+                                    if (dialog != null && dialog.isShowing()) {
+                                        dialog.dismiss();
+                                    }
                                 }
                             } else {
                                 //userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
                                 userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
                                 likeButtonValue = "LIKE";
+                                if (dialog != null && dialog.isShowing()) {
+                                    dialog.dismiss();
+                                }
                             }
                         }
                     } else {
                         //userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
                         userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
                         likeButtonValue = "LIKE";
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 }
                 task.addOnFailureListener(new OnFailureListener() {
@@ -176,16 +210,39 @@ public class BlogActivity extends AppCompatActivity {
                       //  userLikesButton.setBackgroundTintList(getResources().getColorStateList(R.color.black));
                         userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_like_24dp);
                         userLikesButton.setBackgroundColor(getResources().getColor(R.color.white));
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
 
                     }
                 });
             }
         });
 
+
+        connectivityReceiver = new ConnectivityReceiver(this);
+        // Initialize SDK before setContentView(Layout ID)
+        isInternetPresent = connectivityReceiver.isConnectingToInternet();
+        if (isInternetPresent) {
+            userLikeButtonLogic();
+        } else {
+            CommonDialog.getInstance().showErrorDialog(this, R.drawable.no_internet);
+            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    public void userLikeButtonLogic(){
         userLikesButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v)
             {
+                connectivityReceiver = new ConnectivityReceiver(BlogActivity.this);
+                // Initialize SDK before setContentView(Layout ID)
+                isInternetPresent = connectivityReceiver.isConnectingToInternet();
+                if (isInternetPresent)
+                {
                 if (likeButtonValue == "LIKE") {
                     AddUserBlogMap(blogModel);
                 } else {
@@ -210,9 +267,13 @@ public class BlogActivity extends AppCompatActivity {
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
+                                    CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                                    if (dialog != null && dialog.isShowing()) {
+                                        dialog.dismiss();
+                                    }
                                 }
                             });
-                    DocumentReference userBlog  = db.collection("Users").document(userIdBlog[0]).collection("Blogs").document(blogId);
+                    DocumentReference userBlog = db.collection("Users").document(userIdBlog[0]).collection("Blogs").document(blogId);
                     userBlog.update("BlogLikes", blogLikesNewString)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
@@ -224,6 +285,10 @@ public class BlogActivity extends AppCompatActivity {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
                                     Log.w(TAG, "Error updating document", e);
+                                    CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                                    if (dialog != null && dialog.isShowing()) {
+                                        dialog.dismiss();
+                                    }
                                 }
                             });
                     DocumentReference userDoc = db.collection("Blogs").document(blogId);
@@ -238,14 +303,23 @@ public class BlogActivity extends AppCompatActivity {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
                                     Log.w(TAG, "Error updating document", e);
+                                    CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                                    if (dialog != null && dialog.isShowing()) {
+                                        dialog.dismiss();
+                                    }
                                 }
                             });
+
+                }
+                }
+                else
+                {
+                    CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.no_internet);
                 }
             }
 
         });
     }
-
 
 
     public void AddUserBlogMap(BlogModel blogModel) {
@@ -270,6 +344,10 @@ public class BlogActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error updating document", e);
+                        CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 });
 
@@ -285,6 +363,10 @@ public class BlogActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error updating document", e);
+                        CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 });
         db.collection("Users").document(userId).collection("UserReadBlogs").document(blogId).set(userReadBlogMap)
@@ -296,6 +378,10 @@ public class BlogActivity extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     }
                 });
     }
@@ -317,4 +403,8 @@ public class BlogActivity extends AppCompatActivity {
     }
 
 }
+
+
+
+
 

@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swiperefresh_task"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Fragments.TaskFragment">
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragments.TaskFragment">
+    >
 
     <Button
         android:id="@+id/submit_filter_button"
@@ -43,3 +49,4 @@
     </com.google.android.gms.ads.AdView>
 
 </RelativeLayout>
+</android.support.v4.widget.SwipeRefreshLayout>
