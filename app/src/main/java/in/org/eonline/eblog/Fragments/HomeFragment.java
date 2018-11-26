@@ -37,7 +37,6 @@ import java.util.List;
 import in.org.eonline.eblog.Adapters.BlogAdapter;
 import in.org.eonline.eblog.Adapters.UserAdapter;
 import in.org.eonline.eblog.Activities.BlogActivity;
-import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
@@ -58,7 +57,7 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     BlogModel blogModel;
     UserModel userModel;
     private AdView mAdView;
-    private RecyclerView popularUsersRecyclerView, popularBlogsRecyclerView;
+    private RecyclerView popularBlogsRecyclerView;
     private List<UserModel> userModels = new ArrayList<>();
     private List<BlogModel> blogModels = new ArrayList<>();
     FirebaseStorage storage;
@@ -78,14 +77,13 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false);
-
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         db = FirebaseFirestore.getInstance();
-        blogModelsList.clear();
+
         initializeViews();
         setDataFirebase();
         refreshMyProfile();
@@ -105,7 +103,7 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     }
 
     public void initializeViews() {
-        popularUsersRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_users);
+        //popularUsersRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_users);
         popularBlogsRecyclerView = (RecyclerView) getView().findViewById(R.id.popular_blogs);
         mySwipeRequestLayout=(SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_home);
     }
@@ -137,22 +135,6 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
     }
 
     public void setDataFirebase(){
-       /* db.collection("Users")
-                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                if (document.exists()) {
-                                    setUserModel(document);
-                                }
-                            }
-                            setPopularUsersRecyclerView();
-                        } else {
-
-                        }
-                    }
-                }); */
         connectivityReceiver = new ConnectivityReceiver(getActivity());
         // Initialize SDK before setContentView(Layout ID)
         isInternetPresent = connectivityReceiver.isConnectingToInternet();
@@ -162,11 +144,7 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
             enterBlogsFirebase();
         } else {
             CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
-
-            //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
         }
-
-
     }
 
     public void enterBlogsFirebase(){
@@ -203,16 +181,13 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
                             }
                             setPopularBlogsRecyclerView();
                             if (dialog != null && dialog.isShowing()) {
-                                if (dialog != null && dialog.isShowing()) {
-                                    dialog.dismiss();
-                                }
+                                dialog.dismiss();
                             }
                         } else {
                             CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
                             if (dialog != null && dialog.isShowing()) {
                                 dialog.dismiss();
                             }
-                            Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
                 });
@@ -245,25 +220,19 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
         blogModel.setBannerAdMobId(doc.getString("BlogUserBannerId"));
         blogModel.setUserBlogImage1Url(doc.getString("BlogImage1Url"));
         blogModel.setUserBlogImage2Url(doc.getString("BlogImage2Url"));
+        blogModel.setUserImageUrl(doc.getString("BlogUserImageUrl"));
 
         blogModelsList.add(blogModel);
-        // setPopularBlogsRecyclerView();
-
-        // blogHeader = document.getString("BlogHeader");
-        //Log.v(TAG, "DocumentSnapshot data: " + document.getData() );
-        // blogHeaderTextView.setText(blogModel.getBlogHeader());
-        // blogContentTextView.setText(blogModel.getBlogContent());
-        //blogFooterTextView.setText(blogModel.getBlogFooter());
 
     }
 
-    public void setPopularUsersRecyclerView() {
+    /*public void setPopularUsersRecyclerView() {
         popularUsersRecyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL, false);
         popularUsersRecyclerView.setLayoutManager(linearLayoutManager);
         UserAdapter adapter = new UserAdapter(getActivity(),userModelsList , HomeFragment.this);
         popularUsersRecyclerView.setAdapter(adapter);
-    }
+    } */
 
     public void setPopularBlogsRecyclerView() {
         popularBlogsRecyclerView.setHasFixedSize(true);
@@ -280,6 +249,4 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
         intent.putExtra("blog", blogmodel);
         getActivity().startActivity(intent);
     }
-
-
 }

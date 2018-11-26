@@ -1,61 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/_150sdp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    xmlns:card_view="http://schemas.android.com/tools"
     android:layout_marginStart="@dimen/_10sdp"
+    android:layout_marginTop="@dimen/_10sdp"
     android:layout_marginEnd="@dimen/_10sdp"
-    android:id="@+id/parent_layout"
-    >
+    card_view:cardCornerRadius="10dp"
+    card_view:cardElevation="5dp"
+    android:id="@+id/parent_layout">
 
-    <android.support.v7.widget.CardView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_200sdp"
-        app:cardElevation="@dimen/_2sdp"
-        app:cardUseCompatPadding="true"
-        app:cardPreventCornerOverlap="true">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:background="@color/black"
+        android:alpha="0.8">
         
        <ImageView
            android:layout_width="match_parent"
-           android:layout_height="@dimen/_170sdp"
-           android:src="@drawable/admob_logo"
+           android:layout_height="@dimen/_150sdp"
            android:id="@+id/blog_image_item"/>
 
-        <LinearLayout
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="@dimen/_5sdp">
+
+        <include
+            android:id="@+id/user_item"
+            layout="@layout/user_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </include>
+
+        <TextView
+            android:id="@+id/blog_likes_item"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_alignBottom="@+id/user_item"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/_10sdp"
+            android:text="100 Likes"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_12sdp" />
 
-            <TextView
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:text="Blog Header"
-                android:textSize="@dimen/_15sdp"
-                android:textColor="@color/black"
-                android:id="@+id/blog_header_item"
-                android:layout_marginStart="@dimen/_5sdp"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Blog Header"
-                android:textSize="@dimen/_12sdp"
-                android:textColor="@color/black"
-                android:id="@+id/blog_likes_item"
-                android:layout_marginStart="@dimen/_120sdp"/>
+    </RelativeLayout>
 
-        </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp">
 
-        </LinearLayout>
-        
-    </android.support.v7.widget.CardView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Blog Header"
+            android:textSize="@dimen/_14sdp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:id="@+id/blog_header_item" />
 
+    </LinearLayout>
 
-
-
-</LinearLayout>
+</android.support.v7.widget.CardView>

@@ -193,6 +193,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         blogModel.setBannerAdMobId(document.getString("BlogUserBannerId"));
         blogModel.setUserBlogImage1Url(document.getString("BlogImage1Url"));
         blogModel.setUserBlogImage2Url(document.getString("BlogImage2Url"));
+        blogModel.setUserImageUrl(document.getString("BlogUserImageUrl"));
         blogModelsList.add(blogModel);
        // setPopularBlogsRecyclerView();
     }

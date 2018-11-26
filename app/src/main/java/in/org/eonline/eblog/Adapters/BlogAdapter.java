@@ -10,6 +10,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.annotation.GlideModule;
+import com.bumptech.glide.module.AppGlideModule;
+
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 import in.org.eonline.eblog.Models.BlogModel;
@@ -33,18 +39,35 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final BlogAdapter.BlogViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position) {
       final  BlogModel blogModel = blogModels.get(position);
 
         holder.blogNameItem.setText(blogModels.get(position).getBlogHeader());
-        holder.blogLikeItem.setText(blogModels.get(position).getBlogLikes()+" Likes");
+        holder.blogLikeItem.setText(blogModels.get(position).getBlogLikes()+ " Likes");
+        holder.blogUserNameItem.setText(blogModels.get(position).getBlogUser());
+
+        Glide.with(context)
+                .load(blogModels.get(position).getUserImageUrl())
+                .into(holder.blogUserImageItem);
+
+        if(blogModels.get(position).getUserBlogImage1Url() != null) {
+            Glide.with(context)
+                    .load(blogModels.get(position).getUserBlogImage1Url())
+                    .into(holder.blogImageItem);
+        } else if(blogModels.get(position).getUserBlogImage2Url() != null) {
+            Glide.with(context)
+                    .load(blogModels.get(position).getUserBlogImage2Url())
+                    .into(holder.blogImageItem);
+        } else {
+            Glide.with(context)
+                    .load(R.drawable.sample_blog)
+                    .into(holder.blogImageItem);
+        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 clickListner.onClickItem(blogModel); // decides the item in adapter which is clicked
-
-
             }
         });
     }
@@ -59,21 +82,16 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
 
     public class BlogViewHolder extends RecyclerView.ViewHolder  implements View.OnClickListener{
 
-        ImageView blogImageItem;
-        TextView blogNameItem;
-        TextView blogLikeItem;
-        TextView blogHeader;
-        TextView blogFooter;
-        TextView blogContent;
-        RelativeLayout blogParent;
-        BlogViewHolder holder;
+        ImageView blogImageItem, blogUserImageItem;
+        TextView blogNameItem, blogLikeItem, blogUserNameItem;
 
         public BlogViewHolder(View itemView) {
             super(itemView);
             blogImageItem = (ImageView) itemView.findViewById(R.id.blog_image_item);
             blogNameItem = (TextView) itemView.findViewById(R.id.blog_header_item);
             blogLikeItem = (TextView) itemView.findViewById(R.id.blog_likes_item);
-
+            blogUserImageItem = (ImageView) itemView.findViewById(R.id.user_image_item);
+            blogUserNameItem = (TextView) itemView.findViewById(R.id.user_name_item);
         }
 
         @Override

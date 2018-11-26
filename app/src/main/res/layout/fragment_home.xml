@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Fragments.HomeFragment">
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.v7.widget.RecyclerView
+       <!-- <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/popular_users">
@@ -30,14 +31,14 @@
             android:background="@color/straightLine"
             android:id="@+id/view_1">
 
-        </View>
+        </View> -->
 
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/view_1"
             android:id="@+id/popular_blogs"
-            android:layout_marginTop="@dimen/_10sdp">
+            android:layout_marginBottom="@dimen/_50sdp">
 
         </android.support.v7.widget.RecyclerView>
 

@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/view_1"
         android:id="@+id/your_blogs"
-        android:layout_marginTop="@dimen/_10sdp">
+        android:layout_marginBottom="@dimen/_50sdp">
 
     </android.support.v7.widget.RecyclerView>
 

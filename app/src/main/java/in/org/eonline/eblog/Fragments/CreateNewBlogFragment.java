@@ -419,8 +419,10 @@ public class CreateNewBlogFragment extends Fragment  {
                         try {
                             String bannerId = document.getString("UserBannerId");
                             String userImageUrl = document.getString("UserImageUrl");
+                            String userName = document.getString("UserFirstName");
                             blogmodel.setBannerAdMobId(bannerId);
                             blogmodel.setUserImageUrl(userImageUrl);
+                            blogmodel.setBlogUser(userName);
                         }
                         catch(NullPointerException e) {
                             Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
@@ -523,7 +525,6 @@ public class CreateNewBlogFragment extends Fragment  {
         blogmodel.setBlogContent2(blogContentEdit2.getText().toString());
         blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
         blogmodel.setBlogLikes("0");
-        blogmodel.setBlogUser("Aditya Kamat");  // Todo: why this is hardcoded?
         blogMap.put("BlogHeader",blogmodel.getBlogHeader());
         blogMap.put("BlogContent1",blogmodel.getBlogContent1());
         blogMap.put("BlogContent2",blogmodel.getBlogContent2());
@@ -533,6 +534,7 @@ public class CreateNewBlogFragment extends Fragment  {
         blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
         blogMap.put("BlogUserBannerId",blogmodel.getBannerAdMobId());
         blogMap.put("BlogUserImageUrl",blogmodel.getUserImageUrl());
+        blogMap.put("BlogUser", blogmodel.getBlogUser());
     }
 
     public String createBlogId() {
@@ -767,6 +769,8 @@ public class CreateNewBlogFragment extends Fragment  {
 
         blogImageView2.setDrawingCacheEnabled(true);
         blogImageView2.buildDrawingCache();
+
+        storageRef = storage.getReference();
 
         final StorageReference imagesRef2 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId + "img2");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

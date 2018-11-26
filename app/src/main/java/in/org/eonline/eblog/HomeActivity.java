@@ -83,6 +83,7 @@ public class HomeActivity extends AppCompatActivity
 
         navigationView.setNavigationItemSelectedListener(this);
 
+
         // Create a new user with a first and last name
 
         user.put("first", "Viraj");

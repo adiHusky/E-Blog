@@ -15,7 +15,7 @@
         android:src="@drawable/him"
         android:layout_gravity="center_horizontal"
         card_view:civ_border_width="@dimen/_1sdp"
-        card_view:civ_border_color="@color/colorPrimaryDark"
+        card_view:civ_border_color="@color/colorAccent"
         android:background="@drawable/app_edittext_drawable"/>
 
     <TextView
@@ -26,6 +26,6 @@
         android:textSize="@dimen/_12sdp"
         android:layout_gravity="center"
         android:paddingTop="@dimen/_5sdp"
-        android:textColor="@color/black"/>
+        android:textColor="@color/white"/>
 
 </LinearLayout>
