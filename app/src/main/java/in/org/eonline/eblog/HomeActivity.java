@@ -1,9 +1,15 @@
 package in.org.eonline.eblog;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -20,8 +26,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -34,6 +42,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,13 +72,37 @@ public class HomeActivity extends AppCompatActivity
     GoogleSignInClient mGoogleSignInClient;
     public String fragmentTag;
     private Boolean exit = false;
+    ImageView imageView;
+    View hView;
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs_new" ;
+    private String isUserRegisteredAlready;
+    private String isUserNamePresent;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        sharedpreferences = this.getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        isUserRegisteredAlready = sharedpreferences.getString("UserImagePath", "false");
+        isUserNamePresent = sharedpreferences.getString("UserFirstName", "false");
         initializeViews();
+      /*  Intent intent = getIntent();
+        String s1 = intent.getStringExtra("Check");
+try {
+    if (s1.equals("1")) {
+        s1 = "";
+        android.support.v4.app.Fragment frg;
+        frg = getSupportFragmentManager().findFragmentByTag("nav_home");
+        final android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
+
+    }
+}
+catch(NullPointerException e){}*/
         fragmentTag="nav_home";
         openFragment(new HomeFragment(), "nav_home");
         //getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, new HomeFragment(), "EXPLORE").commit();
@@ -106,6 +141,47 @@ public class HomeActivity extends AppCompatActivity
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         frameLayout = (FrameLayout) findViewById(R.id.content_frame);
+        getNavHeaderTextImage();
+
+    }
+
+    public void getNavHeaderTextImage(){
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        hView =  navigationView.getHeaderView(0);
+        TextView nav_user = (TextView)hView.findViewById(R.id.nav_user_name);
+        if(isUserNamePresent!="false")
+        {
+            nav_user.setText(sharedpreferences.getString("UserFirstName","EBlog User"));
+        }
+        else
+        {
+            nav_user.setText("EBlog User");
+        }
+        imageView = (ImageView)hView.findViewById(R.id.nav_imageView);
+        //imageView.setImageResource();
+        if(isUserRegisteredAlready!="false") {
+            loadImageFromStorage(sharedpreferences.getString("UserImagePath","0"));
+        }
+        else{
+            imageView.setImageResource(R.drawable.ic_user_dummy);
+        }
+    }
+
+
+    private void loadImageFromStorage(String path)
+    {
+
+        try {
+            File f=new File(path, "profile.jpg");
+            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
+            ImageView img=(ImageView)hView.findViewById(R.id.nav_imageView);
+            img.setImageBitmap(b);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     // Back button click handled by this method
@@ -180,6 +256,7 @@ public class HomeActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
+
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {

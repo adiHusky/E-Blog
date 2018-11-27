@@ -7,6 +7,7 @@ import android.app.Dialog;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -60,6 +61,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -72,6 +74,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import in.org.eonline.eblog.Activities.Login;
+import in.org.eonline.eblog.Constants;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
@@ -388,6 +391,7 @@ public class MyProfileFragment extends Fragment {
                                 userModel.getUserLName(), userModel.getUserEmail(), userModel.getUserContact()); //this method returns boolean value
                         editor = sharedpreferences.edit();
                         editor.putBoolean("isUserCreated", isDataInserted);
+                        editor.putString("UserFirstName",userModel.getUserFName());
                         editor.commit();
                         dialog.dismiss();
                       //  startUploadingImageToFirebase();
@@ -412,6 +416,8 @@ public class MyProfileFragment extends Fragment {
                         Log.d(TAG, "DocumentSnapshot successfully updated!");
                         Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
                         startUploadingImageToFirebase();
+                        editor.putString("UserFirstName",userFnameEdit.getText().toString());
+                        editor.commit();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -438,6 +444,8 @@ public class MyProfileFragment extends Fragment {
         Bitmap bitmap = ((BitmapDrawable) userProfileImage.getDrawable()).getBitmap();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        editor.putString("UserImagePath",saveToInternalStorage(bitmap));
+        editor.commit();
         byte[] data = baos.toByteArray();
 
         UploadTask uploadTask = imagesRef.putBytes(data);
@@ -467,6 +475,31 @@ public class MyProfileFragment extends Fragment {
             })
                ;
 
+    }
+
+    public String saveToInternalStorage(Bitmap bitmapImage){
+        ContextWrapper cw = new ContextWrapper(getActivity());
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+
+        File mypath=new File(directory,"profile.jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
     }
 
 
