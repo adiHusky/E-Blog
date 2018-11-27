@@ -87,6 +87,15 @@ public class Login extends AppCompatActivity {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         callLoginWithGoogle();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        //updateUI(currentUser);
+        if (currentUser != null) {
+            Toast.makeText(Login.this, "User is already signed in...", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Login.this, HomeActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     public void initializeViews() {
@@ -182,6 +191,7 @@ public class Login extends AppCompatActivity {
                             Toast.makeText(Login.this, "signInWithCredential:success", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(Login.this, HomeActivity.class);
                             startActivity(intent);
+                            finishAndRemoveTask();
                         } else {
                             // If sign in fails, display a message to the user.
                             //Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -219,13 +229,14 @@ public class Login extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        /*FirebaseUser currentUser = mAuth.getCurrentUser();
         //updateUI(currentUser);
         if (currentUser != null) {
             Toast.makeText(Login.this, "User is already signed in...", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(Login.this, HomeActivity.class);
             startActivity(intent);
         }
+        */
     }
 
 }

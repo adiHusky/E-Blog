@@ -74,7 +74,6 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import in.org.eonline.eblog.Activities.Login;
-import in.org.eonline.eblog.Constants;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;

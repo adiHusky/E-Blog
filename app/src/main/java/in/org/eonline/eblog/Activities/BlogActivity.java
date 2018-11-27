@@ -387,8 +387,8 @@ public class BlogActivity extends AppCompatActivity {
     }
    @Override
     public void onBackPressed() {
-       Intent intent = new Intent(BlogActivity.this, HomeActivity.class);
-       startActivity(intent);
+       //Intent intent = new Intent(BlogActivity.this, HomeActivity.class);
+       //startActivity(intent);
       // openFragment();
        super.onBackPressed();
     }

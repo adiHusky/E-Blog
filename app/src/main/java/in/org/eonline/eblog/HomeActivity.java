@@ -190,28 +190,20 @@ catch(NullPointerException e){}*/
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if (exit) {
-                super.onBackPressed();
-            }
-            else {
-                android.support.v4.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
-                if (fragment != null) {
-                    if(fragment.getTag() == "nav_home") {
-                        finish();
-                    } else {
-                        openFragment(new HomeFragment(), "nav_home");
-                    }
-                } else {
-                    /* Toast.makeText(this, "Press Back again to Exit.", Toast.LENGTH_SHORT).show();
-                    exit = true;
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            exit = false;
-                        }
-                    }, 3 * 1000); */
+            android.support.v4.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+            if (fragment != null) {
+                if(fragment.getTag() == "nav_home") {
                     finish();
+                    //System.exit(0);
+                    //super.onBackPressed();
+                    //finishAndRemoveTask();
+                } else {
+                    openFragment(new HomeFragment(), "nav_home");
                 }
+            } else {
+                finish();
+                //System.exit(0);
+                //finishAndRemoveTask();
             }
         }
     }
