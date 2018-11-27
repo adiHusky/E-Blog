@@ -16,12 +16,14 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_gravity="center"
-        android:background="@color/black"
-        android:alpha="0.8">
+        android:background="@color/white"
+        android:alpha="0.6">
         
        <ImageView
            android:layout_width="match_parent"
            android:layout_height="@dimen/_150sdp"
+           android:adjustViewBounds="true"
+           android:scaleType="centerCrop"
            android:id="@+id/blog_image_item"/>
 
     </LinearLayout>
@@ -47,7 +49,7 @@
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="@dimen/_10sdp"
             android:text="100 Likes"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="@dimen/_12sdp" />
 
     </RelativeLayout>
@@ -65,7 +67,7 @@
             android:layout_height="wrap_content"
             android:text="Blog Header"
             android:textSize="@dimen/_14sdp"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:id="@+id/blog_header_item" />
 

@@ -169,6 +169,7 @@ public class CreateNewBlogFragment extends Fragment  {
         storage = FirebaseStorage.getInstance();
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
+        blogmodel.setUserId(userId);
         blogIdBase = userId + "_0";
         blogId = sharedpreferences.getString("blogId_new",blogIdBase);
         setSpinner();

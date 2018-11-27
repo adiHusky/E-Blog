@@ -16,6 +16,16 @@ public class BlogModel {
     public String UserBlogImage1Url;
     public String UserBlogImage2Url;
 
+    public String getUserId() {
+        return UserId;
+    }
+
+    public void setUserId(String userId) {
+        UserId = userId;
+    }
+
+    public String UserId;
+
     public String getUserBlogImage1Url() {
         return UserBlogImage1Url;
     }

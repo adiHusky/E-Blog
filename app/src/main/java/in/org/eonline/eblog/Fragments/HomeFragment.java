@@ -221,9 +221,8 @@ public class HomeFragment extends Fragment implements UserAdapter.ClickListener,
         blogModel.setUserBlogImage1Url(doc.getString("BlogImage1Url"));
         blogModel.setUserBlogImage2Url(doc.getString("BlogImage2Url"));
         blogModel.setUserImageUrl(doc.getString("BlogUserImageUrl"));
-
+        blogModel.setUserId(doc.getString("UserId"));
         blogModelsList.add(blogModel);
-
     }
 
     /*public void setPopularUsersRecyclerView() {

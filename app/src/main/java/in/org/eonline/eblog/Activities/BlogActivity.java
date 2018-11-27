@@ -131,7 +131,7 @@ public class BlogActivity extends AppCompatActivity {
                 .into(blogImageView2);
         CheckLikes(blogModel);
         userIdBlog=blogId.split("\\_");
-        if (bannerId != null) {
+        if (bannerId != null && !blogModel.getUserId().equalsIgnoreCase(userId)) {
             View adContainer = findViewById(R.id.blogAdMobView);
             AdView userAdView = new AdView(this);
             userAdView.setAdSize(AdSize.SMART_BANNER);

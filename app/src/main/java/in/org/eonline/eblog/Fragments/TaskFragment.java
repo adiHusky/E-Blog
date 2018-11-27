@@ -280,6 +280,7 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogModel.setUserBlogImage1Url(document.getString("BlogImage1Url"));
         blogModel.setUserBlogImage2Url(document.getString("BlogImage2Url"));
         blogModel.setUserImageUrl(document.getString("BlogUserImageUrl"));
+        blogModel.setUserId(document.getString("UserId"));
         blogModelsList.add(blogModel);
     }
 

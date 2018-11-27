@@ -12,11 +12,10 @@
         android:layout_width="@dimen/_50sdp"
         android:layout_height="@dimen/_50sdp"
         android:id="@+id/user_image_item"
-        android:src="@drawable/him"
         android:layout_gravity="center_horizontal"
-        card_view:civ_border_width="@dimen/_1sdp"
+        card_view:civ_border_width="@dimen/_2sdp"
         card_view:civ_border_color="@color/colorAccent"
-        android:background="@drawable/app_edittext_drawable"/>
+        card_view:civ_border_overlay="true"/>
 
     <TextView
         android:id="@+id/user_name_item"
@@ -25,7 +24,7 @@
         android:text="Vaibhav"
         android:textSize="@dimen/_12sdp"
         android:layout_gravity="center"
-        android:paddingTop="@dimen/_5sdp"
-        android:textColor="@color/white"/>
+        android:layout_marginTop="@dimen/_1sdp"
+        android:textColor="@color/black"/>
 
 </LinearLayout>

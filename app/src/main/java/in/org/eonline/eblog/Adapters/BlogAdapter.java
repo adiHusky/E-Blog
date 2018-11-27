@@ -46,9 +46,16 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
         holder.blogLikeItem.setText(blogModels.get(position).getBlogLikes()+ " Likes");
         holder.blogUserNameItem.setText(blogModels.get(position).getBlogUser());
 
-        Glide.with(context)
-                .load(blogModels.get(position).getUserImageUrl())
-                .into(holder.blogUserImageItem);
+        if(blogModels.get(position).getUserImageUrl() != null) {
+            Glide.with(context)
+                    .load(blogModels.get(position).getUserImageUrl())
+                    .into(holder.blogUserImageItem);
+        } else {
+            Glide.with(context)
+                    .load(R.drawable.ic_user_dummy)
+                    .into(holder.blogUserImageItem);
+        }
+
 
         if(blogModels.get(position).getUserBlogImage1Url() != null) {
             Glide.with(context)
