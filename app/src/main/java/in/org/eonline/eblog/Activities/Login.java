@@ -8,12 +8,14 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +43,7 @@ import com.google.firebase.firestore.SetOptions;
 import java.util.HashMap;
 import java.util.Map;
 
+import in.org.eonline.eblog.Adapters.ViewPagerAdapter;
 import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
@@ -48,7 +51,7 @@ import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
 
-public class Login extends AppCompatActivity {
+public class Login extends AppCompatActivity implements View.OnClickListener{
 
     SignInButton signInButton;
     private FirebaseAuth mAuth;
@@ -62,11 +65,33 @@ public class Login extends AppCompatActivity {
     public static final String MyPREFERENCES = "MyPrefs_new" ;
     private SharedPreferences.Editor editor;
     private String userIdCreated;
+    private ViewPager viewPager;
+    private Button skipButton, nextButton;
+    private ViewPagerAdapter mAdapter;
+    public String flag = "";
+
+    private int[] mImageResources = {
+            R.drawable.viewpagerone,
+            R.drawable.viewpagertwo,
+            R.drawable.viewpagerthree,
+            R.drawable.viewpagerfour
+
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        viewPager = (ViewPager) findViewById(R.id.viewPagerContainer);
+        skipButton = (Button) findViewById(R.id.viewPagerSkip);
+        nextButton = (Button) findViewById(R.id.viewPagerNext);
+        flag = "MainViewPager";
+        mAdapter = new ViewPagerAdapter(Login.this, mImageResources, flag);
+        viewPager.setAdapter(mAdapter);
+        viewPager.setCurrentItem(0, true);
+
+        skipButton.setOnClickListener(this);
+        nextButton.setOnClickListener(this);
 
         initializeViews();
 
@@ -239,4 +264,32 @@ public class Login extends AppCompatActivity {
         */
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.viewPagerNext:
+                if (viewPager.getCurrentItem() == 0 || viewPager.getCurrentItem() == 1 || viewPager.getCurrentItem() == 2) {
+                    viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
+                } else {
+                   // Intent intent = new Intent(ViewPagerActivity.this, Login.class);
+                    //startActivity(intent);
+
+                }
+
+                break;
+
+            case R.id.viewPagerSkip:
+              //  Intent intent = new Intent(ViewPagerActivity.this, Login.class);
+               // startActivity(intent);
+                if (viewPager.getCurrentItem() == 0 || viewPager.getCurrentItem() == 1 || viewPager.getCurrentItem() == 2) {
+                    viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
+                } else {
+                    // Intent intent = new Intent(ViewPagerActivity.this, Login.class);
+                    //startActivity(intent);
+
+                }
+                break;
+        }
+
+    }
 }
