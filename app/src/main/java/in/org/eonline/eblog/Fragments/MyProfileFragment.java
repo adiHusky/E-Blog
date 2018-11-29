@@ -31,6 +31,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -80,6 +82,7 @@ import in.org.eonline.eblog.SQLite.DatabaseHelper;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 import in.org.eonline.eblog.Utilities.ImageUtility;
+import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor;
 
 
 import static android.Manifest.permission.CAMERA;
@@ -128,6 +131,7 @@ public class MyProfileFragment extends Fragment {
     private File file;
     String dateFormatter;
     public static final String IMAGE_DIRECTORY = "E-Blogger";
+    private TextView edit_profile;
 
 
     public MyProfileFragment() {
@@ -172,6 +176,8 @@ public class MyProfileFragment extends Fragment {
 
         submitUserProfile();
 
+        editProfile();
+
         //downloadImageFromFirebaseStorage();
 
         refreshMyProfile();
@@ -189,6 +195,27 @@ public class MyProfileFragment extends Fragment {
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
         dateFormatter = df.format(ct.getTime());
 
+    }
+
+    public void editProfile(){
+        edit_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                userFnameEdit.setEnabled(true);
+                userFnameEdit.setFocusable(true);
+                userFnameEdit.setFocusableInTouchMode(true);
+                userFnameEdit.setInputType(InputType.TYPE_CLASS_TEXT);
+                userLnameEdit.setEnabled(true);
+                userLnameEdit.setFocusable(true);
+                userLnameEdit.setFocusableInTouchMode(true);
+                userLnameEdit.setInputType(InputType.TYPE_CLASS_TEXT);
+                userContactEdit.setEnabled(true);
+                userContactEdit.setFocusable(true);
+                userContactEdit.setInputType(InputType.TYPE_CLASS_TEXT);
+                userContactEdit.setFocusableInTouchMode(true);
+
+            }
+        });
     }
 
     public void refreshMyProfile(){
@@ -295,6 +322,7 @@ public class MyProfileFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         setUserModel(document);
+                        edit_profile.setVisibility(View.VISIBLE);
                         try {
                             String userImageUrl = document.getString("UserImageUrl");
                             if(userImageUrl != null) {
@@ -352,13 +380,24 @@ public class MyProfileFragment extends Fragment {
         userModel = new UserModel();
         userModel.setUserFName(document.getString("UserFirstName"));
         userFnameEdit.setText(userModel.getUserFName());
+        userFnameEdit.setEnabled(false);
+        userFnameEdit.setFocusable(false);
+        userFnameEdit.setInputType(InputType.TYPE_NULL);
         userModel.setUserLName(document.getString("UserLastName"));
         userLnameEdit.setText(userModel.getUserLName());
+        userLnameEdit.setEnabled(false);
+        userLnameEdit.setFocusable(false);
+        userLnameEdit.setInputType(InputType.TYPE_NULL);
         userModel.setUserEmail(document.getString("UserEmailId"));
         userEmailIdEdit.setText(userModel.getUserEmail());
+        userEmailIdEdit.setEnabled(false);
+        userEmailIdEdit.setFocusable(false);
         // blogModel.setBlogLikes(Integer.parseInt(document.getString("BlogLikes")));
         userModel.setUserContact(document.getString("UserContact"));
         userContactEdit.setText(userModel.getUserContact());
+        userContactEdit.setFocusable(false);
+        userContactEdit.setEnabled(false);
+        userContactEdit.setInputType(InputType.TYPE_NULL);
     }
 
     public void setUserModelAndUserMap() {
@@ -417,6 +456,7 @@ public class MyProfileFragment extends Fragment {
                         startUploadingImageToFirebase();
                         editor.putString("UserFirstName",userFnameEdit.getText().toString());
                         editor.commit();
+                        disableEditText();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -428,6 +468,22 @@ public class MyProfileFragment extends Fragment {
 
                     }
                 });
+    }
+
+    public void disableEditText(){
+        userFnameEdit.setEnabled(false);
+        userFnameEdit.setFocusable(false);
+        userFnameEdit.setFocusableInTouchMode(false);
+        userFnameEdit.setInputType(InputType.TYPE_NULL);
+        userLnameEdit.setEnabled(false);
+        userLnameEdit.setFocusable(false);
+        userLnameEdit.setFocusableInTouchMode(false);
+        userLnameEdit.setInputType(InputType.TYPE_NULL);
+        userContactEdit.setEnabled(false);
+        userContactEdit.setFocusable(false);
+        userContactEdit.setInputType(InputType.TYPE_NULL);
+        userContactEdit.setFocusableInTouchMode(false);
+
     }
 
     public void uploadImageToFirebaseStorage() {
@@ -559,6 +615,8 @@ public class MyProfileFragment extends Fragment {
         userContactEdit = (EditText) getView().findViewById(R.id.mobile_no);
         submitButton = (Button) getView().findViewById(R.id.submit_button);
         mySwipeRequestLayout =(SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_profile);
+        edit_profile  = (TextView) getView().findViewById(R.id.user_edit);
+        edit_profile.setVisibility(View.GONE);
     }
 
     public void allowPermissions() {
@@ -578,6 +636,8 @@ public class MyProfileFragment extends Fragment {
             }
         }
     }
+
+
 
     public void uploadImage() {
         userProfileImage.setOnClickListener(new View.OnClickListener() {
