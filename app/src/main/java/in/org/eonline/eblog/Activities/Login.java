@@ -40,6 +40,8 @@ import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
+import org.w3c.dom.Text;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +68,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener{
     private SharedPreferences.Editor editor;
     private String userIdCreated;
     private ViewPager viewPager;
-    private Button skipButton, nextButton;
+    private TextView backButton, nextButton;
     private ViewPagerAdapter mAdapter;
     public String flag = "";
 
@@ -83,14 +85,14 @@ public class Login extends AppCompatActivity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         viewPager = (ViewPager) findViewById(R.id.viewPagerContainer);
-        skipButton = (Button) findViewById(R.id.viewPagerSkip);
-        nextButton = (Button) findViewById(R.id.viewPagerNext);
+        backButton = (TextView) findViewById(R.id.viewPagerBack);
+        nextButton = (TextView) findViewById(R.id.viewPagerNext);
         flag = "MainViewPager";
         mAdapter = new ViewPagerAdapter(Login.this, mImageResources, flag);
         viewPager.setAdapter(mAdapter);
         viewPager.setCurrentItem(0, true);
 
-        skipButton.setOnClickListener(this);
+        backButton.setOnClickListener(this);
         nextButton.setOnClickListener(this);
 
         initializeViews();
@@ -216,7 +218,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener{
                             Toast.makeText(Login.this, "signInWithCredential:success", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(Login.this, HomeActivity.class);
                             startActivity(intent);
-                            finishAndRemoveTask();
+                            finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             //Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -278,7 +280,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener{
 
                 break;
 
-            case R.id.viewPagerSkip:
+            case R.id.viewPagerBack:
               //  Intent intent = new Intent(ViewPagerActivity.this, Login.class);
                // startActivity(intent);
                 if (viewPager.getCurrentItem() == 0 || viewPager.getCurrentItem() == 1 || viewPager.getCurrentItem() == 2) {

@@ -12,22 +12,34 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/user_edit"
-        android:text="EDIT"
-        android:textSize="@dimen/_25sdp"
-        android:layout_gravity="right"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/user_profile_image"
-        android:layout_width="@dimen/_100sdp"
-        android:layout_height="@dimen/_100sdp"
-        android:layout_marginTop="@dimen/_10sdp"
-        android:src="@drawable/ic_user_dummy"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/app_edittext_drawable"/>
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user_profile_image"
+            android:layout_width="@dimen/_100sdp"
+            android:layout_height="@dimen/_100sdp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/app_edittext_drawable"
+            android:src="@drawable/ic_user_dummy" />
+
+        <TextView
+            android:id="@+id/user_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/user_profile_image"
+            android:text="EDIT PROFILE"
+            android:textSize="@dimen/_14sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            android:textStyle="bold"
+            android:textColor="@color/colorAccent"/>
+
+    </RelativeLayout>
+
 
     <EditText
         android:id="@+id/first_name"

@@ -9,4 +9,5 @@
     <color name="straightLine">#a39b9b</color>
     <color name="like">#281dff</color>
     <color name="error">#FFF11212</color>
+    <color name="red">#FF0000</color>
 </resources>

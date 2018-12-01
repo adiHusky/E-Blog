@@ -39,6 +39,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -62,24 +64,14 @@ import static android.content.ContentValues.TAG;
 import static in.org.eonline.eblog.Fragments.YourBlogsFragment.MyPREFERENCES;
 
 public class BlogActivity extends AppCompatActivity {
-    private TextView blogHeader;
-    private TextView blogContent1;
-    private TextView blogContent2;
-    private TextView blogFooter;
-    private TextView blogCategory;
-    private TextView blogLikes;
-    private String bannerId;
-    private ImageView userLikesButton;
-    private ImageView blogImageView1;
-    private ImageView blogImageView2;
+    private TextView blogHeader, blogContent1, blogContent2, blogFooter, blogCategory, blogLikes, deleteBlog;
+    private String bannerId, userId, likeStatus, likeButtonValue;
+    private ImageView userLikesButton, blogImageView1, blogImageView2;
     private String blogId;
     FirebaseFirestore db;
     Map<String, String> userReadBlogMap = new HashMap<>();
     private SharedPreferences sharedpreferences;
     public static final String MyPREFERENCES = "MyPrefs_new";
-    private String userId;
-    private String likeStatus;
-    private String likeButtonValue;
     private BlogModel blogModel;
     FrameLayout frameLayout;
     String[] userIdBlog;
@@ -87,6 +79,8 @@ public class BlogActivity extends AppCompatActivity {
     Boolean isInternetPresent = false;
     public SwipeRefreshLayout mySwipeRequestLayout;
     public Dialog dialog;
+    FirebaseStorage storage;
+    StorageReference storageRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,10 +88,15 @@ public class BlogActivity extends AppCompatActivity {
         //To make activity Full Screen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_blog);
+
         InitializeViews();
+
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
+
         sharedpreferences = this.getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated", "AdityaKamat75066406850");
+
         if (getIntent().hasExtra("blog")) {
             blogModel = new Gson().fromJson(getIntent().getStringExtra("blog"), BlogModel.class);
             connectivityReceiver = new ConnectivityReceiver(this);
@@ -110,6 +109,18 @@ public class BlogActivity extends AppCompatActivity {
             } else {
                 CommonDialog.getInstance().showErrorDialog(this, R.drawable.no_internet);
                 //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
+            }
+
+            if(blogModel.getUserId().equalsIgnoreCase(userId)) {
+                deleteBlog.setVisibility(View.VISIBLE);
+                deleteBlog.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        deleteBlog();
+                    }
+                });
+            } else {
+                deleteBlog.setVisibility(View.GONE);
             }
         }
     }
@@ -130,7 +141,8 @@ public class BlogActivity extends AppCompatActivity {
                 .load(blogModel.getUserBlogImage2Url())
                 .into(blogImageView2);
         CheckLikes(blogModel);
-        userIdBlog=blogId.split("\\_");
+        userIdBlog = blogId.split("\\_");
+
         if (bannerId != null && !blogModel.getUserId().equalsIgnoreCase(userId)) {
             View adContainer = findViewById(R.id.blogAdMobView);
             AdView userAdView = new AdView(this);
@@ -155,6 +167,7 @@ public class BlogActivity extends AppCompatActivity {
         frameLayout = (FrameLayout) findViewById(R.id.content_frame);
         blogImageView1= (ImageView) findViewById(R.id.blog_image_activity_1);
         blogImageView2= (ImageView) findViewById(R.id.blog_image_activity_2);
+        deleteBlog = (TextView) findViewById(R.id.delete_blog);
     }
 
     public void CheckLikes(final BlogModel blogModel) {
@@ -321,7 +334,6 @@ public class BlogActivity extends AppCompatActivity {
         });
     }
 
-
     public void AddUserBlogMap(BlogModel blogModel) {
         likeStatus = "true";
         userLikesButton.setImageResource(R.drawable.ic_thumb_up_black_24dp);
@@ -385,6 +397,69 @@ public class BlogActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    public void deleteBlog() {
+        String[] urls = new String[] {blogModel.getUserBlogImage1Url(), blogModel.getUserBlogImage2Url()};
+        for(int i = 0; i < urls.length; i++) {
+            deleteBlogImages(urls[i]);
+        }
+        deleteBlogDocuments();
+    }
+
+    public void deleteBlogImages(String url) {
+        // Create a storage reference from our app
+        storageRef = storage.getReference();
+
+        // Create a reference to the file to delete
+        StorageReference desertRef = storageRef.child("Blogs").child(userId).child(url);
+
+        // Delete the file
+        desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(BlogActivity.this, "File deleted successfully", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Toast.makeText(BlogActivity.this, "Some error occured", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void deleteBlogDocuments() {
+        //Deleting blog from Users > Blogs collection
+        db.collection("Users").document(userId).collection("Blogs").document(blogId)
+          .delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+              @Override
+              public void onSuccess(Void aVoid) {
+                  Toast.makeText(BlogActivity.this, "Deleted blog from Users collection", Toast.LENGTH_SHORT).show();
+              }
+          })
+          .addOnFailureListener(new OnFailureListener() {
+              @Override
+              public void onFailure(@NonNull Exception e) {
+                  Toast.makeText(BlogActivity.this, "Some error occured", Toast.LENGTH_SHORT).show();
+              }
+          });
+
+        //Deleting blog from standalone Blogs collection
+        db.collection("Blogs").document(blogId)
+          .delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+              @Override
+              public void onSuccess(Void aVoid) {
+                  Toast.makeText(BlogActivity.this, "Deleted blog from Blogs collection", Toast.LENGTH_SHORT).show();
+              }
+          })
+          .addOnFailureListener(new OnFailureListener() {
+              @Override
+              public void onFailure(@NonNull Exception e) {
+                  Toast.makeText(BlogActivity.this, "Some error occured", Toast.LENGTH_SHORT).show();
+              }
+          });
+    }
+
+
    @Override
     public void onBackPressed() {
        //Intent intent = new Intent(BlogActivity.this, HomeActivity.class);

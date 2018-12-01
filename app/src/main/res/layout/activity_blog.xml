@@ -126,6 +126,21 @@
 
             </RelativeLayout>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/delete_blog"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:textColor="@color/red"
+            android:text="Delete Blog"
+            android:textSize="@dimen/_15sdp"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:drawableStart="@drawable/ic_delete_black_24dp"
+            android:drawablePadding="@dimen/_3sdp"
+            android:visibility="gone"/>
+
         </LinearLayout>
 
 </ScrollView>
