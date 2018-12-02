@@ -72,7 +72,7 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
                             .into(holder.blogUserImageItem);
                 } else {
                     Glide.with(context)
-                            .load(R.drawable.ic_user_dummy)
+                            .load(R.drawable.user_shadow)
                             .into(holder.blogUserImageItem);
                 }
             }
@@ -85,7 +85,7 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
                         .into(holder.blogUserImageItem);
             } else {
                 Glide.with(context)
-                        .load(R.drawable.ic_user_dummy)
+                        .load(R.drawable.user_shadow)
                         .into(holder.blogUserImageItem);
             }
         }

@@ -136,7 +136,6 @@ public class ReportBugFragment extends Fragment {
     public void refreshMyProfile(){
 
         mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-
             @Override
             public void onRefresh() {
                 onRefreshOperation();

@@ -59,7 +59,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/_20sdp"
             android:text="@string/submit_button"
-            android:background="@drawable/app_button_drawable"
+            android:background="@drawable/gradient_corner"
             android:paddingStart="@dimen/_25sdp"
             android:paddingEnd="@dimen/_25sdp"
             android:textColor="#fff"

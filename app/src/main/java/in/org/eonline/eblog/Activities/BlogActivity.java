@@ -91,6 +91,8 @@ public class BlogActivity extends AppCompatActivity {
 
         InitializeViews();
 
+        refreshMyProfile();
+
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
 
@@ -116,6 +118,8 @@ public class BlogActivity extends AppCompatActivity {
                 deleteBlog.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        dialog = CommonDialog.getInstance().showProgressDialog(BlogActivity.this);
+                        dialog.show();
                         deleteBlog();
                     }
                 });
@@ -168,6 +172,23 @@ public class BlogActivity extends AppCompatActivity {
         blogImageView1= (ImageView) findViewById(R.id.blog_image_activity_1);
         blogImageView2= (ImageView) findViewById(R.id.blog_image_activity_2);
         deleteBlog = (TextView) findViewById(R.id.delete_blog);
+        mySwipeRequestLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh_blog_activity);
+    }
+
+    public void refreshMyProfile(){
+        mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onRefreshOperation();
+                mySwipeRequestLayout.setRefreshing(false);
+            }
+        });
+    }
+
+    public void onRefreshOperation(){
+        //recreate();
+        finish();
+        startActivity(getIntent());
     }
 
     public void CheckLikes(final BlogModel blogModel) {
@@ -399,10 +420,20 @@ public class BlogActivity extends AppCompatActivity {
     }
 
     public void deleteBlog() {
-        String[] urls = new String[] {blogModel.getUserBlogImage1Url(), blogModel.getUserBlogImage2Url()};
+        if(blogModel.getUserBlogImage1Url() != null) {
+            String url1 = "Blogs/" + userId + "/" + blogModel.getBlogId() + "img1";
+            deleteBlogImages(url1);
+        }
+        if(blogModel.getUserBlogImage2Url() != null) {
+            String url2 = "Blogs/" + userId + "/" + blogModel.getBlogId() + "img2";
+            deleteBlogImages(url2);
+        }
+
+        /*String[] urls = new String[] {blogModel.getUserBlogImage1Url(), blogModel.getUserBlogImage2Url()};
         for(int i = 0; i < urls.length; i++) {
             deleteBlogImages(urls[i]);
-        }
+        } */
+
         deleteBlogDocuments();
     }
 
@@ -411,7 +442,7 @@ public class BlogActivity extends AppCompatActivity {
         storageRef = storage.getReference();
 
         // Create a reference to the file to delete
-        StorageReference desertRef = storageRef.child("Blogs").child(userId).child(url);
+        StorageReference desertRef = storageRef.child(url);
 
         // Delete the file
         desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -423,6 +454,10 @@ public class BlogActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 Toast.makeText(BlogActivity.this, "Some error occured", Toast.LENGTH_SHORT).show();
+                CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
             }
         });
     }
@@ -440,6 +475,10 @@ public class BlogActivity extends AppCompatActivity {
               @Override
               public void onFailure(@NonNull Exception e) {
                   Toast.makeText(BlogActivity.this, "Some error occured", Toast.LENGTH_SHORT).show();
+                  CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                  if (dialog != null && dialog.isShowing()) {
+                      dialog.dismiss();
+                  }
               }
           });
 
@@ -449,12 +488,20 @@ public class BlogActivity extends AppCompatActivity {
               @Override
               public void onSuccess(Void aVoid) {
                   Toast.makeText(BlogActivity.this, "Deleted blog from Blogs collection", Toast.LENGTH_SHORT).show();
+                  if (dialog != null && dialog.isShowing()) {
+                      dialog.dismiss();
+                  }
+                  onBackPressed();
               }
           })
           .addOnFailureListener(new OnFailureListener() {
               @Override
               public void onFailure(@NonNull Exception e) {
                   Toast.makeText(BlogActivity.this, "Some error occured", Toast.LENGTH_SHORT).show();
+                  CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                  if (dialog != null && dialog.isShowing()) {
+                      dialog.dismiss();
+                  }
               }
           });
     }

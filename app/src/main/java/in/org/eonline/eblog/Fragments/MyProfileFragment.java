@@ -16,6 +16,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -61,6 +62,8 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.w3c.dom.Text;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -105,7 +108,7 @@ public class MyProfileFragment extends Fragment {
     private EditText userEmailIdEdit;
     private EditText userContactEdit;
     UserModel userModel = new UserModel();
-    Map<String, String> userMap = new HashMap<>();
+    Map<String, Object> userMap = new HashMap<>();
     private Button submitButton;
     private Boolean isDataInserted = false;
     private Boolean isUserRegisteredAlready = false;
@@ -131,7 +134,7 @@ public class MyProfileFragment extends Fragment {
     private File file;
     String dateFormatter;
     public static final String IMAGE_DIRECTORY = "E-Blogger";
-    private TextView edit_profile;
+    private TextView edit_profile, cancel_profile;
 
 
     public MyProfileFragment() {
@@ -178,6 +181,7 @@ public class MyProfileFragment extends Fragment {
 
         editProfile();
 
+        disableProfile();
         //downloadImageFromFirebaseStorage();
 
         refreshMyProfile();
@@ -201,6 +205,9 @@ public class MyProfileFragment extends Fragment {
         edit_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                cancel_profile.setVisibility(View.VISIBLE);
+                edit_profile.setVisibility(View.GONE);
+
                 userFnameEdit.setEnabled(true);
                 userFnameEdit.setFocusable(true);
                 userFnameEdit.setFocusableInTouchMode(true);
@@ -214,6 +221,15 @@ public class MyProfileFragment extends Fragment {
                 userContactEdit.setInputType(InputType.TYPE_CLASS_TEXT);
                 userContactEdit.setFocusableInTouchMode(true);
 
+            }
+        });
+    }
+
+    public void disableProfile() {
+        cancel_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                disableEditText();
             }
         });
     }
@@ -256,12 +272,12 @@ public class MyProfileFragment extends Fragment {
                     if (isInternetPresent) {
                         dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
                         dialog.show();
+                        setUserModelAndUserMap();
                         updateDataToUserFirebase();
                     } else {
                         CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
                         //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
                     }
-
 
                 } else {
                     connectivityReceiver = new ConnectivityReceiver(getActivity());
@@ -322,7 +338,7 @@ public class MyProfileFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         setUserModel(document);
-                        edit_profile.setVisibility(View.VISIBLE);
+                        //edit_profile.setVisibility(View.VISIBLE);
                         try {
                             String userImageUrl = document.getString("UserImageUrl");
                             if(userImageUrl != null) {
@@ -398,6 +414,9 @@ public class MyProfileFragment extends Fragment {
         userContactEdit.setFocusable(false);
         userContactEdit.setEnabled(false);
         userContactEdit.setInputType(InputType.TYPE_NULL);
+
+        edit_profile.setVisibility(View.VISIBLE);
+        cancel_profile.setVisibility(View.GONE);
     }
 
     public void setUserModelAndUserMap() {
@@ -447,7 +466,7 @@ public class MyProfileFragment extends Fragment {
 
     public void updateDataToUserFirebase() {
              DocumentReference userDoc = db.collection("Users").document(userIdCreated);
-             userDoc.update("UserFirstName", userFnameEdit.getText().toString())
+             userDoc.update(userMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -484,6 +503,8 @@ public class MyProfileFragment extends Fragment {
         userContactEdit.setInputType(InputType.TYPE_NULL);
         userContactEdit.setFocusableInTouchMode(false);
 
+        edit_profile.setVisibility(View.VISIBLE);
+        cancel_profile.setVisibility(View.GONE);
     }
 
     public void uploadImageToFirebaseStorage() {
@@ -511,8 +532,6 @@ public class MyProfileFragment extends Fragment {
                 CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
                 Toast.makeText(getContext(), "File could not be uploaded", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
-
-
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -527,9 +546,7 @@ public class MyProfileFragment extends Fragment {
                 editor.putString("userProfileUrl",userProfileUrl);
                 editor.apply(); */
                 }
-            })
-               ;
-
+            });
     }
 
     public String saveToInternalStorage(Bitmap bitmapImage){
@@ -616,7 +633,8 @@ public class MyProfileFragment extends Fragment {
         submitButton = (Button) getView().findViewById(R.id.submit_button);
         mySwipeRequestLayout =(SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_profile);
         edit_profile  = (TextView) getView().findViewById(R.id.user_edit);
-        edit_profile.setVisibility(View.GONE);
+        cancel_profile = (TextView) getView().findViewById(R.id.user_cancel);
+        //edit_profile.setVisibility(View.GONE);
     }
 
     public void allowPermissions() {

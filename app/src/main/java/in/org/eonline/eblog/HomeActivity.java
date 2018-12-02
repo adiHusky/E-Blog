@@ -208,6 +208,11 @@ catch(NullPointerException e){}*/
         }
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
+
     /* @Override
     protected void onPause() {
         //Toast.makeText(HomeActivity.this, "on pause is called", Toast.LENGTH_SHORT).show();
@@ -268,11 +273,13 @@ catch(NullPointerException e){}*/
             MonetizationFragment monetizationFragment = new MonetizationFragment();
             fragmentTag="nav_monetize";
             openFragment(monetizationFragment,fragmentTag);
-        } else if (id == R.id.nav_task) {
+        }
+        /*else if (id == R.id.nav_task) {
             TaskFragment taskFragment = new TaskFragment();
             fragmentTag="nav_task";
             openFragment(taskFragment,fragmentTag);
-        } else if (id == R.id.nav_profile) {
+        } */
+        else if (id == R.id.nav_profile) {
             MyProfileFragment myProfileFragment = new MyProfileFragment();
             fragmentTag="nav_profile";
             openFragment(myProfileFragment,fragmentTag);

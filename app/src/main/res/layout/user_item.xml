@@ -13,9 +13,8 @@
         android:layout_height="@dimen/_50sdp"
         android:id="@+id/user_image_item"
         android:layout_gravity="center_horizontal"
-        card_view:civ_border_width="@dimen/_2sdp"
-        card_view:civ_border_color="@color/colorAccent"
-        card_view:civ_border_overlay="true"/>
+        android:background="@drawable/gradient_corner"
+        android:padding="@dimen/_2sdp" />
 
     <TextView
         android:id="@+id/user_name_item"

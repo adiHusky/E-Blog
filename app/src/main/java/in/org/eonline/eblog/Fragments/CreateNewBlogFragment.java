@@ -185,14 +185,11 @@ public class CreateNewBlogFragment extends Fragment  {
                 if (isInternetPresent) {
                     submitButtonLogic();
                 }
-                else
-                {
+                else {
                     CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
                 }
             }
         });
-
-
 
         cancelImage1.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -248,7 +245,7 @@ public class CreateNewBlogFragment extends Fragment  {
 
     public boolean validateData() {
 
-        if (blogHeaderEdit.getText().toString().equals("") || blogHeaderEdit.getText().toString().length() <= 7) {
+        if (blogHeaderEdit.getText().toString().equals("") || blogHeaderEdit.getText().toString().length() <= 5) {
             errorHeader.setVisibility(View.VISIBLE);
             errorImage.setVisibility(View.VISIBLE);
             return false;
@@ -258,16 +255,16 @@ public class CreateNewBlogFragment extends Fragment  {
             errorImage1.setVisibility(View.VISIBLE);
             return false;
         }
-        if (blogContentEdit2.getText().toString().equals("") || blogContentEdit2.getText().toString().length() <= 100) {
+        /*if (blogContentEdit2.getText().toString().equals("") || blogContentEdit2.getText().toString().length() <= 100) {
             errorContent2.setVisibility(View.VISIBLE);
             errorImage2.setVisibility(View.VISIBLE);
             return false;
-        }
-        if (blogFooterEdit.getText().toString().equals("")) {
+        } */
+        /*if (blogFooterEdit.getText().toString().equals("")) {
             errorFooter.setVisibility(View.VISIBLE);
             errorImage3.setVisibility(View.VISIBLE);
             return false;
-        }
+        } */
 
         return true;
     }

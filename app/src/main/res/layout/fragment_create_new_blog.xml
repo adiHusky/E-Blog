@@ -279,7 +279,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/_20sdp"
             android:layout_marginBottom="@dimen/_20sdp"
-            android:background="@drawable/app_button_drawable"
+            android:background="@drawable/gradient_corner"
             android:paddingEnd="@dimen/_30sdp"
             android:paddingStart="@dimen/_30sdp"
             android:text="Create Blog"

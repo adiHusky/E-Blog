@@ -21,10 +21,10 @@
             android:id="@+id/nav_monetize"
             android:icon="@drawable/ic_graph"
             android:title="Monetization" />
-        <item
+       <!-- <item
             android:id="@+id/nav_task"
             android:icon="@drawable/ic_playlist_add_check_black_24dp"
-            android:title="Tasks" />
+            android:title="Tasks" /> -->
 
 
     </group>
