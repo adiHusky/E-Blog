@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -50,6 +51,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
 import in.org.eonline.eblog.Fragments.HomeFragment;
 import in.org.eonline.eblog.Fragments.MyProfileFragment;
 import in.org.eonline.eblog.Fragments.TaskFragment;
@@ -64,9 +66,10 @@ import static android.content.ContentValues.TAG;
 import static in.org.eonline.eblog.Fragments.YourBlogsFragment.MyPREFERENCES;
 
 public class BlogActivity extends AppCompatActivity {
-    private TextView blogHeader, blogContent1, blogContent2, blogFooter, blogCategory, blogLikes, deleteBlog;
+    private TextView blogHeader, blogContent1, blogContent2, blogFooter, blogCategory, blogLikes, blogShare;
     private String bannerId, userId, likeStatus, likeButtonValue;
     private ImageView userLikesButton, blogImageView1, blogImageView2;
+    private Button deleteBlog, updateBlog;
     private String blogId;
     FirebaseFirestore db;
     Map<String, String> userReadBlogMap = new HashMap<>();
@@ -123,10 +126,32 @@ public class BlogActivity extends AppCompatActivity {
                         deleteBlog();
                     }
                 });
+
+                updateBlog.setVisibility(View.VISIBLE);
+                updateBlog.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        /*Bundle bundle = new Bundle();
+                        String blogmodel = (new Gson()).toJson(blogModel);
+                        bundle.putString("update_blog", blogmodel);
+                        CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
+                        createNewBlogFragment.setArguments(bundle);
+                        getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, createNewBlogFragment).commit(); */
+
+                        Intent intent = new Intent(BlogActivity.this, HomeActivity.class);
+                        String blogmodel = (new Gson()).toJson(blogModel);
+                        intent.putExtra("update_blog", blogmodel);
+                        intent.putExtra("update_key", "blog_update");
+                        startActivity(intent);
+                    }
+                });
             } else {
                 deleteBlog.setVisibility(View.GONE);
+                updateBlog.setVisibility(View.GONE);
             }
         }
+
+        shareBlog();
     }
 
     public void setBlogDataAndImage(){
@@ -171,8 +196,10 @@ public class BlogActivity extends AppCompatActivity {
         frameLayout = (FrameLayout) findViewById(R.id.content_frame);
         blogImageView1= (ImageView) findViewById(R.id.blog_image_activity_1);
         blogImageView2= (ImageView) findViewById(R.id.blog_image_activity_2);
-        deleteBlog = (TextView) findViewById(R.id.delete_blog);
+        deleteBlog = (Button) findViewById(R.id.delete_blog);
         mySwipeRequestLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh_blog_activity);
+        updateBlog = (Button) findViewById(R.id.update_blog);
+        blogShare = (TextView) findViewById(R.id.user_share_blog);
     }
 
     public void refreshMyProfile(){
@@ -504,6 +531,21 @@ public class BlogActivity extends AppCompatActivity {
                   }
               }
           });
+    }
+
+    public void shareBlog() {
+        blogShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("text/plain");
+                //i.setType("image*//*");
+                //i.putExtra(Intent.EXTRA_STREAM, getLocalBitmapUri(bitmap));
+                //i.putExtra(Intent.EXTRA_TEXT, FullName + " has invited you to the most exciting event " + explorePojo.getChatTitle() + " organized by " + explorePojo.getEventOwner() + " at " + explorePojo.getEventLocation() + "." + " Now join it via " + "https://play.google.com/store/apps/details?id=com.temp.tempdesign&hl=en");
+                i.putExtra(Intent.EXTRA_TEXT, blogModel.getBlogHeader() + " by " + blogModel.getBlogUser() + ". Read this blog here: " + "https://goo.gl/9rT2M9");
+                startActivity(Intent.createChooser(i, "Share This Blog"));
+            }
+        });
     }
 
 

@@ -54,7 +54,7 @@
                         android:textColor="@color/black"
                         android:textSize="@dimen/_10sdp"
                         android:layout_marginStart="@dimen/_5sdp"
-                        android:layout_marginTop="@dimen/_3sdp"/>
+                        android:layout_marginTop="@dimen/_2sdp"/>
 
                     <TextView
                         android:id="@+id/user_blog_category"
@@ -62,9 +62,24 @@
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/_10sdp"
                         android:text="Blog Category"
-                        android:layout_marginTop="@dimen/_3sdp"
+                        android:layout_marginTop="@dimen/_2sdp"
                         android:layout_marginStart="@dimen/_10sdp"
                         android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                    <TextView
+                        android:id="@+id/user_share_blog"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/_10sdp"
+                        android:text="Share Blog"
+                        android:layout_marginTop="@dimen/_2sdp"
+                        android:layout_marginStart="@dimen/_10sdp"
+                        android:textColor="@color/white"
+                        android:paddingStart="@dimen/_5sdp"
+                        android:paddingEnd="@dimen/_5sdp"
+                        android:paddingBottom="@dimen/_2sdp"
+                        android:paddingTop="@dimen/_2sdp"
+                        android:background="@drawable/gradient_corner"/>
 
                 </LinearLayout>
 
@@ -123,21 +138,44 @@
                     android:layout_marginBottom="@dimen/_42sdp"
                     android:text="Blog Footer"/>
 
-                <TextView
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/update_blog"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:textColor="@color/white"
+                    android:text="Update Blog"
+                    android:textSize="@dimen/_15sdp"
+                    android:textAllCaps="false"
+                    android:textStyle="bold"
+                    android:layout_gravity="center"
+                    android:drawableStart="@drawable/ic_edit_black_24dp"
+                    android:drawableTint="@color/white"
+                    android:drawablePadding="@dimen/_3sdp"
+                    android:visibility="visible"
+                    android:background="@drawable/gradient_corner"
+                    android:paddingEnd="@dimen/_20sdp"
+                    android:paddingStart="@dimen/_20sdp"/>
+
+                <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/delete_blog"
-                    android:layout_marginTop="@dimen/_10sdp"
+                    android:layout_marginTop="@dimen/_20sdp"
                     android:layout_marginBottom="@dimen/_20sdp"
-                    android:textColor="@color/red"
+                    android:textColor="@color/white"
                     android:text="Delete Blog"
                     android:textSize="@dimen/_15sdp"
-                    android:textAllCaps="true"
+                    android:textAllCaps="false"
                     android:textStyle="bold"
                     android:layout_gravity="center"
                     android:drawableStart="@drawable/ic_delete_black_24dp"
+                    android:drawableTint="@color/white"
                     android:drawablePadding="@dimen/_3sdp"
-                    android:visibility="visible"/>
+                    android:visibility="visible"
+                    android:background="@drawable/gradient_corner"
+                    android:paddingEnd="@dimen/_20sdp"
+                    android:paddingStart="@dimen/_20sdp"/>
 
             </LinearLayout>
 

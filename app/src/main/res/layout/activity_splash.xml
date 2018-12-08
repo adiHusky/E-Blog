@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.Splash"
-    android:background="@drawable/gradient">
+    android:background="@color/white">
 
     <ImageView
         android:layout_width="@dimen/_220sdp"

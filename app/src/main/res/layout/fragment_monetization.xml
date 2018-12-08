@@ -70,6 +70,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_10sdp"
+            android:id="@+id/open_admob_link"
+            android:textColor="@color/colorPrimary"
+            android:textColorLink="@color/colorPrimary"
             android:text="If you do not have Google AdMob Banner Ad Unit ID then Click Here" />
 
     </LinearLayout>

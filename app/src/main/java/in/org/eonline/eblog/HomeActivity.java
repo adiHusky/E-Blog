@@ -41,6 +41,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,6 +59,7 @@ import in.org.eonline.eblog.Fragments.ReportBugFragment;
 import in.org.eonline.eblog.Fragments.TaskFragment;
 import in.org.eonline.eblog.Fragments.TermsConditionsFragment;
 import in.org.eonline.eblog.Fragments.YourBlogsFragment;
+import in.org.eonline.eblog.Models.BlogModel;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -88,27 +90,27 @@ public class HomeActivity extends AppCompatActivity
         isUserRegisteredAlready = sharedpreferences.getString("UserImagePath", "false");
         isUserNamePresent = sharedpreferences.getString("UserFirstName", "false");
         initializeViews();
-      /*  Intent intent = getIntent();
-        String s1 = intent.getStringExtra("Check");
-try {
-    if (s1.equals("1")) {
-        s1 = "";
-        android.support.v4.app.Fragment frg;
-        frg = getSupportFragmentManager().findFragmentByTag("nav_home");
-        final android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.detach(frg);
-        ft.attach(frg);
-        ft.commit();
 
-    }
-}
-catch(NullPointerException e){}*/
         fragmentTag="nav_home";
-        openFragment(new HomeFragment(), "nav_home");
-        //getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, new HomeFragment(), "EXPLORE").commit();
+
+        if (getIntent().hasExtra("update_blog")) {
+            String bm = getIntent().getStringExtra("update_blog");
+            String key = getIntent().getStringExtra("update_key");
+            //BlogModel blogModel = new Gson().fromJson(getIntent().getStringExtra("blog"), BlogModel.class);
+            Bundle bundle = new Bundle();
+            //String blogmodel = (new Gson()).toJson(blogModel);
+            bundle.putString("update_blog", bm);
+            bundle.putString("update_key", key);
+            CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
+            createNewBlogFragment.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, createNewBlogFragment).commit();
+        } else {
+            openFragment(new HomeFragment(), "nav_home");
+        }
 
         db = FirebaseFirestore.getInstance();
 
+        toolbar.setTitle("Explore Blogs");
         setSupportActionBar(toolbar);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -259,19 +261,22 @@ catch(NullPointerException e){}*/
         if (id == R.id.nav_home) {
             HomeFragment homeFragment = new HomeFragment();
             fragmentTag="nav_home";
+            toolbar.setTitle("Explore Blogs");
             openFragment(homeFragment,fragmentTag);
-
         } else if (id == R.id.nav_new_blog) {
             CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
             fragmentTag="create_new_fragment";
+            toolbar.setTitle("Create/Update Blog");
             openFragment(createNewBlogFragment,fragmentTag);
         } else if (id == R.id.nav_blog_history) {
             YourBlogsFragment yourBlogsFragment = new YourBlogsFragment();
             fragmentTag="nav_blog_history";
+            toolbar.setTitle("Your Blogs");
             openFragment(yourBlogsFragment,fragmentTag);
         } else if (id == R.id.nav_monetize) {
             MonetizationFragment monetizationFragment = new MonetizationFragment();
             fragmentTag="nav_monetize";
+            toolbar.setTitle("Monetize Blog");
             openFragment(monetizationFragment,fragmentTag);
         }
         /*else if (id == R.id.nav_task) {
@@ -282,6 +287,7 @@ catch(NullPointerException e){}*/
         else if (id == R.id.nav_profile) {
             MyProfileFragment myProfileFragment = new MyProfileFragment();
             fragmentTag="nav_profile";
+            toolbar.setTitle("My Profile");
             openFragment(myProfileFragment,fragmentTag);
         } else if (id == R.id.nav_logout) {
             FirebaseAuth.getInstance().signOut();
@@ -292,10 +298,12 @@ catch(NullPointerException e){}*/
         } else if (id == R.id.nav_tc) {
             TermsConditionsFragment termsConditionsFragment = new TermsConditionsFragment();
             fragmentTag="nav_tc";
+            toolbar.setTitle("Terms & Conditions");
             openFragment(termsConditionsFragment,fragmentTag);
         } else if (id == R.id.nav_report_bug){
             ReportBugFragment reportBugFragment = new ReportBugFragment();
             fragmentTag="nav_report_bug";
+            toolbar.setTitle("Feedback/Report Bug");
             openFragment(reportBugFragment,fragmentTag);
         }
 

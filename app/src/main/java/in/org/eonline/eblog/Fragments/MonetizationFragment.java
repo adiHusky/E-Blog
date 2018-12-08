@@ -4,7 +4,9 @@ package in.org.eonline.eblog.Fragments;
 import android.app.Dialog;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,9 +18,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -54,7 +58,8 @@ public class MonetizationFragment extends Fragment {
     private EditText adMobAdUnitIdEdit;
     private Button submitAdMobAdUnitId;
     private String adMobUnitId;
-     FirebaseFirestore db;
+    private TextView admobLink;
+    FirebaseFirestore db;
     private SharedPreferences sharedpreferences;
     public static final String MyPREFERENCES = "MyPrefs_new" ;
     private  String userId;
@@ -91,7 +96,6 @@ public class MonetizationFragment extends Fragment {
         submitAdMobAdUnitId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 adMobUnitId = adMobAdUnitIdEdit.getText().toString();
 
                 /*View adContainer = getView().findViewById(R.id.adMobView);
@@ -113,8 +117,17 @@ public class MonetizationFragment extends Fragment {
             }
         });
 
+        admobLink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://apps.admob.com"));
+                startActivity(browserIntent);
 
-
+                /*WebView webView = (WebView) findViewById(R.id.webView1);
+                webView.getSettings().setJavaScriptEnabled(true);
+                webView.loadUrl("http://www.google.com");*/
+            }
+        });
     }
     public void refreshMyProfile(){
         mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -186,6 +199,7 @@ public class MonetizationFragment extends Fragment {
         submitAdMobAdUnitId = (Button) getView().findViewById(R.id.admob_ad_unit_id_submit);
         //userAdView = (AdView) getView().findViewById(R.id.user_ad_view);
         mySwipeRequestLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_monetize);
+        admobLink = (TextView) getView().findViewById(R.id.open_admob_link);
     }
 
     public void checkAdmobId()

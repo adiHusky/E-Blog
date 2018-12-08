@@ -44,6 +44,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -62,6 +63,7 @@ import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
@@ -105,7 +107,7 @@ public class CreateNewBlogFragment extends Fragment  {
     private EditText blogFooterEdit;
     //private AdView mAdView;
     //private EditText bannerAdIdEdit;
-    private Button submitButton;
+    private Button submitButton, updateButton;
     private ImageView cancelImage1;
     private ImageView cancelImage2;
     private String bannerAdId;
@@ -114,9 +116,9 @@ public class CreateNewBlogFragment extends Fragment  {
     DatabaseHelper sqliteDatabaseHelper;
     //private String blogId = "Aditya7506640685";
     BlogModel blogmodel = new BlogModel();
-
+    BlogModel blogModelToBeUpdated = new BlogModel();
     UserModel userModel;
-    Map<String, String> blogMap = new HashMap<>();
+    Map<String, Object> blogMap = new HashMap<>();
     private SharedPreferences sharedpreferences;
     public static final String MyPREFERENCES = "MyPrefs_new" ;
     private String userId;
@@ -145,6 +147,7 @@ public class CreateNewBlogFragment extends Fragment  {
     ConnectivityReceiver connectivityReceiver;
     Boolean isInternetPresent = false;
     public SwipeRefreshLayout mySwipeRequestLayout;
+    private String updateBlog = "";
 
     public CreateNewBlogFragment() {
         // Required empty public constructor
@@ -155,6 +158,17 @@ public class CreateNewBlogFragment extends Fragment  {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        try {
+            Bundle bundle = getArguments();
+            if(bundle != null) {
+                String model = bundle.getString("update_blog");
+                updateBlog = bundle.getString("update_key");
+                blogModelToBeUpdated = new Gson().fromJson(model, BlogModel.class);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_create_new_blog, container, false);
     }
@@ -170,6 +184,7 @@ public class CreateNewBlogFragment extends Fragment  {
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
         blogmodel.setUserId(userId);
+        blogModelToBeUpdated.setUserId(userId);
         blogIdBase = userId + "_0";
         blogId = sharedpreferences.getString("blogId_new",blogIdBase);
         setSpinner();
@@ -217,6 +232,78 @@ public class CreateNewBlogFragment extends Fragment  {
         Calendar ct = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
         dateFormatter = df.format(ct.getTime());
+
+        if("blog_update".equalsIgnoreCase(updateBlog)) {
+            setUpdateBlogData();
+        }
+    }
+
+    public void setUpdateBlogData() {
+        submitButton.setVisibility(View.GONE);
+        updateButton.setVisibility(View.VISIBLE);
+
+        blogId = blogModelToBeUpdated.getBlogId();
+
+        blogHeaderEdit.setText(blogModelToBeUpdated.getBlogHeader());
+        blogContentEdit1.setText(blogModelToBeUpdated.getBlogContent1());
+        blogContentEdit2.setText(blogModelToBeUpdated.getBlogContent2());
+        blogFooterEdit.setText(blogModelToBeUpdated.getBlogFooter());
+
+        if(blogModelToBeUpdated.getUserBlogImage1Url() != null) {
+            blogImageView1.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                    .load(blogModelToBeUpdated.getUserBlogImage1Url())
+                    .into(blogImageView1);
+            uploadImage1.setVisibility(View.GONE);
+            cancelImage1.setVisibility(View.VISIBLE);
+        } else {
+            uploadImage1.setVisibility(View.VISIBLE);
+            cancelImage1.setVisibility(View.GONE);
+        }
+
+        if(blogModelToBeUpdated.getUserBlogImage2Url() != null) {
+            blogImageView2.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                    .load(blogModelToBeUpdated.getUserBlogImage2Url())
+                    .into(blogImageView2);
+            uploadImage2.setVisibility(View.GONE);
+            cancelImage2.setVisibility(View.VISIBLE);
+        } else {
+            uploadImage2.setVisibility(View.VISIBLE);
+            cancelImage2.setVisibility(View.GONE);
+        }
+
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setVisibilityGone();
+                boolean isValidated = validateData();
+                if(isValidated) {
+                    dialog = CommonDialog.getInstance().showProgressDialog(getActivity());
+                    dialog.show();
+                    isImageOnePresent = hasImage(blogImageView1);
+                    isImageTwoPresent = hasImage(blogImageView2);
+
+                    if(isImageOnePresent && isImageTwoPresent) {
+                        uploadBlogImagesToFirebaseStorage();
+                    } else if (!isImageOnePresent && !isImageTwoPresent) {
+                        blogModelToBeUpdated.setUserBlogImage1Url(null);
+                        blogModelToBeUpdated.setUserBlogImage2Url(null);
+                        blogMap.put("BlogImage1Url", blogModelToBeUpdated.getUserBlogImage1Url());
+                        blogMap.put("BlogImage2Url", blogModelToBeUpdated.getUserBlogImage2Url());
+                        getUserBannerIdAndUserImageUrl();
+                    } else if(isImageOnePresent && !isImageTwoPresent) {
+                        blogModelToBeUpdated.setUserBlogImage2Url(null);
+                        blogMap.put("BlogImage2Url", blogModelToBeUpdated.getUserBlogImage2Url());
+                        uploadBlogImagesToFirebaseStorage();
+                    } else if(!isImageOnePresent && isImageTwoPresent) {
+                        blogModelToBeUpdated.setUserBlogImage1Url(null);
+                        blogMap.put("BlogImage1Url", blogModelToBeUpdated.getUserBlogImage1Url());
+                        uploadImage2();
+                    }
+                }
+            }
+        });
     }
 
     public void submitButtonLogic(){
@@ -319,14 +406,15 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "New Blog is created in Users collection", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "New Blog is created in Users collection", Toast.LENGTH_SHORT).show();
                         addBlogToSQLite();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_LONG).show();
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -336,7 +424,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "New Blog is created in standalone Blogs collection", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "New Blog is created in standalone Blogs collection", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -346,7 +434,52 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_LONG).show();
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_SHORT).show();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                    }
+                });
+    }
+
+    public void updateData() {
+        DocumentReference userDoc = db.collection("Users").document(userId).collection("Blogs").document(blogId);
+        userDoc.update(blogMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getActivity(), "Blog is updated in Users collection", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                        Toast.makeText(getActivity(), "Some error occured while updating blog", Toast.LENGTH_SHORT).show();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                    }
+                });
+
+        DocumentReference documentReference = db.collection("Blogs").document(blogId);
+        documentReference.update(blogMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getActivity(), "Blog is updated in standalone Blogs collection", Toast.LENGTH_SHORT).show();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                        clearEditText();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                        Toast.makeText(getActivity(), "Some error occured while updating blog", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -367,6 +500,9 @@ public class CreateNewBlogFragment extends Fragment  {
         blogImageView2.setImageBitmap(null);
         uploadImage2.setVisibility(View.VISIBLE);
         cancelImage2.setVisibility(View.GONE);
+
+        submitButton.setVisibility(View.VISIBLE);
+        updateButton.setVisibility(View.GONE);
     }
 
     public void initializeViews() {
@@ -376,7 +512,9 @@ public class CreateNewBlogFragment extends Fragment  {
         blogImageView1 = (ImageView) getView().findViewById(R.id.blog_image_1);
         blogImageView2= (ImageView) getView().findViewById(R.id.blog_image_2);
         uploadImage1 = (LinearLayout) getView().findViewById(R.id.upload_image_1);
+        uploadImage1.setVisibility(View.VISIBLE);
         uploadImage2 = (LinearLayout) getView().findViewById(R.id.upload_image_2);
+        uploadImage2.setVisibility(View.VISIBLE);
         blogFooterEdit = (EditText) getView().findViewById(R.id.blog_footer);
         //mAdView = (AdView) getView().findViewById(R.id.adView_user_ad);
         submitButton = (Button) getView().findViewById(R.id.submit_blog_button);
@@ -392,6 +530,7 @@ public class CreateNewBlogFragment extends Fragment  {
         errorImage3=(ImageView) getView().findViewById(R.id.error_image3);
         cancelImage1 = (ImageView) getView().findViewById(R.id.submit_cancel_image1);
         cancelImage2 = (ImageView) getView().findViewById(R.id.submit_cancel_image2);
+        updateButton = (Button) getView().findViewById(R.id.update_blog_button);
         setVisibilityGone();
     }
 
@@ -421,27 +560,28 @@ public class CreateNewBlogFragment extends Fragment  {
                             blogmodel.setBannerAdMobId(bannerId);
                             blogmodel.setUserImageUrl(userImageUrl);
                             blogmodel.setBlogUser(userName);
+                            blogModelToBeUpdated.setBannerAdMobId(bannerId);
+                            blogModelToBeUpdated.setUserImageUrl(userImageUrl);
+                            blogModelToBeUpdated.setBlogUser(userName);
                         }
                         catch(NullPointerException e) {
-                            Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_SHORT).show();
                             if (dialog != null && dialog.isShowing()) {
                                 dialog.dismiss();
                             }
                         }
 
-                      if (blogmodel.getBannerAdMobId()!= null) {
-                          setBlogModelAndMap();
-                          addData();
-                      } else {
-                          Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
-                          if (dialog != null && dialog.isShowing()) {
-                              dialog.dismiss();
-                          }
-                      }
-                       // Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                        if("blog_update".equalsIgnoreCase(updateBlog)) {
+                            setUpdateBlogModelAndMap();
+                            updateData();
+                        } else {
+                            setBlogModelAndMap();
+                            addData();
+                        }
+
                     } else {
                         Log.d(TAG, "No such document");
-                        Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -457,7 +597,7 @@ public class CreateNewBlogFragment extends Fragment  {
 
     }
 
-    public void getUserImageUrl(){
+    /*public void getUserImageUrl(){
 
        DocumentReference docRef = db.collection("Users").document(userId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -484,7 +624,7 @@ public class CreateNewBlogFragment extends Fragment  {
             }
         });
 
-    }
+    } */
 
     public void setSpinner() {
         List<String> categories = new ArrayList<>();
@@ -504,10 +644,13 @@ public class CreateNewBlogFragment extends Fragment  {
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // attaching data adapter to spinner
         spinner.setAdapter(dataAdapter);
+        //spinner.setSelection(0, false);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 item = parent.getItemAtPosition(position).toString();
+                blogmodel.setBlogCategory(item);
+                blogModelToBeUpdated.setBlogCategory(item);
             }
 
             @Override
@@ -517,7 +660,6 @@ public class CreateNewBlogFragment extends Fragment  {
         });
     }
     public void setBlogModelAndMap(){
-
         blogmodel.setBlogHeader(blogHeaderEdit.getText().toString());
         blogmodel.setBlogContent1(blogContentEdit1.getText().toString());
         blogmodel.setBlogContent2(blogContentEdit2.getText().toString());
@@ -527,12 +669,33 @@ public class CreateNewBlogFragment extends Fragment  {
         blogMap.put("BlogContent1",blogmodel.getBlogContent1());
         blogMap.put("BlogContent2",blogmodel.getBlogContent2());
         blogMap.put("BlogFooter", blogmodel.getBlogFooter());
-        blogMap.put("BlogCategory",item);
+        blogMap.put("BlogCategory", blogmodel.getBlogCategory());
         blogMap.put("UserId",userId);
         blogMap.put("BlogLikes", String.valueOf(blogmodel.getBlogLikes()));
         blogMap.put("BlogUserBannerId",blogmodel.getBannerAdMobId());
         blogMap.put("BlogUserImageUrl",blogmodel.getUserImageUrl());
         blogMap.put("BlogUser", blogmodel.getBlogUser());
+        blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
+        blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+    }
+
+    public void setUpdateBlogModelAndMap() {
+        blogModelToBeUpdated.setBlogHeader(blogHeaderEdit.getText().toString());
+        blogModelToBeUpdated.setBlogContent1(blogContentEdit1.getText().toString());
+        blogModelToBeUpdated.setBlogContent2(blogContentEdit2.getText().toString());
+        blogModelToBeUpdated.setBlogFooter(blogFooterEdit.getText().toString());
+        blogMap.put("BlogHeader",blogModelToBeUpdated.getBlogHeader());
+        blogMap.put("BlogContent1",blogModelToBeUpdated.getBlogContent1());
+        blogMap.put("BlogContent2",blogModelToBeUpdated.getBlogContent2());
+        blogMap.put("BlogFooter", blogModelToBeUpdated.getBlogFooter());
+        blogMap.put("BlogCategory", blogModelToBeUpdated.getBlogCategory());
+        blogMap.put("UserId",userId);
+        blogMap.put("BlogLikes", String.valueOf(blogModelToBeUpdated.getBlogLikes()));
+        blogMap.put("BlogUserBannerId",blogModelToBeUpdated.getBannerAdMobId());
+        blogMap.put("BlogUserImageUrl",blogModelToBeUpdated.getUserImageUrl());
+        blogMap.put("BlogUser", blogModelToBeUpdated.getBlogUser());
+        blogMap.put("BlogImage1Url",blogModelToBeUpdated.getUserBlogImage1Url());
+        blogMap.put("BlogImage2Url",blogModelToBeUpdated.getUserBlogImage2Url());
     }
 
     public String createBlogId() {
@@ -544,6 +707,7 @@ public class CreateNewBlogFragment extends Fragment  {
         blogId = blogId + localblogId;
 
         blogmodel.setBlogId(blogId);
+        blogModelToBeUpdated.setBlogId(blogId);
         blogMap.put("BlogId",blogmodel.getBlogId());
         editor = sharedpreferences.edit();
         editor.putString("blogId_new",blogId);
@@ -810,7 +974,7 @@ public class CreateNewBlogFragment extends Fragment  {
                         String downloadUrl = uri.toString();
                         if (downloadUrl != null) {
                             blogmodel.setUserBlogImage1Url(downloadUrl);
-                            blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
+                            blogModelToBeUpdated.setUserBlogImage1Url(downloadUrl);
                         }
                         if(isImageTwoPresent) {
                             getImageUrl2();
@@ -821,7 +985,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure (@NonNull Exception exception){
-                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_SHORT).show();
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
@@ -841,14 +1005,14 @@ public class CreateNewBlogFragment extends Fragment  {
                         String downloadUrl = uri.toString();
                         if (downloadUrl != null) {
                             blogmodel.setUserBlogImage2Url(downloadUrl);
-                            blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+                            blogModelToBeUpdated.setUserBlogImage2Url(downloadUrl);
                         }
                         getUserBannerIdAndUserImageUrl();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure (@NonNull Exception exception){
-                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_SHORT).show();
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
@@ -866,7 +1030,6 @@ public class CreateNewBlogFragment extends Fragment  {
 
         return hasImage;
     }
-
 
 }
 

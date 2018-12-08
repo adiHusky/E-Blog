@@ -118,7 +118,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="@dimen/_2sdp"
-            android:id="@+id/upload_image_1">
+            android:id="@+id/upload_image_1"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -197,7 +198,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="@dimen/_2sdp"
-            android:id="@+id/upload_image_2">
+            android:id="@+id/upload_image_2"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -286,6 +288,22 @@
             android:textAllCaps="false"
             android:textColor="#fff"
             android:textSize="@dimen/_16sdp" />
+
+        <Button
+            android:id="@+id/update_blog_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
+            android:background="@drawable/gradient_corner"
+            android:paddingEnd="@dimen/_30sdp"
+            android:paddingStart="@dimen/_30sdp"
+            android:text="Update Blog"
+            android:textAllCaps="false"
+            android:textColor="#fff"
+            android:textSize="@dimen/_16sdp"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
