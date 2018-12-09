@@ -11,10 +11,12 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ExifInterface;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -48,6 +50,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -69,6 +72,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -90,6 +94,7 @@ import in.org.eonline.eblog.Utilities.PermissionUtils;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
+import static com.bumptech.glide.load.resource.bitmap.TransformationUtils.rotateImage;
 import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
 
 /**
@@ -129,6 +134,7 @@ public class CreateNewBlogFragment extends Fragment  {
     public Bitmap myBitmap1;
     public Bitmap myBitmap2;
     private AdView mAdView;
+    private InterstitialAd interstitialAd;
     private TextView errorHeader;
     private TextView errorContent1;
     private TextView errorContent2;
@@ -236,6 +242,8 @@ public class CreateNewBlogFragment extends Fragment  {
         if("blog_update".equalsIgnoreCase(updateBlog)) {
             setUpdateBlogData();
         }
+
+        loadInterstitialAd();
     }
 
     public void setUpdateBlogData() {
@@ -429,6 +437,9 @@ public class CreateNewBlogFragment extends Fragment  {
                             dialog.dismiss();
                         }
                         clearEditText();
+                        if(interstitialAd.isLoaded()) {
+                            interstitialAd.show();
+                        }
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -473,6 +484,9 @@ public class CreateNewBlogFragment extends Fragment  {
                             dialog.dismiss();
                         }
                         clearEditText();
+                        if(interstitialAd.isLoaded()) {
+                            interstitialAd.show();
+                        }
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -800,6 +814,15 @@ public class CreateNewBlogFragment extends Fragment  {
 
                 bitmap = compressImage(picUri);
 
+                try{
+                    bitmap = rotateImageIfRequired(requireContext(), bitmap, picUri);
+                } catch (IOException e) {
+                    blogImageView1.setVisibility(View.VISIBLE);
+                    blogImageView1.setImageBitmap(bitmap);
+                    uploadImage1.setVisibility(View.GONE);
+                    cancelImage1.setVisibility(View.VISIBLE);
+                }
+
                 blogImageView1.setVisibility(View.VISIBLE);
                 blogImageView1.setImageBitmap(bitmap);
                 uploadImage1.setVisibility(View.GONE);
@@ -829,6 +852,15 @@ public class CreateNewBlogFragment extends Fragment  {
                 picUri = getPickImageResultUri(data);
 
                 bitmap = compressImage(picUri);
+
+                try{
+                   bitmap = rotateImageIfRequired(requireContext(), bitmap, picUri);
+                } catch (IOException e) {
+                    blogImageView2.setVisibility(View.VISIBLE);
+                    blogImageView2.setImageBitmap(bitmap);
+                    uploadImage2.setVisibility(View.GONE);
+                    cancelImage2.setVisibility(View.VISIBLE);
+                }
 
                 blogImageView2.setVisibility(View.VISIBLE);
                 blogImageView2.setImageBitmap(bitmap);
@@ -1029,6 +1061,47 @@ public class CreateNewBlogFragment extends Fragment  {
         }
 
         return hasImage;
+    }
+
+    public void loadInterstitialAd() {
+        interstitialAd = new InterstitialAd(requireContext());
+        interstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice("")
+                .build();
+        interstitialAd.loadAd(request);
+    }
+
+
+    private static Bitmap rotateImageIfRequired(Context context, Bitmap img, Uri selectedImage) throws IOException {
+
+        InputStream input = context.getContentResolver().openInputStream(selectedImage);
+        ExifInterface ei;
+        if (Build.VERSION.SDK_INT > 23)
+            ei = new ExifInterface(input);
+        else
+            ei = new ExifInterface(selectedImage.getPath());
+
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return rotateImage(img, 90);
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return rotateImage(img, 180);
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return rotateImage(img, 270);
+            default:
+                return img;
+        }
+    }
+
+    private static Bitmap rotateImage(Bitmap img, int degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle();
+        return rotatedImg;
     }
 
 }

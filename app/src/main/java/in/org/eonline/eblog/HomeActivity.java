@@ -123,10 +123,10 @@ public class HomeActivity extends AppCompatActivity
 
         // Create a new user with a first and last name
 
-        user.put("first", "Viraj");
-        user.put("last", "Jadhav");
-        user.put("born", 1998);
-        user.put("City", "Panvel");
+        //user.put("first", "Viraj");
+        //user.put("last", "Jadhav");
+        //user.put("born", 1998);
+        //user.put("City", "Panvel");
         //addData();
 
         /* MobileAds.initialize(this,"ca-app-pub-7293397784162310~9840078574");
