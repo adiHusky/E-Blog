@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,46 +8,31 @@
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPagerContainer"
-        android:layout_width="@dimen/_250sdp"
-        android:layout_height="@dimen/_370sdp"
-        android:layout_gravity="center"
-        android:padding="@dimen/_20sdp">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <android.support.design.widget.TabLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabBackground="@drawable/tab_selector"
+            app:tabGravity="center"
+            app:tabIndicatorHeight="0dp"
+            app:tabMaxWidth="30dp"
+            android:layout_gravity="bottom|center"
+            android:paddingBottom="@dimen/_50sdp"
+            />
     </android.support.v4.view.ViewPager>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginStart="@dimen/_60sdp"
-            android:drawableStart="@drawable/ic_chevron_left_black_24dp"
-            android:gravity="start"
-            android:padding="@dimen/_5sdp"
-            android:id="@+id/viewPagerBack"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginEnd="@dimen/_60sdp"
-            android:drawableStart="@drawable/ic_chevron_right_black_24dp"
-            android:gravity="end"
-            android:padding="@dimen/_5sdp"
-            android:id="@+id/viewPagerNext"/>
 
-    </RelativeLayout>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"
         android:layout_width="221dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="@dimen/_20sdp"/>
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center" />
 
-</LinearLayout>
+</RelativeLayout>

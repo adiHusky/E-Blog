@@ -279,11 +279,11 @@ public class HomeActivity extends AppCompatActivity
             toolbar.setTitle("Monetize Blog");
             openFragment(monetizationFragment,fragmentTag);
         }
-        /*else if (id == R.id.nav_task) {
+        else if (id == R.id.nav_task) {
             TaskFragment taskFragment = new TaskFragment();
             fragmentTag="nav_task";
             openFragment(taskFragment,fragmentTag);
-        } */
+        }
         else if (id == R.id.nav_profile) {
             MyProfileFragment myProfileFragment = new MyProfileFragment();
             fragmentTag="nav_profile";

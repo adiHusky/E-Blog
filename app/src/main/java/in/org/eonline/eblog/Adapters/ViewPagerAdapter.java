@@ -38,22 +38,22 @@ public class ViewPagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
 
-        if (flag.equalsIgnoreCase("MainViewPager")){
+      /*  if (flag.equalsIgnoreCase("MainViewPager")){*/
             View itemView = LayoutInflater.from(mContext).inflate(R.layout.pager_item, container, false);
             ImageView imageView = (ImageView) itemView.findViewById(R.id.img_pager_item);
             imageView.setImageResource(mResources[position]);
             container.addView(itemView);
             return itemView;
-        }
+     //   }
 
-        else if(flag.equalsIgnoreCase("SellImagesViewPager")){
+    /*    else if(flag.equalsIgnoreCase("SellImagesViewPager")){
             View itemView = LayoutInflater.from(mContext).inflate(R.layout.sell_images_item_viewpager, container, false);
             ImageView imageView = (ImageView) itemView.findViewById(R.id.sell_img_pager_item);
             imageView.setImageResource(mResources[position]);
             container.addView(itemView);
             return itemView;
         }
-        return true;
+        return true;*/
     }
 
     @Override

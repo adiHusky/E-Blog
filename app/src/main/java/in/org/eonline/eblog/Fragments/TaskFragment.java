@@ -263,6 +263,10 @@ public class TaskFragment extends Fragment implements BlogAdapter.ClickListener 
         blogModel.setBlogCategory(blogModelFromDialog.getBlogCategory());
         blogModel.setBlogId(blogModelFromDialog.getBlogId());
         blogModel.setBannerAdMobId(blogModelFromDialog.getBannerAdMobId());
+        blogModel.setUserBlogImage1Url(blogModelFromDialog.getUserBlogImage1Url());
+        blogModel.setUserBlogImage2Url(blogModelFromDialog.getUserBlogImage2Url());
+        blogModel.setUserImageUrl(blogModelFromDialog.getUserImageUrl());
+        blogModel.setUserId(blogModelFromDialog.getUserId());
         blogListCategorywise.add(blogModel);
     }
 
