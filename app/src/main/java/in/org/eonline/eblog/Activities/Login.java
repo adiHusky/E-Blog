@@ -12,6 +12,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -53,7 +54,7 @@ import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
 
 
-public class Login extends AppCompatActivity implements View.OnClickListener{
+public class Login extends AppCompatActivity {
 
     SignInButton signInButton;
     private FirebaseAuth mAuth;
@@ -86,15 +87,16 @@ public class Login extends AppCompatActivity implements View.OnClickListener{
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login);
         viewPager = (ViewPager) findViewById(R.id.viewPagerContainer);
-        backButton = (TextView) findViewById(R.id.viewPagerBack);
-        nextButton = (TextView) findViewById(R.id.viewPagerNext);
+      //  backButton = (TextView) findViewById(R.id.viewPagerBack);
+       // nextButton = (TextView) findViewById(R.id.viewPagerNext);
         flag = "MainViewPager";
         mAdapter = new ViewPagerAdapter(Login.this, mImageResources, flag);
         viewPager.setAdapter(mAdapter);
         viewPager.setCurrentItem(0, true);
+        viewPager.setOffscreenPageLimit(1);
 
-        backButton.setOnClickListener(this);
-        nextButton.setOnClickListener(this);
+       // backButton.setOnClickListener(this);
+       // nextButton.setOnClickListener(this);
 
         initializeViews();
 
@@ -267,7 +269,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener{
         */
     }
 
-    @Override
+ /*  @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.viewPagerNext:
@@ -294,5 +296,5 @@ public class Login extends AppCompatActivity implements View.OnClickListener{
                 break;
         }
 
-    }
+    }*/
 }
