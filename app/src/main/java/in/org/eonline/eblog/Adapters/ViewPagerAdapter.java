@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import in.org.eonline.eblog.R;
 
@@ -32,7 +33,7 @@ public class ViewPagerAdapter extends PagerAdapter {
 
     @Override
     public boolean isViewFromObject(View view, Object object) {
-        return view == ((ConstraintLayout) object);
+        return view == ((LinearLayout) object);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class ViewPagerAdapter extends PagerAdapter {
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
-        container.removeView((ConstraintLayout) object);
+        container.removeView((LinearLayout) object);
     }
 
 }

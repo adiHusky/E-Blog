@@ -58,7 +58,7 @@ public class MonetizationFragment extends Fragment {
     private EditText adMobAdUnitIdEdit;
     private Button submitAdMobAdUnitId;
     private String adMobUnitId;
-    private TextView admobLink;
+    private TextView admobLink, monetizationEdit, monetizationCancel;
     FirebaseFirestore db;
     private SharedPreferences sharedpreferences;
     public static final String MyPREFERENCES = "MyPrefs_new" ;
@@ -128,7 +128,40 @@ public class MonetizationFragment extends Fragment {
                 webView.loadUrl("http://www.google.com");*/
             }
         });
+
+        monetizationEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                monetizationCancel.setVisibility(View.VISIBLE);
+                monetizationEdit.setVisibility(View.GONE);
+                adMobAdUnitIdEdit.setEnabled(true);
+                adMobAdUnitIdEdit.setFocusable(true);
+                adMobAdUnitIdEdit.setFocusableInTouchMode(true);
+                submitAdMobAdUnitId.setEnabled(true);
+                submitAdMobAdUnitId.setAlpha((float)1);
+            }
+        });
+
+        disableEditFields();
+
+        monetizationCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                disableEditFields();
+            }
+        });
     }
+
+    public void disableEditFields() {
+        monetizationEdit.setVisibility(View.VISIBLE);
+        monetizationCancel.setVisibility(View.GONE);
+        adMobAdUnitIdEdit.setEnabled(false);
+        adMobAdUnitIdEdit.setFocusable(false);
+        adMobAdUnitIdEdit.setFocusableInTouchMode(false);
+        submitAdMobAdUnitId.setEnabled(false);
+        submitAdMobAdUnitId.setAlpha((float)0.5);
+    }
+
     public void refreshMyProfile(){
         mySwipeRequestLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -165,9 +198,7 @@ public class MonetizationFragment extends Fragment {
             CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
             //Toast.makeText(Login.this, "No Internet Connection, Please connect to Internet.", Toast.LENGTH_LONG).show();
         }
-
-
-        }
+    }
 
     public void addDataToUserFirebase(String adMobUnitId){
         db.collection("Users").document(userId).update("UserBannerId", adMobUnitId)
@@ -179,6 +210,7 @@ public class MonetizationFragment extends Fragment {
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
+                        disableEditFields();
 
                     }
                 })
@@ -200,6 +232,8 @@ public class MonetizationFragment extends Fragment {
         //userAdView = (AdView) getView().findViewById(R.id.user_ad_view);
         mySwipeRequestLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_monetize);
         admobLink = (TextView) getView().findViewById(R.id.open_admob_link);
+        monetizationEdit = (TextView) getView().findViewById(R.id.monetization_edit);
+        monetizationCancel = (TextView) getView().findViewById(R.id.monetization_cancel);
     }
 
     public void checkAdmobId()

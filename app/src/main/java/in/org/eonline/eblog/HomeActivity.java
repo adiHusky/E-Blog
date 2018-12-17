@@ -1,15 +1,11 @@
 package in.org.eonline.eblog;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -18,30 +14,21 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,17 +36,15 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
-import in.org.eonline.eblog.Activities.BlogActivity;
 import in.org.eonline.eblog.Activities.Login;
 import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
-import in.org.eonline.eblog.Fragments.HomeFragment;
+import in.org.eonline.eblog.Fragments.ExploreFragment;
+import in.org.eonline.eblog.Fragments.FAQFragment;
 import in.org.eonline.eblog.Fragments.MonetizationFragment;
 import in.org.eonline.eblog.Fragments.MyProfileFragment;
 import in.org.eonline.eblog.Fragments.ReportBugFragment;
-import in.org.eonline.eblog.Fragments.TaskFragment;
 import in.org.eonline.eblog.Fragments.TermsConditionsFragment;
 import in.org.eonline.eblog.Fragments.YourBlogsFragment;
-import in.org.eonline.eblog.Models.BlogModel;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -105,7 +90,7 @@ public class HomeActivity extends AppCompatActivity
             createNewBlogFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, createNewBlogFragment).commit();
         } else {
-            openFragment(new HomeFragment(), "nav_home");
+            openFragment(new ExploreFragment(), "nav_home");
         }
 
         db = FirebaseFirestore.getInstance();
@@ -200,7 +185,7 @@ public class HomeActivity extends AppCompatActivity
                     //super.onBackPressed();
                     //finishAndRemoveTask();
                 } else {
-                    openFragment(new HomeFragment(), "nav_home");
+                    openFragment(new ExploreFragment(), "nav_home");
                 }
             } else {
                 finish();
@@ -259,10 +244,10 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            HomeFragment homeFragment = new HomeFragment();
+            ExploreFragment exploreFragment = new ExploreFragment();
             fragmentTag="nav_home";
             toolbar.setTitle("Explore Blogs");
-            openFragment(homeFragment,fragmentTag);
+            openFragment(exploreFragment,fragmentTag);
         } else if (id == R.id.nav_new_blog) {
             CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
             fragmentTag="create_new_fragment";
@@ -279,11 +264,11 @@ public class HomeActivity extends AppCompatActivity
             toolbar.setTitle("Monetize Blog");
             openFragment(monetizationFragment,fragmentTag);
         }
-        else if (id == R.id.nav_task) {
+        /*else if (id == R.id.nav_task) {
             TaskFragment taskFragment = new TaskFragment();
             fragmentTag="nav_task";
             openFragment(taskFragment,fragmentTag);
-        }
+        } */
         else if (id == R.id.nav_profile) {
             MyProfileFragment myProfileFragment = new MyProfileFragment();
             fragmentTag="nav_profile";
@@ -294,7 +279,10 @@ public class HomeActivity extends AppCompatActivity
             Intent intent = new Intent(HomeActivity.this, Login.class);
             startActivity(intent);
         } else if (id == R.id.nav_about_us) {
-            //TODO
+            FAQFragment faqFragment = new FAQFragment();
+            fragmentTag="nav_faq";
+            toolbar.setTitle("FAQ and About Us");
+            openFragment(faqFragment,fragmentTag);
         } else if (id == R.id.nav_tc) {
             TermsConditionsFragment termsConditionsFragment = new TermsConditionsFragment();
             fragmentTag="nav_tc";

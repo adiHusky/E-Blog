@@ -7,22 +7,81 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Terms and Conditions"
-        android:textSize="@dimen/_20sdp"
-        android:padding="@dimen/_10sdp"
-        android:id="@+id/terms_header"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This following sets out the terms and conditions on which you may use the content on
-business-standard.com website, business-standard.com's mobile browser site, Business Standard instore Applications and other digital publishing services (www.smartinvestor.in, www.bshindi.com and www.bsmotoring,com) owned by Business Standard Private Limited, all the services herein will be referred to as Business Standard Content Services."
-        android:textSize="@dimen/_15sdp"
-        android:padding="@dimen/_10sdp"
-        android:id="@+id/terms_content"/>
+        android:orientation="vertical"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_20sdp">
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_14sdp"
+            android:text="Welcome to E-Blogger!"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_12sdp"
+            android:text="@string/terms_conditions_0"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_12sdp"
+            android:text="@string/terms_conditions_1"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_12sdp"
+            android:text="@string/terms_conditions_2"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_12sdp"
+            android:text="@string/terms_conditions_3"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_12sdp"
+            android:text="@string/terms_conditions_4"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_12sdp"
+            android:text="@string/terms_conditions_5"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textSize="@dimen/_12sdp"
+            android:text="@string/terms_conditions_6"
+            android:textColor="#000000"
+            android:layout_marginBottom="@dimen/_20sdp"/>
     </LinearLayout>
 
 </ScrollView>

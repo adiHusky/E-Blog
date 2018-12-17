@@ -37,8 +37,8 @@ public class TermsConditionsFragment extends Fragment {
 
 
    public void initializeViews(){
-    termsHeader = (TextView) getView().findViewById(R.id.terms_header);
-    termsContent= (TextView) getView().findViewById(R.id.terms_content);
+    //termsHeader = (TextView) getView().findViewById(R.id.terms_header);
+    //termsContent= (TextView) getView().findViewById(R.id.terms_content);
 
    };
 }

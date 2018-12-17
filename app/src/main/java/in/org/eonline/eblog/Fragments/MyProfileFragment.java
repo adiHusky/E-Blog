@@ -68,6 +68,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -207,7 +208,8 @@ public class MyProfileFragment extends Fragment {
             public void onClick(View v) {
                 cancel_profile.setVisibility(View.VISIBLE);
                 edit_profile.setVisibility(View.GONE);
-
+                submitButton.setEnabled(true);
+                submitButton.setAlpha((float)1);
                 userFnameEdit.setEnabled(true);
                 userFnameEdit.setFocusable(true);
                 userFnameEdit.setFocusableInTouchMode(true);
@@ -220,7 +222,7 @@ public class MyProfileFragment extends Fragment {
                 userContactEdit.setFocusable(true);
                 userContactEdit.setInputType(InputType.TYPE_CLASS_TEXT);
                 userContactEdit.setFocusableInTouchMode(true);
-
+                userProfileImage.setEnabled(true);
             }
         });
     }
@@ -502,9 +504,11 @@ public class MyProfileFragment extends Fragment {
         userContactEdit.setFocusable(false);
         userContactEdit.setInputType(InputType.TYPE_NULL);
         userContactEdit.setFocusableInTouchMode(false);
-
+        submitButton.setEnabled(false);
+        submitButton.setAlpha((float)0.5);
         edit_profile.setVisibility(View.VISIBLE);
         cancel_profile.setVisibility(View.GONE);
+        userProfileImage.setEnabled(false);
     }
 
     public void uploadImageToFirebaseStorage() {
@@ -634,7 +638,9 @@ public class MyProfileFragment extends Fragment {
         mySwipeRequestLayout =(SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh_profile);
         edit_profile  = (TextView) getView().findViewById(R.id.user_edit);
         cancel_profile = (TextView) getView().findViewById(R.id.user_cancel);
-        //edit_profile.setVisibility(View.GONE);
+        submitButton.setEnabled(false);
+        submitButton.setAlpha((float)0.5);
+        userProfileImage.setEnabled(false);
     }
 
     public void allowPermissions() {
@@ -770,6 +776,12 @@ public class MyProfileFragment extends Fragment {
                 picUri = getPickImageResultUri(data);
 
                 bitmap = compressImage(picUri);
+                try{
+                    bitmap = rotateImageIfRequired(requireContext(), bitmap, picUri);
+                } catch (IOException e) {
+                    userProfileImage.setImageBitmap(bitmap);
+                }
+
                 userProfileImage.setImageBitmap(bitmap);
 
                 /*try {
@@ -825,10 +837,15 @@ public class MyProfileFragment extends Fragment {
     // Devices like Samsung galaxy are known to capture the image in landscape orientation.
     // Retrieving the image and displaying as it is can cause it to be displayed in the wrong orientation.
     // Hence we’ve called the method rotateImageIfRequired(myBitmap, picUri);
-    private static Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) throws IOException {
+    private static Bitmap rotateImageIfRequired(Context context, Bitmap img, Uri selectedImage) throws IOException {
 
-        // ExifInterface is a class for reading and writing Exif tags in a JPEG file or a RAW image file.
-        ExifInterface ei = new ExifInterface(selectedImage.getPath());
+        InputStream input = context.getContentResolver().openInputStream(selectedImage);
+        ExifInterface ei;
+        if (Build.VERSION.SDK_INT > 23)
+            ei = new ExifInterface(input);
+        else
+            ei = new ExifInterface(selectedImage.getPath());
+
         int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
         switch (orientation) {
