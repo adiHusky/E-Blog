@@ -89,6 +89,7 @@ import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+import in.org.eonline.eblog.Utilities.FontClass;
 import in.org.eonline.eblog.Utilities.ImageUtility;
 import in.org.eonline.eblog.Utilities.PermissionUtils;
 
@@ -183,6 +184,9 @@ public class CreateNewBlogFragment extends Fragment  {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         initializeViews();
+
+        ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.createNewBlog_layout);
+        FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
 
         sqliteDatabaseHelper = new DatabaseHelper(getActivity());
         db = FirebaseFirestore.getInstance();

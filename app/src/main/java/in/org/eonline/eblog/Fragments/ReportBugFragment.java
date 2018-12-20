@@ -38,6 +38,7 @@ import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+import in.org.eonline.eblog.Utilities.FontClass;
 
 
 public class ReportBugFragment extends Fragment {
@@ -92,6 +93,9 @@ public class ReportBugFragment extends Fragment {
         mAdView = (AdView) getView().findViewById(R.id.reportBug_adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
+
+        ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.reportBug_layout);
+        FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
     }
 
     public void submitBugFunction(){

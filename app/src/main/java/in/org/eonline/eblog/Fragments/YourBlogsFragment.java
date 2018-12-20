@@ -213,6 +213,7 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
         yourBlogsRecyclerView.setLayoutManager(linearLayoutManager);
         BlogAdapter adapter = new BlogAdapter(getActivity(),blogModelsList , YourBlogsFragment.this);
         yourBlogsRecyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     @Override

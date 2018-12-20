@@ -40,11 +40,13 @@ import java.util.List;
 import in.org.eonline.eblog.Adapters.BlogAdapter;
 import in.org.eonline.eblog.Adapters.UserAdapter;
 import in.org.eonline.eblog.Activities.BlogActivity;
+import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.Models.UserModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+import in.org.eonline.eblog.Utilities.FontClass;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -92,6 +94,9 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
         initializeViews();
         setDataFirebase();
         refreshMyProfile();
+
+        ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.swiperefresh_home);
+        FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
 
         // Get the instance of Firebase storage
         storage = FirebaseStorage.getInstance();
@@ -242,6 +247,7 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
         popularBlogsRecyclerView.setLayoutManager(linearLayoutManager);
         BlogAdapter adapter = new BlogAdapter(getActivity(),blogModelsList , ExploreFragment.this);
         popularBlogsRecyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     @Override

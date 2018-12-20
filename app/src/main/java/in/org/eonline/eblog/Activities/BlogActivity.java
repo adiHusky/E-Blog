@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -12,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -46,6 +48,7 @@ import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+import in.org.eonline.eblog.Utilities.FontClass;
 
 import static android.content.ContentValues.TAG;
 
@@ -68,6 +71,7 @@ public class BlogActivity extends AppCompatActivity {
     public Dialog dialog;
     FirebaseStorage storage;
     StorageReference storageRef;
+    Typeface tf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +81,8 @@ public class BlogActivity extends AppCompatActivity {
         setContentView(R.layout.activity_blog);
 
         InitializeViews();
-
+        ViewGroup myMostParentLayout = (ViewGroup) findViewById(R.id.blogActivity);
+        FontClass.getInstance(BlogActivity.this).setFontToAllChilds(myMostParentLayout);
         refreshMyProfile();
 
         db = FirebaseFirestore.getInstance();

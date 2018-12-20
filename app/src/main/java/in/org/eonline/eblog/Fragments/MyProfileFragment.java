@@ -85,6 +85,7 @@ import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.SQLite.DatabaseHelper;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+import in.org.eonline.eblog.Utilities.FontClass;
 import in.org.eonline.eblog.Utilities.ImageUtility;
 import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor;
 
@@ -160,6 +161,10 @@ public class MyProfileFragment extends Fragment {
         //userProfileUrl = sharedpreferences.getString("userProfileUrl", "imageUrl");
 
         initializeViews();
+
+        ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.my_profile_layout);
+        FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
+
         // get instance of Firebase Firestore Database
         db = FirebaseFirestore.getInstance();
 

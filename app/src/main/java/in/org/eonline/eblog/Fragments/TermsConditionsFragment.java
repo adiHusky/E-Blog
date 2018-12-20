@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.Utilities.FontClass;
 
 
 public class TermsConditionsFragment extends Fragment {
@@ -32,13 +33,8 @@ public class TermsConditionsFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        initializeViews();
+
+        ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.tnc_layout);
+        FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
     }
-
-
-   public void initializeViews(){
-    //termsHeader = (TextView) getView().findViewById(R.id.terms_header);
-    //termsContent= (TextView) getView().findViewById(R.id.terms_content);
-
-   };
 }

@@ -47,6 +47,7 @@ import java.util.Map;
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.Utilities.CommonDialog;
 import in.org.eonline.eblog.Utilities.ConnectivityReceiver;
+import in.org.eonline.eblog.Utilities.FontClass;
 
 import static android.content.ContentValues.TAG;
 
@@ -92,6 +93,9 @@ public class MonetizationFragment extends Fragment {
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
         checkAdmobId();
         refreshMyProfile();
+
+        ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.swiperefresh_monetize);
+        FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
 
         submitAdMobAdUnitId.setOnClickListener(new View.OnClickListener() {
             @Override

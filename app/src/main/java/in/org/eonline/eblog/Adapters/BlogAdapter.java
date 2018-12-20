@@ -1,9 +1,11 @@
 package in.org.eonline.eblog.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -26,6 +28,7 @@ import java.util.List;
 
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.R;
+import in.org.eonline.eblog.Utilities.FontClass;
 
 public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder> {
     private Context context;
@@ -150,6 +153,11 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
             blogLikeItem = (TextView) itemView.findViewById(R.id.blog_likes_item);
             blogUserImageItem = (ImageView) itemView.findViewById(R.id.user_image_item);
             blogUserNameItem = (TextView) itemView.findViewById(R.id.user_name_item);
+
+            Typeface typeface = Typeface.createFromAsset(context.getAssets(), "fonts/OpenSans-Bold.ttf");
+            blogNameItem.setTypeface(typeface);
+            blogLikeItem.setTypeface(typeface);
+            blogUserNameItem.setTypeface(typeface);
         }
 
         @Override

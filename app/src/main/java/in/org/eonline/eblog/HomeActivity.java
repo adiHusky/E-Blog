@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +37,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+import in.org.eonline.eblog.Activities.BlogActivity;
 import in.org.eonline.eblog.Activities.Login;
 import in.org.eonline.eblog.Fragments.CreateNewBlogFragment;
 import in.org.eonline.eblog.Fragments.ExploreFragment;
@@ -45,6 +47,7 @@ import in.org.eonline.eblog.Fragments.MyProfileFragment;
 import in.org.eonline.eblog.Fragments.ReportBugFragment;
 import in.org.eonline.eblog.Fragments.TermsConditionsFragment;
 import in.org.eonline.eblog.Fragments.YourBlogsFragment;
+import in.org.eonline.eblog.Utilities.FontClass;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -76,6 +79,9 @@ public class HomeActivity extends AppCompatActivity
         isUserNamePresent = sharedpreferences.getString("UserFirstName", "false");
         initializeViews();
 
+        ViewGroup myMostParentLayout = (ViewGroup) findViewById(R.id.drawer_layout);
+        FontClass.getInstance(HomeActivity.this).setFontToAllChilds(myMostParentLayout);
+
         fragmentTag="nav_home";
 
         if (getIntent().hasExtra("update_blog")) {
@@ -95,7 +101,7 @@ public class HomeActivity extends AppCompatActivity
 
         db = FirebaseFirestore.getInstance();
 
-        toolbar.setTitle("Explore Blogs");
+        toolbar.setTitle("E-Blogger");
         setSupportActionBar(toolbar);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -246,22 +252,22 @@ public class HomeActivity extends AppCompatActivity
         if (id == R.id.nav_home) {
             ExploreFragment exploreFragment = new ExploreFragment();
             fragmentTag="nav_home";
-            toolbar.setTitle("Explore Blogs");
+            //toolbar.setTitle("Explore Blogs");
             openFragment(exploreFragment,fragmentTag);
         } else if (id == R.id.nav_new_blog) {
             CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
             fragmentTag="create_new_fragment";
-            toolbar.setTitle("Create/Update Blog");
+            //toolbar.setTitle("Create/Update Blog");
             openFragment(createNewBlogFragment,fragmentTag);
         } else if (id == R.id.nav_blog_history) {
             YourBlogsFragment yourBlogsFragment = new YourBlogsFragment();
             fragmentTag="nav_blog_history";
-            toolbar.setTitle("Your Blogs");
+            //toolbar.setTitle("Your Blogs");
             openFragment(yourBlogsFragment,fragmentTag);
         } else if (id == R.id.nav_monetize) {
             MonetizationFragment monetizationFragment = new MonetizationFragment();
             fragmentTag="nav_monetize";
-            toolbar.setTitle("Monetize Blog");
+            //toolbar.setTitle("Monetize Blog");
             openFragment(monetizationFragment,fragmentTag);
         }
         /*else if (id == R.id.nav_task) {
@@ -272,7 +278,7 @@ public class HomeActivity extends AppCompatActivity
         else if (id == R.id.nav_profile) {
             MyProfileFragment myProfileFragment = new MyProfileFragment();
             fragmentTag="nav_profile";
-            toolbar.setTitle("My Profile");
+            //toolbar.setTitle("My Profile");
             openFragment(myProfileFragment,fragmentTag);
         } else if (id == R.id.nav_logout) {
             FirebaseAuth.getInstance().signOut();
@@ -281,17 +287,17 @@ public class HomeActivity extends AppCompatActivity
         } else if (id == R.id.nav_about_us) {
             FAQFragment faqFragment = new FAQFragment();
             fragmentTag="nav_faq";
-            toolbar.setTitle("FAQ and About Us");
+            //toolbar.setTitle("FAQ and About Us");
             openFragment(faqFragment,fragmentTag);
         } else if (id == R.id.nav_tc) {
             TermsConditionsFragment termsConditionsFragment = new TermsConditionsFragment();
             fragmentTag="nav_tc";
-            toolbar.setTitle("Terms & Conditions");
+            //toolbar.setTitle("Terms & Conditions");
             openFragment(termsConditionsFragment,fragmentTag);
         } else if (id == R.id.nav_report_bug){
             ReportBugFragment reportBugFragment = new ReportBugFragment();
             fragmentTag="nav_report_bug";
-            toolbar.setTitle("Feedback/Report Bug");
+            //toolbar.setTitle("Feedback/Report Bug");
             openFragment(reportBugFragment,fragmentTag);
         }
 

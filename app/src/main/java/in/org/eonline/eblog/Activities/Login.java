@@ -73,6 +73,7 @@ public class Login extends AppCompatActivity {
     private TextView backButton, nextButton;
     private ViewPagerAdapter mAdapter;
     public String flag = "";
+    public Dialog dialog;
 
     private int[] mImageResources = {
             R.drawable.viewpagerone,
@@ -156,6 +157,8 @@ public class Login extends AppCompatActivity {
     private void signIn() {
         //call this signout() function before every sign in call in order to get google login account chooser/picker
         //mGoogleSignInClient.signOut();
+        dialog = CommonDialog.getInstance().showProgressDialog(Login.this);
+        dialog.show();
 
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -175,6 +178,9 @@ public class Login extends AppCompatActivity {
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Toast.makeText(Login.this, "Google sign in failed", Toast.LENGTH_SHORT).show();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
             }
         }
     }
@@ -222,6 +228,9 @@ public class Login extends AppCompatActivity {
                                 editor.commit();
                                 addDataToUserFirebase(userModel);
                             }
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                             Toast.makeText(Login.this, "signInWithCredential:success", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(Login.this, HomeActivity.class);
                             startActivity(intent);
@@ -232,6 +241,9 @@ public class Login extends AppCompatActivity {
                             //Snackbar.make(findViewById(R.id.main_layout), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
                             //updateUI(null);
                             Toast.makeText(Login.this, "Authentication Failed.", Toast.LENGTH_LONG).show();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                         }
 
                         // ...
