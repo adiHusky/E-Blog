@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -94,6 +95,9 @@ public class Login extends AppCompatActivity {
         viewPager.setAdapter(mAdapter);
         viewPager.setCurrentItem(0, true);
         viewPager.setOffscreenPageLimit(1);
+
+        TabLayout tabLayout =  findViewById(R.id.tab_layout);
+        tabLayout.setupWithViewPager(viewPager, true);
 
        // backButton.setOnClickListener(this);
        // nextButton.setOnClickListener(this);
