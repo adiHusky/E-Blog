@@ -26,6 +26,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
@@ -83,6 +84,10 @@ public class ReportBugFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         initializeViews();
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
         refreshMyProfile();
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
@@ -227,7 +232,7 @@ public void validateData(){
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "Bug Reported Successfully", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "Bug is reported", Toast.LENGTH_LONG).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }

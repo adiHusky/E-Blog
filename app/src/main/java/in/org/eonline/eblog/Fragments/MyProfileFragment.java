@@ -54,6 +54,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
@@ -167,6 +168,10 @@ public class MyProfileFragment extends Fragment {
 
         // get instance of Firebase Firestore Database
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
 
         // get instance of Firebase Storage
         storage = FirebaseStorage.getInstance();
@@ -361,7 +366,7 @@ public class MyProfileFragment extends Fragment {
                                 dialog.dismiss();
                             }
                         }
-                        Toast.makeText(getContext(), "Data is retrieved from firebase", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getContext(), "Data is retrieved from firebase", Toast.LENGTH_LONG).show();
                     } else {
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
@@ -478,7 +483,7 @@ public class MyProfileFragment extends Fragment {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "DocumentSnapshot successfully updated!");
-                        Toast.makeText(getContext(), "Data updated successfully", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(), "Data is updated successfully", Toast.LENGTH_SHORT).show();
                         startUploadingImageToFirebase();
                         editor.putString("UserFirstName",userFnameEdit.getText().toString());
                         editor.commit();
@@ -547,7 +552,7 @@ public class MyProfileFragment extends Fragment {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                 // ...
-                Toast.makeText(getContext(), "File successfully uploaded", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "File successfully uploaded", Toast.LENGTH_SHORT).show();
                 getimageUrl();
                     //downloadImageFromFirebaseStorage();
                 /*userProfileUrl = imagesRef.getDownloadUrl().toString();
@@ -620,7 +625,7 @@ public class MyProfileFragment extends Fragment {
                   @Override
                   public void onSuccess(Void aVoid) {
                       Log.d(TAG, "DocumentSnapshot successfully updated!");
-                      Toast.makeText(getContext(), "Image Id updated successfully", Toast.LENGTH_SHORT).show();
+                      //Toast.makeText(getContext(), "Image Id updated successfully", Toast.LENGTH_SHORT).show();
                       startUploadingImageToFirebase();
                   }
               })

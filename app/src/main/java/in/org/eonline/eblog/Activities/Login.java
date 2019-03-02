@@ -40,6 +40,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.SetOptions;
 
 import org.w3c.dom.Text;
@@ -108,6 +109,10 @@ public class Login extends AppCompatActivity {
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userIdCreated = sharedpreferences.getString("UserIdCreated","document");
 
@@ -231,7 +236,7 @@ public class Login extends AppCompatActivity {
                             if (dialog != null && dialog.isShowing()) {
                                 dialog.dismiss();
                             }
-                            Toast.makeText(Login.this, "signInWithCredential:success", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(Login.this, "signInWithCredential:success", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(Login.this, HomeActivity.class);
                             startActivity(intent);
                             finish();
@@ -259,7 +264,7 @@ public class Login extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(Login.this, "Data is successfully saved", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(Login.this, "Data is successfully saved", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -285,32 +290,9 @@ public class Login extends AppCompatActivity {
         */
     }
 
- /*  @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.viewPagerNext:
-                if (viewPager.getCurrentItem() == 0 || viewPager.getCurrentItem() == 1 || viewPager.getCurrentItem() == 2) {
-                    viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
-                } else {
-                   // Intent intent = new Intent(ViewPagerActivity.this, Login.class);
-                    //startActivity(intent);
-
-                }
-
-                break;
-
-            case R.id.viewPagerBack:
-              //  Intent intent = new Intent(ViewPagerActivity.this, Login.class);
-               // startActivity(intent);
-                if (viewPager.getCurrentItem() == 0 || viewPager.getCurrentItem() == 1 || viewPager.getCurrentItem() == 2) {
-                    viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
-                } else {
-                    // Intent intent = new Intent(ViewPagerActivity.this, Login.class);
-                    //startActivity(intent);
-
-                }
-                break;
-        }
-
-    }*/
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 }

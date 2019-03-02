@@ -83,6 +83,16 @@
                         android:paddingTop="@dimen/_2sdp"
                         android:background="@drawable/gradient_corner"/>
 
+                    <ImageView
+                        android:layout_width="@dimen/_20sdp"
+                        android:layout_height="@dimen/_20sdp"
+                        android:src="@drawable/ic_graph"
+                        android:layout_marginStart="@dimen/_10sdp"
+                        android:id="@+id/monetization_icon"
+                        android:visibility="gone"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"/>
+
                 </LinearLayout>
 
                 <ImageView
@@ -91,7 +101,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/_10sdp"
                     android:layout_marginStart="@dimen/_10sdp"
-                    android:layout_marginTop="@dimen/_5sdp"/>
+                    android:layout_marginTop="@dimen/_15sdp"/>
 
                 <TextView
                     android:id="@+id/user_blog_content_text1"

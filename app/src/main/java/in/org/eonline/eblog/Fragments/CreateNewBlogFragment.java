@@ -5,6 +5,7 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -29,7 +30,9 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,9 +62,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.ServerTimestamp;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -75,6 +82,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -93,6 +101,9 @@ import in.org.eonline.eblog.Utilities.FontClass;
 import in.org.eonline.eblog.Utilities.ImageUtility;
 import in.org.eonline.eblog.Utilities.PermissionUtils;
 
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 import static com.bumptech.glide.load.resource.bitmap.TransformationUtils.rotateImage;
@@ -102,6 +113,7 @@ import static in.org.eonline.eblog.Fragments.MyProfileFragment.MyPREFERENCES;
  * A simple {@link Fragment} subclass.
  */
 public class CreateNewBlogFragment extends Fragment  {
+    @ServerTimestamp Date time;
     FirebaseFirestore db;
     StorageReference storageRef;
     FirebaseStorage storage;
@@ -155,6 +167,12 @@ public class CreateNewBlogFragment extends Fragment  {
     Boolean isInternetPresent = false;
     public SwipeRefreshLayout mySwipeRequestLayout;
     private String updateBlog = "";
+    private ArrayList<String> permissionsToRequest;
+    private ArrayList<String> permissionsRejected = new ArrayList<>();
+    private ArrayList<String> permissions = new ArrayList<>();
+    private final static int ALL_PERMISSIONS_RESULT = 107;
+    private final static int ALL_WRITE_EXTERNAL_STORAGE = 108;
+    private final static int ALL_READ_EXTERNAL_STORAGE = 109;
 
     public CreateNewBlogFragment() {
         // Required empty public constructor
@@ -190,6 +208,11 @@ public class CreateNewBlogFragment extends Fragment  {
 
         sqliteDatabaseHelper = new DatabaseHelper(getActivity());
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
+
         storage = FirebaseStorage.getInstance();
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
@@ -197,6 +220,14 @@ public class CreateNewBlogFragment extends Fragment  {
         blogModelToBeUpdated.setUserId(userId);
         blogIdBase = userId + "_0";
         blogId = sharedpreferences.getString("blogId_new",blogIdBase);
+
+        if((sharedpreferences.getString("blogId_new", blogIdBase) == null || sharedpreferences.getString("blogId_new", blogIdBase).equalsIgnoreCase(blogIdBase))
+            && !"blog_update".equalsIgnoreCase(updateBlog)) {
+            // This executes when user has uninstalled app and re-installed
+            // after re-installing, shared pref may be null or it will be same as userId_0 so we have to get latest blog Id
+            getBlogIdNewFromUserCollection();
+        }
+
         setSpinner();
 
         setBlogImages();
@@ -248,6 +279,102 @@ public class CreateNewBlogFragment extends Fragment  {
         }
 
         loadInterstitialAd();
+
+        allowPermissions();
+    }
+
+    public void getBlogIdNewFromUserCollection() {
+        DocumentReference docRef = db.collection("Users").document(userId);
+        docRef.get().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                Toast.makeText(getContext(), "Server is down", Toast.LENGTH_SHORT).show();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        if(document.getString("BlogIdNew") != null) {
+                            //if BlogIdNew is present means user's latest blog id is stored in db
+                            blogId = document.getString("BlogIdNew");
+                            editor = sharedpreferences.edit();
+                            editor.putString("blogId_new",blogId);
+                            editor.apply();
+                        } else {
+                            //if BlogIdNew is null means user's latest blog id is never stored in db
+                            // so write logic to find out which blog id of user is latest
+                            findBlogIdNewFromAllBlogs();
+                        }
+                        if(document.getString("UserBannerId") == null) {
+                            //Toast.makeText(getContext(), "Please enter AdMob Banner Id in Monetization Section of application in order to monetize blog and earn", Toast.LENGTH_LONG).show();
+                            createDialog();
+                        }
+                    } else {
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                    }
+                } else {
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                }
+            }
+        });
+    }
+
+    public void findBlogIdNewFromAllBlogs() {
+        CollectionReference blogRef = db.collection("Users").document(userId).collection("Blogs");
+        blogRef.get().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    ArrayList<String> blogIds = new ArrayList<String>();
+                    ArrayList<Integer> idNumbers = new ArrayList<Integer>();
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.exists()) {
+                            blogIds.add(document.getString("BlogId"));
+                        }
+                    }
+                    for(int i = 0; i< blogIds.size(); i++) {
+                        String id = blogIds.get(i);
+                        int number = Integer.parseInt(id.substring(id.lastIndexOf("_") + 1));
+                        idNumbers.add(number);
+                    }
+                    int max = 0;
+                    if(idNumbers.size() > 0) {
+                         max =  idNumbers.get(0);
+                    }
+                    for(int j = 0; j < idNumbers.size(); j++) {
+                        if(max < idNumbers.get(j)) {
+                            max = idNumbers.get(j);
+                        }
+                    }
+                    blogId = userId + "_" + max;
+                    editor = sharedpreferences.edit();
+                    editor.putString("blogId_new",blogId);
+                    editor.apply();
+                } else {
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                }
+            }
+        });
     }
 
     public void setUpdateBlogData() {
@@ -349,7 +476,7 @@ public class CreateNewBlogFragment extends Fragment  {
             errorImage.setVisibility(View.VISIBLE);
             return false;
         }
-        if (blogContentEdit1.getText().toString().equals("") || blogContentEdit1.getText().toString().length() <= 100) {
+        if (blogContentEdit1.getText().toString().equals("") || blogContentEdit1.getText().toString().length() <= 399) {
             errorContent1.setVisibility(View.VISIBLE);
             errorImage1.setVisibility(View.VISIBLE);
             return false;
@@ -377,13 +504,11 @@ public class CreateNewBlogFragment extends Fragment  {
                 isInternetPresent = connectivityReceiver.isConnectingToInternet();
                 if (isInternetPresent) {
                     startActivityForResult(getPickImageChooserIntent(), 201);
+                    //allowPermissions();
                 }
-                else
-                {
+                else {
                     CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
                 }
-
-
             }
         });
         uploadImage2.setOnClickListener(new View.OnClickListener() {
@@ -394,9 +519,9 @@ public class CreateNewBlogFragment extends Fragment  {
                 isInternetPresent = connectivityReceiver.isConnectingToInternet();
                 if (isInternetPresent) {
                     startActivityForResult(getPickImageChooserIntent(), 202);
+                    //allowPermissions();
                 }
-                else
-                {
+                else {
                     CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.no_internet);
                 }
 
@@ -418,7 +543,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "New Blog is created in Users collection", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getActivity(), "New Blog is created in Users collection", Toast.LENGTH_SHORT).show();
                         addBlogToSQLite();
                     }
                 })
@@ -426,7 +551,7 @@ public class CreateNewBlogFragment extends Fragment  {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
-                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Blog could not be created. Please try again.", Toast.LENGTH_LONG).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -436,7 +561,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "New Blog is created in standalone Blogs collection", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Blog is created", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -450,7 +575,7 @@ public class CreateNewBlogFragment extends Fragment  {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
-                        Toast.makeText(getActivity(), "Some error occured while creating new blog", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Blog could not be created. Please try again.", Toast.LENGTH_LONG).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -464,14 +589,14 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "Blog is updated in Users collection", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getActivity(), "Blog is updated in Users collection", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
-                        Toast.makeText(getActivity(), "Some error occured while updating blog", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Some error occured while updating blog", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -483,7 +608,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getActivity(), "Blog is updated in standalone Blogs collection", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Blog is updated", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -583,7 +708,7 @@ public class CreateNewBlogFragment extends Fragment  {
                             blogModelToBeUpdated.setBlogUser(userName);
                         }
                         catch(NullPointerException e) {
-                            Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_SHORT).show();
                             if (dialog != null && dialog.isShowing()) {
                                 dialog.dismiss();
                             }
@@ -599,7 +724,7 @@ public class CreateNewBlogFragment extends Fragment  {
 
                     } else {
                         Log.d(TAG, "No such document");
-                        Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getActivity(), "Please enter banner ID", Toast.LENGTH_SHORT).show();
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
@@ -645,7 +770,7 @@ public class CreateNewBlogFragment extends Fragment  {
     } */
 
     public void setSpinner() {
-        List<String> categories = new ArrayList<>();
+        /*List<String> categories = new ArrayList<>();
         categories.add("Travelling");
         categories.add("Food");
         categories.add("Cosmetics");
@@ -656,7 +781,9 @@ public class CreateNewBlogFragment extends Fragment  {
         categories.add("Socialism");
         categories.add("Bollywood and entertainment");
         categories.add("Business");
-        categories.add("others");
+        categories.add("others"); */
+        String abc[] = getActivity().getResources().getStringArray(R.array.blog_categories);
+        List<String> categories = Arrays.asList(abc);
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, categories);
         // Drop down layout style - list view with radio button
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -683,6 +810,7 @@ public class CreateNewBlogFragment extends Fragment  {
         blogmodel.setBlogContent2(blogContentEdit2.getText().toString());
         blogmodel.setBlogFooter(blogFooterEdit.getText().toString());
         blogmodel.setBlogLikes("0");
+        blogmodel.setBlogTimeStamp(FieldValue.serverTimestamp().toString());
         blogMap.put("BlogHeader",blogmodel.getBlogHeader());
         blogMap.put("BlogContent1",blogmodel.getBlogContent1());
         blogMap.put("BlogContent2",blogmodel.getBlogContent2());
@@ -695,6 +823,7 @@ public class CreateNewBlogFragment extends Fragment  {
         blogMap.put("BlogUser", blogmodel.getBlogUser());
         blogMap.put("BlogImage1Url",blogmodel.getUserBlogImage1Url());
         blogMap.put("BlogImage2Url",blogmodel.getUserBlogImage2Url());
+        blogMap.put("BlogTimeStamp", FieldValue.serverTimestamp());
     }
 
     public void setUpdateBlogModelAndMap() {
@@ -730,8 +859,31 @@ public class CreateNewBlogFragment extends Fragment  {
         editor = sharedpreferences.edit();
         editor.putString("blogId_new",blogId);
         editor.apply();
-
+        saveNewBlogIdToUserCollection(blogId);
         return blogId;
+    }
+
+    public void saveNewBlogIdToUserCollection(String blogid) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("BlogIdNew", blogid);
+
+        db.collection("Users").document(userId)
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        CommonDialog.getInstance().showErrorDialog(getActivity(), R.drawable.failure_image);
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                    }
+                });
     }
 
 
@@ -944,7 +1096,7 @@ public class CreateNewBlogFragment extends Fragment  {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
-                Toast.makeText(getContext(), "File 1 could not be uploaded", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Blog could not be created. Please try again.", Toast.LENGTH_LONG).show();
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
@@ -952,7 +1104,7 @@ public class CreateNewBlogFragment extends Fragment  {
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(getContext(), "File 1 successfully uploaded", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "File 1 successfully uploaded", Toast.LENGTH_SHORT).show();
                 //getimageUrl();
                 if(isImageTwoPresent) {
                     uploadImage2();
@@ -965,14 +1117,15 @@ public class CreateNewBlogFragment extends Fragment  {
 
     public void uploadImage2() {
 
+        storageRef = storage.getReference();
+        Bitmap bitmap2;
+
         blogImageView2.setDrawingCacheEnabled(true);
         blogImageView2.buildDrawingCache();
 
-        storageRef = storage.getReference();
-
         final StorageReference imagesRef2 = storageRef.child("Blogs/" + sharedpreferences.getString("UserIdCreated", "document") + "/" + blogId + "img2");
+        bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Bitmap bitmap2 = ((BitmapDrawable) blogImageView2.getDrawable()).getBitmap();
         bitmap2.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data2 = baos.toByteArray();
         UploadTask uploadTask2 = imagesRef2.putBytes(data2);
@@ -980,7 +1133,7 @@ public class CreateNewBlogFragment extends Fragment  {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
-                Toast.makeText(getContext(), "File 2 could not be uploaded", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Blog could not be created. Please try again.", Toast.LENGTH_LONG).show();
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
@@ -988,7 +1141,7 @@ public class CreateNewBlogFragment extends Fragment  {
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(getContext(), "File 2 successfully uploaded", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "File 2 successfully uploaded", Toast.LENGTH_SHORT).show();
                 if(isImageOnePresent) {
                     getimageUrl();
                 } else {
@@ -1021,7 +1174,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure (@NonNull Exception exception){
-                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Blog could not be created. Please try again.", Toast.LENGTH_LONG).show();
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
@@ -1048,7 +1201,7 @@ public class CreateNewBlogFragment extends Fragment  {
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure (@NonNull Exception exception){
-                Toast.makeText(getActivity(), "Could not get user image url", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Blog could not be created. Please try again.", Toast.LENGTH_LONG).show();
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
@@ -1069,10 +1222,8 @@ public class CreateNewBlogFragment extends Fragment  {
 
     public void loadInterstitialAd() {
         interstitialAd = new InterstitialAd(requireContext());
-        interstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
-        AdRequest request = new AdRequest.Builder()
-                .addTestDevice("")
-                .build();
+        interstitialAd.setAdUnitId("ca-app-pub-7293397784162310/2566340475");
+        AdRequest request = new AdRequest.Builder().build();
         interstitialAd.loadAd(request);
     }
 
@@ -1106,6 +1257,125 @@ public class CreateNewBlogFragment extends Fragment  {
         Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
         img.recycle();
         return rotatedImg;
+    }
+
+    public void allowPermissions() {
+        permissions.add(CAMERA);
+        permissions.add(READ_EXTERNAL_STORAGE);
+        permissions.add(WRITE_EXTERNAL_STORAGE);
+
+        permissionsToRequest = findUnAskedPermissions(permissions);
+        //get the permissions we have asked for before but are not granted..
+        //we will store this in a global list to access later.
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (permissionsToRequest.size() > 0) {
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_PERMISSIONS_RESULT);
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_READ_EXTERNAL_STORAGE);
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_WRITE_EXTERNAL_STORAGE);
+            }
+        }
+    }
+
+    private ArrayList<String> findUnAskedPermissions(ArrayList<String> wanted) {
+        ArrayList<String> result = new ArrayList<String>();
+
+        for (String perm : wanted) {
+            if (!hasPermission(perm)) {
+                result.add(perm);
+            }
+        }
+        return result;
+    }
+
+    private boolean hasPermission(String permission) {
+        if (canMakeSmores()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return (getActivity().checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
+            }
+        }
+        return true;
+    }
+
+    private boolean canMakeSmores() {
+        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case ALL_PERMISSIONS_RESULT:
+
+            case ALL_READ_EXTERNAL_STORAGE:
+
+            case ALL_WRITE_EXTERNAL_STORAGE:
+
+                for (String perms : permissionsToRequest) {
+                    if (hasPermission(perms)) {
+
+                    } else {
+                        permissionsRejected.add(perms);
+                    }
+                }
+                if (permissionsRejected.size() > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
+                            showMessageOKCancel("These permissions are mandatory for the application. Please allow access.",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                requestPermissions(permissionsRejected.toArray(new String[permissionsRejected.size()]), ALL_PERMISSIONS_RESULT);
+                                            }
+                                        }
+                                    });
+                            return;
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(getContext())
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
+
+    public void createDialog() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(requireContext());
+        alertDialogBuilder.setTitle("To earn, monetize first and then create blogs");
+        alertDialogBuilder.setMessage("Please enter your Google AdMob Banner Id in Monetization Section of application in order to monetize a Blog and earn");
+
+        alertDialogBuilder.setPositiveButton("Redirect To Monetization", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                openFragment(new MonetizationFragment());
+            }
+        });
+
+        alertDialogBuilder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    public void openFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.content_frame, fragment);
+        fragmentTransaction.commit();
     }
 
 }

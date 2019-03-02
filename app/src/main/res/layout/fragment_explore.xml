@@ -54,7 +54,6 @@
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/view_1"
             android:id="@+id/popular_blogs"
             android:layout_marginBottom="@dimen/_50sdp">
 

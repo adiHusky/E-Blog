@@ -1,41 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.Splash"
+    android:orientation="vertical"
     android:background="@color/white">
 
     <ImageView
         android:layout_width="@dimen/_220sdp"
         android:layout_height="@dimen/_220sdp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="59dp"
-        android:src="@mipmap/app_logo" />
+        android:layout_marginTop="@dimen/_30sdp"
+        android:layout_gravity="center"
+        android:src="@mipmap/app_logo"
+        android:id="@+id/app_logo_main"
+        android:contentDescription="@string/new_app_name"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="258dp"
-        android:text="@string/app_motto"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="@dimen/_16sdp"
-        android:textStyle="italic" />
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_200sdp"
+        android:src="@drawable/splash_screen_name"
+        android:layout_marginBottom="@dimen/_40sdp"
+        android:contentDescription="@string/app_name"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="104dp"
-        android:text="@string/new_app_name"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="@dimen/_50sdp">
-
-    </TextView>
-
-</RelativeLayout>
+</LinearLayout>

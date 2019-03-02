@@ -8,6 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.Utilities.FontClass;
 
@@ -16,6 +19,7 @@ import in.org.eonline.eblog.Utilities.FontClass;
  */
 public class FAQFragment extends Fragment {
 
+    private AdView mAdView;
 
     public FAQFragment() {
         // Required empty public constructor
@@ -35,5 +39,9 @@ public class FAQFragment extends Fragment {
 
         ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.faq_layout);
         FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
+
+        mAdView = (AdView) getView().findViewById(R.id.faq_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 }

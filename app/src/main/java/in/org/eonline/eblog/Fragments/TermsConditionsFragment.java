@@ -10,7 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import in.org.eonline.eblog.R;
 import in.org.eonline.eblog.Utilities.FontClass;
@@ -20,6 +21,8 @@ public class TermsConditionsFragment extends Fragment {
 
    private TextView termsHeader;
    private TextView termsContent;
+   private AdView mAdView;
+
     public TermsConditionsFragment() {
         // Required empty public constructor
     }
@@ -36,5 +39,9 @@ public class TermsConditionsFragment extends Fragment {
 
         ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.tnc_layout);
         FontClass.getInstance(getActivity()).setFontToAllChilds(myMostParentLayout);
+
+        mAdView = (AdView) getView().findViewById(R.id.tnc_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 }

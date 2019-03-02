@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -27,6 +28,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -71,8 +74,9 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
     View view;
     private List<BlogModel> blogListCategorywise = new ArrayList<>();
     private int length;
-    boolean[] checkedSelectedArray = new boolean[11];
+    boolean[] checkedSelectedArray = new boolean[22];
     private TextView filterBlogs;
+    private InterstitialAd interstitialAd;
 
     public ExploreFragment() {
         // Required empty public constructor
@@ -90,9 +94,13 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         db = FirebaseFirestore.getInstance();
-
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
         initializeViews();
         setDataFirebase();
+        loadInterstitialAd();
         refreshMyProfile();
 
         ViewGroup myMostParentLayout = (ViewGroup) getView().findViewById(R.id.swiperefresh_home);
@@ -106,9 +114,7 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
 
         MobileAds.initialize(getContext(),"ca-app-pub-7293397784162310~9840078574");
         mAdView = (AdView) getView().findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder()
-                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                .addTestDevice("5DDD17EFB41CB40FC08FBE350D11B395").build();
+        AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
 
         filterBlogs.setOnClickListener(new View.OnClickListener() {
@@ -117,6 +123,7 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
                 setAlertDialog();
             }
         });
+
     }
 
     public void initializeViews() {
@@ -164,7 +171,7 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
     public void enterBlogsFirebase(){
         CollectionReference colRef=db.collection("Blogs");
 
-        colRef.get().addOnFailureListener(new OnFailureListener() {
+        colRef.orderBy("BlogTimeStamp", Query.Direction.DESCENDING).get().addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.failure_image);
@@ -252,6 +259,9 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
 
     @Override
     public void onClickItem(BlogModel model) {
+        if(interstitialAd.isLoaded()) {
+            interstitialAd.show();
+        }
         Intent intent = new Intent(getActivity(), BlogActivity.class);
         String blogmodel = (new Gson()).toJson(model);
         intent.putExtra("blog", blogmodel);
@@ -259,7 +269,7 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
     }
 
     public void setAlertDialog() {
-        String abc[] = {"Travelling", "Food", "Cosmetics", "Apparels", "Technology", "Cars and Bikes", "Politics", "Socialism", "Bollywood and entertainment", "Business", "others"};
+        String abc[] = getActivity().getResources().getStringArray(R.array.blog_categories);
         final List<String> categories = Arrays.asList(abc);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         length = checkedSelectedArray.length;
@@ -333,6 +343,14 @@ public class ExploreFragment extends Fragment implements UserAdapter.ClickListen
         popularBlogsRecyclerView.setLayoutManager(linearLayoutManager);
         BlogAdapter adapter = new BlogAdapter(getActivity(), blogListCategorywise, ExploreFragment.this);
         popularBlogsRecyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void loadInterstitialAd() {
+        interstitialAd = new InterstitialAd(requireContext());
+        interstitialAd.setAdUnitId("ca-app-pub-7293397784162310/3163493818");
+        AdRequest request = new AdRequest.Builder().build();
+        interstitialAd.loadAd(request);
     }
 
 }

@@ -2,13 +2,18 @@ package in.org.eonline.eblog.Activities;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.ImageViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,7 +37,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -43,6 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import in.org.eonline.eblog.Fragments.ExploreFragment;
+import in.org.eonline.eblog.Fragments.MonetizationFragment;
 import in.org.eonline.eblog.HomeActivity;
 import in.org.eonline.eblog.Models.BlogModel;
 import in.org.eonline.eblog.R;
@@ -55,7 +63,7 @@ import static android.content.ContentValues.TAG;
 public class BlogActivity extends AppCompatActivity {
     private TextView blogHeader, blogContent1, blogContent2, blogFooter, blogCategory, blogLikes, blogShare;
     private String bannerId, userId, likeStatus, likeButtonValue;
-    private ImageView userLikesButton, blogImageView1, blogImageView2;
+    private ImageView userLikesButton, blogImageView1, blogImageView2, monetizationIcon;
     private Button deleteBlog, updateBlog;
     private String blogId;
     FirebaseFirestore db;
@@ -72,6 +80,7 @@ public class BlogActivity extends AppCompatActivity {
     FirebaseStorage storage;
     StorageReference storageRef;
     Typeface tf;
+    private String shareLink = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +95,10 @@ public class BlogActivity extends AppCompatActivity {
         refreshMyProfile();
 
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
         storage = FirebaseStorage.getInstance();
 
         sharedpreferences = this.getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
@@ -145,9 +158,11 @@ public class BlogActivity extends AppCompatActivity {
 
     public void setBlogDataAndImage(){
         blogHeader.setText(blogModel.getBlogHeader());
+        blogHeader.setTypeface(blogHeader.getTypeface(), Typeface.BOLD);
         blogContent1.setText(blogModel.getBlogContent1());
         blogContent2.setText(blogModel.getBlogContent2());
         blogFooter.setText(blogModel.getBlogFooter());
+        blogFooter.setTypeface(blogFooter.getTypeface(), Typeface.BOLD);
         blogCategory.setText(blogModel.getBlogCategory());
         blogId = blogModel.getBlogId();
         blogLikes.setText(blogModel.getBlogLikes() + "Likes");
@@ -167,11 +182,58 @@ public class BlogActivity extends AppCompatActivity {
             userAdView.setAdSize(AdSize.SMART_BANNER);
             userAdView.setAdUnitId(bannerId);
             ((RelativeLayout) adContainer).addView(userAdView);
-            AdRequest adRequest = new AdRequest.Builder()
-                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                    .addTestDevice("F6ECB8AECEA2A45447ADE1C65B01711B").build();
+            AdRequest adRequest = new AdRequest.Builder().build();
             userAdView.loadAd(adRequest);
         }
+
+        if(blogModel.getUserId().equalsIgnoreCase(userId) && (blogModel.getBannerAdMobId() == null || !blogModel.getBannerAdMobId().contains("ca-app-pub"))) {
+            monetizationIcon.setVisibility(View.VISIBLE);
+            ImageViewCompat.setImageTintList(monetizationIcon, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.red)));
+            //monetizationIcon.setTooltipText("This blog is not monetized");
+            monetizationIcon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    createDialog();
+                }
+            });
+        } else if (blogModel.getUserId().equalsIgnoreCase(userId) && (blogModel.getBannerAdMobId() != null || blogModel.getBannerAdMobId().contains("ca-app-pub"))){
+            monetizationIcon.setVisibility(View.VISIBLE);
+            ImageViewCompat.setImageTintList(monetizationIcon, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green)));
+            //monetizationIcon.setTooltipText("This blog is monetized");
+            monetizationIcon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(BlogActivity.this, "This blog is monetized", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        getAppDownloadLink();
+    }
+
+    public void createDialog() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("This blog is not monetized");
+        alertDialogBuilder.setMessage("Click on 'Redirect To Monetization' button and enter your Google AdMob Banner Id. Once you have entered it in Monetization screen then update this blog to reflect changes.");
+
+        alertDialogBuilder.setPositiveButton("Redirect To Monetization", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                Intent intent = new Intent(BlogActivity.this, HomeActivity.class);
+                intent.putExtra("monetize_key", "open_monetization");
+                startActivity(intent);
+            }
+        });
+
+        alertDialogBuilder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     public void InitializeViews() {
@@ -189,6 +251,7 @@ public class BlogActivity extends AppCompatActivity {
         mySwipeRequestLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh_blog_activity);
         updateBlog = (Button) findViewById(R.id.update_blog);
         blogShare = (TextView) findViewById(R.id.user_share_blog);
+        monetizationIcon = (ImageView) findViewById(R.id.monetization_icon);
     }
 
     public void refreshMyProfile(){
@@ -464,7 +527,7 @@ public class BlogActivity extends AppCompatActivity {
         desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(BlogActivity.this, "File deleted successfully", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(BlogActivity.this, "File deleted successfully", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -484,7 +547,7 @@ public class BlogActivity extends AppCompatActivity {
           .delete().addOnSuccessListener(new OnSuccessListener<Void>() {
               @Override
               public void onSuccess(Void aVoid) {
-                  Toast.makeText(BlogActivity.this, "Deleted blog from Users collection", Toast.LENGTH_SHORT).show();
+                  //Toast.makeText(BlogActivity.this, "Deleted blog from Users collection", Toast.LENGTH_SHORT).show();
               }
           })
           .addOnFailureListener(new OnFailureListener() {
@@ -503,7 +566,7 @@ public class BlogActivity extends AppCompatActivity {
           .delete().addOnSuccessListener(new OnSuccessListener<Void>() {
               @Override
               public void onSuccess(Void aVoid) {
-                  Toast.makeText(BlogActivity.this, "Deleted blog from Blogs collection", Toast.LENGTH_SHORT).show();
+                  Toast.makeText(BlogActivity.this, "Blog deleted", Toast.LENGTH_SHORT).show();
                   if (dialog != null && dialog.isShowing()) {
                       dialog.dismiss();
                   }
@@ -531,8 +594,40 @@ public class BlogActivity extends AppCompatActivity {
                 //i.setType("image*//*");
                 //i.putExtra(Intent.EXTRA_STREAM, getLocalBitmapUri(bitmap));
                 //i.putExtra(Intent.EXTRA_TEXT, FullName + " has invited you to the most exciting event " + explorePojo.getChatTitle() + " organized by " + explorePojo.getEventOwner() + " at " + explorePojo.getEventLocation() + "." + " Now join it via " + "https://play.google.com/store/apps/details?id=com.temp.tempdesign&hl=en");
-                i.putExtra(Intent.EXTRA_TEXT, blogModel.getBlogHeader() + " by " + blogModel.getBlogUser() + ". Read this blog here: " + "https://goo.gl/9rT2M9");
+                i.putExtra(Intent.EXTRA_TEXT, blogModel.getBlogHeader() + " by " + blogModel.getBlogUser() + ". Read this blog here: " + shareLink);
                 startActivity(Intent.createChooser(i, "Share This Blog"));
+            }
+        });
+    }
+
+    public void getAppDownloadLink() {
+        DocumentReference docRef = db.collection("Users").document("AppDownloadLink");
+        docRef.get().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                Toast.makeText(BlogActivity.this, "Server is down", Toast.LENGTH_SHORT).show();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        shareLink = document.getString("DownloadUrl");
+                    } else {
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                    }
+                } else {
+                    CommonDialog.getInstance().showErrorDialog(BlogActivity.this, R.drawable.failure_image);
+                    Toast.makeText(BlogActivity.this, "server is down", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
             }
         });
     }

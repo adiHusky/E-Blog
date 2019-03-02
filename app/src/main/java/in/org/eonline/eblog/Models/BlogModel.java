@@ -15,6 +15,24 @@ public class BlogModel {
     public String UserImageUrl;
     public String UserBlogImage1Url;
     public String UserBlogImage2Url;
+    public String blogTimeStamp;
+    public String blogDate;
+
+    public String getBlogDate() {
+        return blogDate;
+    }
+
+    public void setBlogDate(String blogDate) {
+        this.blogDate = blogDate;
+    }
+
+    public String getBlogTimeStamp() {
+        return blogTimeStamp;
+    }
+
+    public void setBlogTimeStamp(String blogTimeStamp) {
+        this.blogTimeStamp = blogTimeStamp;
+    }
 
     public String getUserId() {
         return UserId;

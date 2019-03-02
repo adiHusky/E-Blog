@@ -129,7 +129,7 @@
         android:hint="Enter Mobile Number"
         android:textSize="@dimen/_14sdp"
         android:inputType="phone"
-        android:maxLength="12"
+        android:maxLength="15"
         android:maxLines="1"
         android:background="@drawable/app_edittext_drawable"/>
 

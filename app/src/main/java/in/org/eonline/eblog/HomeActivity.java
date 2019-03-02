@@ -95,7 +95,11 @@ public class HomeActivity extends AppCompatActivity
             CreateNewBlogFragment createNewBlogFragment = new CreateNewBlogFragment();
             createNewBlogFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, createNewBlogFragment).commit();
-        } else {
+        } else if (getIntent().hasExtra("monetize_key")) {
+            MonetizationFragment monetizationFragment = new MonetizationFragment();
+            getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, monetizationFragment).commit();
+        }
+        else {
             openFragment(new ExploreFragment(), "nav_home");
         }
 
@@ -284,6 +288,7 @@ public class HomeActivity extends AppCompatActivity
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(HomeActivity.this, Login.class);
             startActivity(intent);
+            finish();
         } else if (id == R.id.nav_about_us) {
             FAQFragment faqFragment = new FAQFragment();
             fragmentTag="nav_faq";

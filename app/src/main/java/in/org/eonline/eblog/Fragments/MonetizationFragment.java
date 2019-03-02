@@ -36,6 +36,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -87,7 +88,10 @@ public class MonetizationFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         db= FirebaseFirestore.getInstance();
-
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
         initializeViews();
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userId = sharedpreferences.getString("UserIdCreated","AdityaKamat75066406850");
@@ -278,7 +282,7 @@ public class MonetizationFragment extends Fragment {
                     if (document.exists()) {
                         try {
                             adMobAdUnitIdEdit.setText(document.getString("UserBannerId").toString());
-                            Toast.makeText(getContext(), "Admob ID present", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(getContext(), "Admob ID present", Toast.LENGTH_LONG).show();
                             if (dialog != null && dialog.isShowing()) {
                                 dialog.dismiss();
                             }

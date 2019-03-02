@@ -27,8 +27,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Query.Direction;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -90,6 +93,10 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
 
         sqliteDatabaseHelper = new DatabaseHelper(getActivity());
         db= FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
         InitializeViews();
         setYourBlogsFromFirebase();
         refreshMyProfile();
@@ -148,36 +155,32 @@ public class YourBlogsFragment extends Fragment implements BlogAdapter.ClickList
                     dialog.dismiss();
                 }
             }
-        })
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            int i=0;
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                if (document.exists()) {
-                                    setBlogModel(document);
-
-                                }
-                                i++;
-                            }
-                            if(i==0)
-                            {
-                                CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.no_data);
-                            }
-                            setPopularBlogsRecyclerView();
-                            if (dialog != null && dialog.isShowing()) {
-                                dialog.dismiss();
-                            }
-
-                        } else {
-                            if (dialog != null && dialog.isShowing()) {
-                                dialog.dismiss();
-                            }
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+        }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    int i=0;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.exists()) {
+                            setBlogModel(document);
                         }
+                        i++;
                     }
-                });
+                    if(i==0) {
+                        CommonDialog.getInstance().showErrorDialog(getContext(), R.drawable.no_data);
+                    }
+                    setPopularBlogsRecyclerView();
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                } else {
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+            }
+        });
     }
 
     private void setBlogModel(QueryDocumentSnapshot document) {
